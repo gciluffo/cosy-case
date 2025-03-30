@@ -1,6 +1,6 @@
-import { Tabs } from "expo-router";
+import { router, Tabs } from "expo-router";
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, TouchableOpacity } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -45,21 +45,23 @@ export default function TabLayout() {
           ),
           headerShown: true,
           headerRight: () => (
-            <IconSymbol
-              size={24}
-              name="plus"
-              color={Colors[colorScheme ?? "light"].tint}
-              style={{
-                marginRight: 16,
-                padding: 8,
-                borderRadius: 12,
-                opacity: 0.8,
-                shadowOffset: {
-                  width: 0,
-                  height: 2,
-                },
-              }}
-            />
+            <TouchableOpacity onPress={() => router.push("/book-search")}>
+              <IconSymbol
+                size={24}
+                name="plus"
+                color={Colors[colorScheme ?? "light"].tint}
+                style={{
+                  marginRight: 16,
+                  padding: 8,
+                  borderRadius: 12,
+                  opacity: 0.8,
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                }}
+              />
+            </TouchableOpacity>
           ),
         }}
       />
