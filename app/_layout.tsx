@@ -1,8 +1,3 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
 import "@/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useFonts } from "expo-font";
@@ -42,6 +37,14 @@ export default function RootLayout() {
           name="book-search"
           options={{
             title: "Search",
+          }}
+        />
+        <Stack.Screen
+          name="add-book"
+          options={{
+            title: "Add to Library",
+            presentation: "modal",
+            headerBackButtonDisplayMode: "minimal",
           }}
         />
       </Stack>
