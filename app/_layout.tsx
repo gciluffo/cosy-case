@@ -47,6 +47,12 @@ export default function RootLayout() {
             headerBackButtonDisplayMode: "minimal",
           }}
         />
+        <Stack.Screen
+          name="book-spine-camera-view"
+          options={{
+            title: "",
+          }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </GluestackUIProvider>

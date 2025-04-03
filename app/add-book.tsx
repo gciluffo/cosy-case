@@ -1,9 +1,14 @@
 import { getBookDetails, getSpineImages, searchBookSpineByTitle } from "@/api";
 import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models";
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
 import { Icon } from "@/components/ui/icon";
@@ -16,6 +21,7 @@ export default function AddBookScreen() {
   >({} as any);
   const [spineImages, setSpineImages] = useState<string[]>([]);
   const [searchingSpineImage, setSearchingSpineImage] = useState(false);
+  const [spineError, setSpineError] = useState<string | null>(null);
   const params = useLocalSearchParams();
   const { book } = params;
 
@@ -59,21 +65,29 @@ export default function AddBookScreen() {
           return;
         }
 
-        // const response = await searchBookSpineByTitle(
-        //   bookObject.title,
-        //   bookObject.author_name?.join(", ") || "",
-        //   bookObject.key
-        // );
+        const response = await searchBookSpineByTitle(
+          bookObject.title,
+          bookObject.author_name?.join(", ") || "",
+          bookObject.key
+        );
 
-        // console.log("Spine image response:", response);
+        console.log("Spine image response:", response);
 
-        // if (response?.signed_url) {
-        //   setSpineImages([response.signed_url]);
-        // } else {
-        //   // show error message of somekind
-        //   // and fallback image
-        // }
+        if (response?.signed_url) {
+          setSpineImages([response.signed_url]);
+        } else {
+          // show error message of somekind
+          // and fallback image
+        }
       } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === "Failed to find spine on google"
+        ) {
+          setSpineError(
+            "Unable to find a spine image for this book. You can upload your own image or use the default image"
+          );
+        }
         console.error("Error fetching book spines:", error);
       } finally {
         setSearchingSpineImage(false);
@@ -153,6 +167,11 @@ export default function AddBookScreen() {
       <Text className="text-gray-500 mb-1 ml-1" size="lg">
         Spine Image
       </Text>
+      {spineError && (
+        <Text className="text-red-500 mb-1 ml-1" size="sm">
+          {spineError}
+        </Text>
+      )}
       <Card>
         <View className="flex-row gap-3">
           {searchingSpineImage && (
@@ -168,14 +187,20 @@ export default function AddBookScreen() {
             <Image
               key={index}
               source={image}
-              style={styles.image}
+              style={[styles.spineImage]}
               className="flex-1"
+              // resizeMode="contain"
             />
           ))}
 
-          <View style={styles.addContainer}>
+          <TouchableOpacity
+            style={styles.addContainer}
+            onPress={() => {
+              router.push("./book-spine-camera-view");
+            }}
+          >
             <FontAwesome name="camera" size={20} color="gray" />
-          </View>
+          </TouchableOpacity>
         </View>
       </Card>
     </ScollViewFloatingButton>
@@ -202,5 +227,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 100,
     // borderRadius: 8,
+  },
+  spineImage: {
+    height: 200,
+    width: 50,
+    borderRadius: 8,
+    marginRight: 10,
   },
 });

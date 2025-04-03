@@ -1,0 +1,15 @@
+diff --git a/node_modules/react-native-fast-tflite/spec/NativeRNTflite.ts b/node_modules/react-native-fast-tflite/spec/NativeRNTflite.ts
+new file mode 100644
+index 0000000..dcc2baf
+--- /dev/null
++++ b/node_modules/react-native-fast-tflite/spec/NativeRNTflite.ts
+@@ -0,0 +1,8 @@
++import type { TurboModule } from 'react-native'
++import { TurboModuleRegistry } from 'react-native'
++
++export interface Spec extends TurboModule {
++  install(): boolean
++}
++
++export default TurboModuleRegistry.getEnforcing<Spec>('Tflite')
+\ No newline at end of file
