@@ -1,10 +1,16 @@
 import { OpenLibraryBook } from "@/models";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.2.53:8000";
 
 export async function searchBooks(searchTerm: string) {
+  console.log(
+    "Searching for books with term:",
+    `${BASE_URL}/search/?query=${searchTerm}&offset=0&limit=10`
+  );
   const response = await fetch(
-    `${BASE_URL}/search/?query=${searchTerm}&offset=0&limit=10`,
+    `${BASE_URL}/search/?query=${encodeURIComponent(
+      searchTerm
+    )}&offset=0&limit=10`,
     {
       method: "GET",
       headers: {
@@ -87,7 +93,7 @@ export async function searchBookSpineByTitle(
   });
 
   if (!response.ok) {
-    throw new Error("Failed to fetch book spine");
+    throw new Error("Failed to find spine on google");
   }
 
   const data = await response.json();
