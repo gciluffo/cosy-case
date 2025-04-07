@@ -1,4 +1,4 @@
-import { OpenLibraryBook } from "@/models";
+import { OpenLibraryBook } from "@/models/external";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.2.53:8000";
 
@@ -81,7 +81,7 @@ export async function searchBookSpineByTitle(
     workId: key.split("/").pop(),
   };
 
-  console.log("Searching for book spine with body:", body);
+  // console.log("Searching for book spine with body:", body);
 
   const response = await fetch(`${BASE_URL}/search-book-spine-image`, {
     method: "POST",

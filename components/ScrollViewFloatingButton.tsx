@@ -19,61 +19,28 @@ interface Props {
 }
 
 const ScollViewFloatingButton = React.memo((props: Props) => {
-  const [isKeyboardVisible, setIsKeyboardVisible] = React.useState(false);
   const { children, onPress, buttonText, disabled } = props;
   let screenHeight = Dimensions.get("window").height;
 
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      () => {
-        setIsKeyboardVisible(true);
-      }
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        setIsKeyboardVisible(false);
-      }
-    );
-
-    return () => {
-      keyboardDidHideListener.remove();
-      keyboardDidShowListener.remove();
-    };
-  }, []);
-
   return (
     <View style={{ height: screenHeight, padding: 20 }}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? -20 : 20}
-        style={{ flex: 1 }}
+      <ScrollView keyboardShouldPersistTaps="handled">{children}</ScrollView>
+      <View
+        style={[
+          styles.buttonContainer,
+          { height: screenHeight * (isTablet ? 0.1 : 0.21) },
+        ]}
       >
-        <ScrollView keyboardShouldPersistTaps="handled">{children}</ScrollView>
-        <View
-          style={[
-            styles.buttonContainer,
-            { height: screenHeight * (isTablet ? 0.1 : 0.21) },
-          ]}
+        <Button
+          size="xl"
+          style={styles.button}
+          onPress={onPress}
+          disabled={disabled}
+          className={disabled ? "bg-background-disabled" : undefined}
         >
-          {isKeyboardVisible ? (
-            <Button size="xl" style={styles.keyboardButton} onPress={onPress}>
-              <ButtonText>Finish</ButtonText>
-            </Button>
-          ) : (
-            <Button
-              size="xl"
-              style={styles.button}
-              onPress={onPress}
-              disabled={disabled}
-              className={disabled ? "bg-background-disabled" : undefined}
-            >
-              <ButtonText>{buttonText}</ButtonText>
-            </Button>
-          )}
-        </View>
-      </KeyboardAvoidingView>
+          <ButtonText>{buttonText}</ButtonText>
+        </Button>
+      </View>
     </View>
   );
 });

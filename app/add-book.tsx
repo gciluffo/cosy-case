@@ -1,5 +1,5 @@
 import { getBookDetails, getSpineImages, searchBookSpineByTitle } from "@/api";
-import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models";
+import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models/external";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -14,21 +14,22 @@ import { Text } from "@/components/ui/text";
 import { Icon } from "@/components/ui/icon";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
+import SkiaBookSpine from "@/components/SkiaBookSpine";
+import useStore from "@/store";
+import { Book, Spine } from "@/models/book";
+import { getPrimaryColor } from "@/utils/image";
 
 export default function AddBookScreen() {
   const [bookDetails, setBookDetails] = useState<
-    OpenLibraryBook & OpenLibraryBookSearch
+    OpenLibraryBook & OpenLibraryBookSearch & { primaryColor?: string }
   >({} as any);
   const [spineImages, setSpineImages] = useState<string[]>([]);
   const [searchingSpineImage, setSearchingSpineImage] = useState(false);
   const [spineError, setSpineError] = useState<string | null>(null);
+  const [primaryColor, setPrimaryColor] = useState<string | null>(null);
   const params = useLocalSearchParams();
   const { book } = params;
-
-  // Parse the book object from the URL params
-  //   const bookObject = JSON.parse(book as string);
-
-  //   console.log({ bookObject });
+  const { addBook } = useStore();
 
   useEffect(() => {
     const bookDetailsInit = async () => {
@@ -57,7 +58,7 @@ export default function AddBookScreen() {
         const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
         const images = await getSpineImages(bookObject.key);
 
-        console.log("Spine images:", images);
+        // console.log("Spine images:", images);
 
         if (images.length > 0) {
           setSpineImages(images);
@@ -71,7 +72,7 @@ export default function AddBookScreen() {
           bookObject.key
         );
 
-        console.log("Spine image response:", response);
+        // console.log("Spine image response:", response);
 
         if (response?.signed_url) {
           setSpineImages([response.signed_url]);
@@ -85,7 +86,7 @@ export default function AddBookScreen() {
           error.message === "Failed to find spine on google"
         ) {
           setSpineError(
-            "Unable to find a spine image for this book. You can upload your own image or use the default image"
+            "Unable to find a spine image for this book. You can upload your own image or use the placeholder image."
           );
         }
         console.error("Error fetching book spines:", error);
@@ -94,9 +95,43 @@ export default function AddBookScreen() {
       }
     };
 
+    const bookSpinePrimaryColorInit = async () => {
+      if (!bookDetails.cover_url) {
+        return;
+      }
+
+      try {
+        const color = await getPrimaryColor(bookDetails.cover_url);
+        // console.log("Primary color:", color);
+        setPrimaryColor(color);
+      } catch (error) {}
+    };
+
     bookDetailsInit();
     bookSpinesInit();
+    bookSpinePrimaryColorInit();
   }, [book]);
+
+  const onAddToLibrary = () => {
+    // Always add the placeholder image, just in case
+    const spines: Spine[] = [
+      {
+        primaryColor: bookDetails.primaryColor!,
+        title: bookDetails.title,
+        author: bookDetails.author_name?.join(", ") || "",
+        width: bookDetails.details?.number_of_pages
+          ? bookDetails.details?.number_of_pages * 0.5
+          : 60,
+        height: 200,
+        selected: spineImages.length === 0,
+      },
+    ];
+    const bookToAdd: Book = { ...bookDetails, spines };
+
+    console.log("Book to add:", bookToAdd);
+    addBook(bookToAdd);
+    router.back();
+  };
 
   // Card for description
   // Star review
@@ -105,9 +140,8 @@ export default function AddBookScreen() {
   // Add to library button
   return (
     <ScollViewFloatingButton
-      onPress={() => {}}
+      onPress={() => onAddToLibrary()}
       buttonText="Add to Library"
-      disabled={false}
     >
       <Text className="text-gray-500 mb-1 ml-1" size="lg">
         Book Details
@@ -132,6 +166,7 @@ export default function AddBookScreen() {
                 {bookDetails?.details.publishers[0]}
               </Text>
             )}
+            <Text>{bookDetails.key}</Text>
           </View>
           <FontAwesome
             name="chevron-right"
@@ -192,6 +227,16 @@ export default function AddBookScreen() {
               // resizeMode="contain"
             />
           ))}
+          {spineError &&
+            bookDetails.author_name &&
+            primaryColor &&
+            !spineImages?.length && (
+              <SkiaBookSpine
+                primaryColor={primaryColor}
+                title={bookDetails.title}
+                author={bookDetails.author_name?.join(", ") || ""}
+              />
+            )}
 
           <TouchableOpacity
             style={styles.addContainer}

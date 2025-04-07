@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { TextInput, View, StyleSheet, FlatList } from "react-native";
 import { Text } from "@/components/ui/text";
 import BookSearchResult from "@/components/BookSearchResult";
-import { OpenLibraryBookSearch } from "@/models";
+import { OpenLibraryBookSearch } from "@/models/external";
 import { Skeleton } from "@/components/ui/skeleton";
 import { router } from "expo-router";
 

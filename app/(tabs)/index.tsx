@@ -1,15 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Dimensions, Platform } from "react-native";
 import {
   Canvas,
   Rect,
   Group,
-  Text as SkiaText,
-  useFont,
   BoxShadow,
   Image,
   useImage,
 } from "@shopify/react-native-skia";
+import useStore from "@/store";
+import { Book, isPlaceHolderSpine } from "@/models/book";
+import SkiaBookSpine from "@/components/SkiaBookSpine";
+
+const SHELF_WIDTH = Dimensions.get("window").width * 0.95;
+const SHELF_HEIGHT = Dimensions.get("window").height * 0.8;
+const SHELF_SPACING = (SHELF_HEIGHT + 10) / 5;
+const SHELF_THICKNESS = 20;
 
 // Wood color palette with Skia-friendly colors
 const WOOD_COLORS = {
@@ -20,85 +26,66 @@ const WOOD_COLORS = {
 };
 
 // Book interface
-interface Book {
-  id: string;
-  title: string;
-  author: string;
-  spine?: {
-    color: string;
-    width: number;
-  };
-}
 
 // Bookshelf component using Skia
 const SkiaBookshelf: React.FC<{
   woodType?: keyof typeof WOOD_COLORS;
-  books: Book[][];
-}> = ({ woodType = "oak", books }) => {
+  shelves: Book[][];
+}> = ({ woodType = "oak", shelves }) => {
   // Screen dimensions
   const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
     Dimensions.get("window");
 
   // Shelf configuration
-  const SHELF_WIDTH = SCREEN_WIDTH * 0.95;
-  const SHELF_HEIGHT = SCREEN_HEIGHT * 0.8;
-  const NUM_SHELVES = books.length;
-  const SHELF_SPACING = SHELF_HEIGHT / (NUM_SHELVES + 1);
-  const SHELF_THICKNESS = 20;
+  const NUM_SHELVES = shelves.length;
 
   // Load font from a valid font file
   // Render individual book spine
   const renderBookSpines = (shelfBooks: Book[], shelfY: number) => {
-    const font = useFont(
-      require("../../assets/fonts/SpaceMono-Regular.ttf"),
-      12
-    );
-
     return shelfBooks.map((book, index) => {
-      const spineWidth = book.spine?.width || 40;
-      const spineColor = book.spine?.color || "#5D4037";
+      const spine = book.spines.find((s) => s.selected);
+      const spineWidth = spine?.width || 40;
+      const spineHeight = spine?.height || 100;
+      const spineColor = isPlaceHolderSpine(spine!)
+        ? (spine as any).primaryColor
+        : "#FFFFFF";
+      const spineImage = isPlaceHolderSpine(spine!)
+        ? null
+        : spine?.imageUrl || null;
+      const image = useImage(spineImage || "");
       const xPosition = 20 + index * (spineWidth + 5);
-      const image = useImage(require("../../assets/images/spine_example.jpeg"));
+      // const image = useImage(require("../../assets/images/spine_example.jpeg"));
 
       return (
-        <Group key={book.id}>
+        <Group key={book.key}>
           {/* Book Spine */}
-          {/* <Rect
-            x={xPosition}
-            y={shelfY - 100}
-            width={spineWidth}
-            height={100}
-            color={spineColor}
-          /> */}
-          <Image
-            x={xPosition}
-            y={shelfY - 100}
-            width={spineWidth}
-            height={100}
-            fit="cover"
-            color={spineColor}
-            image={image}
-          />
-
-          {/* Book Title (if font is loaded) */}
-          {/* {font && (
-            <Group
-              transform={[
-                { translateX: xPosition + spineWidth / 2 },
-                { translateY: shelfY - 40 },
-                { rotate: -Math.PI / 2 },
-              ]}
-            >
-              <SkiaText
-                font={font}
-                text={book.title}
-                x={-font.measureText(book.title).width / 2} // Center text horizontally
-                y={0}
-                color="white"
-                style="fill"
-              />
-            </Group>
+          {/* {isPlaceHolderSpine(spine!) ? (
+            <SkiaBookSpine
+              primaryColor={spineColor}
+              title={spine.title}
+              author={spine.author}
+              width={spineWidth}
+              height={100}
+              x={xPosition}
+              y={shelfY - 100}q
+            />
+          ) : (
+            <Image
+              x={xPosition}
+              y={shelfY - 100}
+              width={spineWidth}
+              height={100}
+              fit="cover"
+              image={image}
+            />
           )} */}
+          <Rect
+            x={xPosition}
+            y={shelfY - 100}
+            width={spineWidth}
+            height={100}
+            color={"black"}
+          />
         </Group>
       );
     });
@@ -107,7 +94,7 @@ const SkiaBookshelf: React.FC<{
   return (
     <Canvas style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT }}>
       {/* Multiple Shelves */}
-      {books.map((shelfBooks, index) => {
+      {shelves.map((shelfBooks, index) => {
         const shelfY = SHELF_SPACING * (index + 1);
 
         return (
@@ -135,64 +122,43 @@ const SkiaBookshelf: React.FC<{
 
 // Example Usage
 const BookshelfScreen = () => {
-  const sampleBooks: Book[][] = [
-    // First shelf
-    [
-      {
-        id: "1",
-        title: "Moby Dick",
-        author: "Herman Melville",
-        spine: {
-          color: "#3E2723",
-          width: 40,
-        },
-      },
-      {
-        id: "2",
-        title: "Pride and Prejudice",
-        author: "Jane Austen",
-        spine: {
-          color: "#4E342E",
-          width: 35,
-        },
-      },
-    ],
-    // Second shelf
-    [
-      {
-        id: "3",
-        title: "1984",
-        author: "George Orwell",
-        spine: {
-          color: "#212121",
-          width: 45,
-        },
-      },
-      {
-        id: "4",
-        title: "To Kill a Mockingbird",
-        author: "Harper Lee",
-        spine: {
-          color: "#1B5E20",
-          width: 38,
-        },
-      },
-    ],
-    // Third shelf
-    [
-      {
-        id: "5",
-        title: "The Great Gatsby",
-        author: "F. Scott Fitzgerald",
-        spine: {
-          color: "#3E2723",
-          width: 42,
-        },
-      },
-    ],
-  ];
+  const [shelves, setShelves] = React.useState<Book[][]>([]);
+  const { books } = useStore();
 
-  return <SkiaBookshelf books={sampleBooks} woodType="oak" />;
+  useEffect(() => {
+    // listof books ins tore.
+    // calculate how many books per shelf. Bookwidth + spacing + shelfwidth
+    // iterate through books. keep track of total shelf width, if total shelf width is greater than shelf width, create a new shelf and add the book to that shelf.
+    if (books.length === 0) {
+      setShelves([]);
+      return;
+    }
+
+    const tempShelves: Book[][] = [[], [], [], [], []];
+    let currentShelfWidth = 0;
+    let currentShelfIndex = 0;
+    for (const book of books) {
+      const spine = book.spines.find((s) => s.selected);
+      const { width, height } = spine || { width: 40, height: 100 };
+      const bookWidth = width + 5; // Add spacing
+
+      if (currentShelfWidth + bookWidth < SHELF_WIDTH) {
+        tempShelves[currentShelfIndex].push(book);
+        currentShelfWidth += bookWidth;
+      } else {
+        // If starting a new shelf, reset the width
+        currentShelfIndex++;
+        currentShelfWidth = bookWidth;
+        tempShelves[currentShelfIndex].push(book);
+      }
+    }
+
+    setShelves(tempShelves);
+  }, []);
+
+  console.log("Shelves:", shelves);
+
+  return <SkiaBookshelf shelves={shelves} woodType="walnut" />;
 };
 
 export default BookshelfScreen;
