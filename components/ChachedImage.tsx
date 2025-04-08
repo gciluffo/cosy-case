@@ -1,7 +1,8 @@
+import { SkImage } from "@shopify/react-native-skia";
 import * as FileSystem from "expo-file-system";
 import { DownloadOptions } from "expo-file-system/src/FileSystem.types";
 import React, { useEffect, useRef, useState } from "react";
-import { Image, ImageProps, ImageURISource } from "react-native";
+import { Image, ImageProps } from "expo-image";
 
 export const IMAGE_CACHE_FOLDER = `${FileSystem.cacheDirectory}`;
 
@@ -20,20 +21,19 @@ export const sanitizeCacheKey = (key: string): string => {
 
 type CachedImageProps = Omit<ImageProps, "source"> & {
   cacheKey: string;
-  source: Omit<ImageURISource, "uri"> & { uri: string; expiresIn?: number };
+  source: { uri: string; expiresIn?: number };
   placeholderContent?: React.ReactNode;
 };
 
 const CachedImage: React.FC<CachedImageProps> = (props) => {
   const { source, cacheKey, placeholderContent, ...rest } = props;
-  const { uri, headers, expiresIn } = source;
+  const { uri, expiresIn } = source;
   const sanitizedKey = sanitizeCacheKey(cacheKey);
   const fileURI = `${IMAGE_CACHE_FOLDER}${sanitizedKey}.png`;
 
   const [imgUri, setImgUri] = useState<string | null>(fileURI);
 
   const componentIsMounted = useRef(false);
-  const requestOption = headers ? { headers } : undefined;
 
   useEffect(() => {
     componentIsMounted.current = true;
@@ -52,24 +52,24 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
           new Date().getTime() / 1000 - metadata.modificationTime > expiresIn
       );
 
-      if (!metadata?.exists || metadata?.size === 0 || expired) {
-        await setImgUri(null);
-        if (componentIsMounted.current) {
-          if (expired) {
-            await FileSystem.deleteAsync(fileURI, { idempotent: true });
-          }
+      await setImgUri(null);
+      if (componentIsMounted.current) {
+        // if (expired) {
+        //   await FileSystem.deleteAsync(fileURI, { idempotent: true });
+        // }
 
-          const response = await FileSystem.downloadAsync(
-            uri,
-            fileURI,
-            requestOption
-          );
-          if (componentIsMounted.current && response?.status === 200) {
-            setImgUri(`${fileURI}`);
-          }
-          if (response?.status !== 200) {
-            FileSystem.deleteAsync(fileURI, { idempotent: true });
-          }
+        if (metadata?.exists) {
+          const contentUri = await FileSystem.getContentUriAsync(fileURI);
+          setImgUri(contentUri);
+          return;
+        }
+
+        const response = await FileSystem.downloadAsync(uri, fileURI);
+        if (componentIsMounted.current && response?.status === 200) {
+          setImgUri(`${fileURI}`);
+        }
+        if (response?.status !== 200) {
+          FileSystem.deleteAsync(fileURI, { idempotent: true });
         }
       }
     } catch (err) {
@@ -83,6 +83,7 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
   return (
     <Image
       {...rest}
+      contentFit="fill"
       source={{
         ...source,
         uri: imgUri,
@@ -123,6 +124,21 @@ export const CacheManager = {
       `${IMAGE_CACHE_FOLDER}${sanitizedKey}.png`,
       options
     );
+  },
+  saveBytesToCache: async ({ image, key }: { image: SkImage; key: string }) => {
+    const sanitizedKey = sanitizeCacheKey(key);
+    const filePath = `${IMAGE_CACHE_FOLDER}${sanitizedKey}.png`;
+
+    try {
+      // Write the bytes to the file system
+      await FileSystem.writeAsStringAsync(filePath, image.encodeToBase64(), {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      return filePath; // Return the cached file path
+    } catch (error) {
+      console.error("Error saving bytes to cache:", error);
+      throw error;
+    }
   },
 };
 

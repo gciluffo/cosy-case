@@ -5,31 +5,38 @@ import { FlatList, StyleSheet, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { Image } from "expo-image";
 import CachedImage from "@/components/ChachedImage";
+import { isTablet, moderateScale } from "@/utils/scale";
 
 export default function TabTwoScreen() {
   const { books } = useStore();
 
   return (
     <FlatList
-      className="flex-1"
       contentContainerStyle={{
-        padding: 10,
+        paddingBottom: 100,
+        marginHorizontal: isTablet ? moderateScale(100) : 0,
       }}
+      style={styles.list}
       data={books}
       numColumns={3}
+      ItemSeparatorComponent={() => <View style={{ marginVertical: 10 }} />}
       renderItem={({ item }) => (
         // <CachedImage />
-        <View className="flex-col ">
+        <View className="rounded-lg p-2">
           <Image
             source={{ uri: item.cover_url }}
-            className="w-40 h-60 rounded-lg"
+            className="rounded-lg"
             style={styles.image}
-            contentFit="cover"
+            contentFit="contain"
           />
-          <View className="flex-row justify-between mt-2">
-            <Text className="text-gray-500">{item.title}</Text>
-            {/* <Text className="text-gray-500">{item.author}</Text> */}
-          </View>
+          {/* <Text
+            className="text-gray-500"
+            style={{
+              maxWidth: 110,
+            }}
+          >
+            {item.title}
+          </Text> */}
         </View>
       )}
       keyExtractor={(item) => item.key}
@@ -49,8 +56,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   image: {
-    // width: 100,
+    width: 110,
     height: 150,
     borderRadius: 10,
+  },
+  list: {
+    padding: 10,
+    marginBottom: 10,
   },
 });

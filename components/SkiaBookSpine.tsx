@@ -9,8 +9,7 @@ interface BookSpineProps {
   author: string;
   width?: number;
   height?: number;
-  x?: number;
-  y?: number;
+  canvasRef: React.RefObject<any>;
 }
 
 const SkiaBookSpine: React.FC<BookSpineProps> = ({
@@ -19,8 +18,7 @@ const SkiaBookSpine: React.FC<BookSpineProps> = ({
   width = 60,
   height = 200,
   primaryColor,
-  x,
-  y,
+  canvasRef,
 }) => {
   const font = useFont(require("../assets/fonts/SpaceMono-Regular.ttf"), 12); // Load your own .ttf file
 
@@ -58,14 +56,8 @@ const SkiaBookSpine: React.FC<BookSpineProps> = ({
 
   return (
     <View style={{ width, height }}>
-      <Canvas style={{ width, height }}>
-        <Rect
-          x={x || 0}
-          y={y || 0}
-          width={width}
-          height={height}
-          color={primaryColor}
-        />
+      <Canvas style={{ width, height }} ref={canvasRef}>
+        <Rect x={0} y={0} width={width} height={height} color={primaryColor} />
         {[...titleLines, ...authorLines].map((line, i) => (
           <Text
             key={i}

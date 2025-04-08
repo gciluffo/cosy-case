@@ -6,20 +6,23 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  ActivityIndicator,
 } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
 import React, { useEffect } from "react";
 import { isTablet } from "@/utils/scale";
+import { A } from "@expo/html-elements";
 
 interface Props {
   children: React.ReactNode;
   onPress: () => void;
   buttonText: string;
   disabled?: boolean;
+  loading?: boolean;
 }
 
 const ScollViewFloatingButton = React.memo((props: Props) => {
-  const { children, onPress, buttonText, disabled } = props;
+  const { children, onPress, buttonText, disabled, loading } = props;
   let screenHeight = Dimensions.get("window").height;
 
   return (
@@ -35,10 +38,16 @@ const ScollViewFloatingButton = React.memo((props: Props) => {
           size="xl"
           style={styles.button}
           onPress={onPress}
-          disabled={disabled}
-          className={disabled ? "bg-background-disabled" : undefined}
+          disabled={disabled || loading}
+          className={disabled || loading ? "bg-background-disabled" : undefined}
         >
-          <ButtonText>{buttonText}</ButtonText>
+          {loading ? (
+            <ButtonText>
+              <ActivityIndicator size="small" color="white" />
+            </ButtonText>
+          ) : (
+            <ButtonText>{buttonText}</ButtonText>
+          )}
         </Button>
       </View>
     </View>

@@ -68,6 +68,8 @@ interface BookDetails {
   revision?: number;
   created: DateTimeValue;
   last_modified: DateTimeValue;
+  // "physical_dimensions": "1 x 1 x 1 inches",
+  physical_dimensions?: string;
 }
 
 interface Identifiers {

@@ -1,4 +1,5 @@
 import { getBookDetails, getSpineImages, searchBookSpineByTitle } from "@/api";
+import * as FileSystem from "expo-file-system";
 import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models/external";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
@@ -18,6 +19,8 @@ import SkiaBookSpine from "@/components/SkiaBookSpine";
 import useStore from "@/store";
 import { Book, Spine } from "@/models/book";
 import { getPrimaryColor } from "@/utils/image";
+import { useCanvasRef, makeImageFromView } from "@shopify/react-native-skia";
+import { CacheManager } from "@/components/ChachedImage";
 
 export default function AddBookScreen() {
   const [bookDetails, setBookDetails] = useState<
@@ -26,7 +29,11 @@ export default function AddBookScreen() {
   const [spineImages, setSpineImages] = useState<string[]>([]);
   const [searchingSpineImage, setSearchingSpineImage] = useState(false);
   const [spineError, setSpineError] = useState<string | null>(null);
-  const [primaryColor, setPrimaryColor] = useState<string | null>(null);
+  const [coverPrimaryColor, setCoverPrimaryColor] = useState<string | null>(
+    null
+  );
+  const [addingBook, setAddingBook] = useState(false);
+  const canvasRef = useCanvasRef();
   const params = useLocalSearchParams();
   const { book } = params;
   const { addBook } = useStore();
@@ -96,14 +103,15 @@ export default function AddBookScreen() {
     };
 
     const bookSpinePrimaryColorInit = async () => {
-      if (!bookDetails.cover_url) {
+      const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
+      if (!bookObject.cover_url) {
         return;
       }
 
       try {
-        const color = await getPrimaryColor(bookDetails.cover_url);
-        // console.log("Primary color:", color);
-        setPrimaryColor(color);
+        const color = await getPrimaryColor(bookObject.cover_url);
+        console.log("Primary color:", color);
+        setCoverPrimaryColor(color);
       } catch (error) {}
     };
 
@@ -113,24 +121,50 @@ export default function AddBookScreen() {
   }, [book]);
 
   const onAddToLibrary = () => {
-    // Always add the placeholder image, just in case
-    const spines: Spine[] = [
-      {
-        primaryColor: bookDetails.primaryColor!,
-        title: bookDetails.title,
-        author: bookDetails.author_name?.join(", ") || "",
-        width: bookDetails.details?.number_of_pages
-          ? bookDetails.details?.number_of_pages * 0.5
-          : 60,
-        height: 200,
-        selected: spineImages.length === 0,
-      },
-    ];
-    const bookToAdd: Book = { ...bookDetails, spines };
+    const spines: Spine[] = [];
 
-    console.log("Book to add:", bookToAdd);
-    addBook(bookToAdd);
-    router.back();
+    setTimeout(async () => {
+      setAddingBook(true);
+      // you can pass an optional rectangle
+      // to only save part of the image
+      const image = canvasRef.current?.makeImageSnapshot();
+      console.log("Canvas image:", image);
+      if (image) {
+        const cacheKey = `${bookDetails.key}-spine-placeholder`;
+        await CacheManager.saveBytesToCache({
+          image,
+          key: cacheKey,
+        });
+
+        spines.push({
+          cacheKey: cacheKey,
+          selected: spineImages.length === 0,
+        });
+      }
+
+      const images = await getSpineImages(bookDetails.key);
+      // console.log("Spine images:", images);
+      for (const i of images) {
+        const cacheKey = `${bookDetails.key}-spine-${i}`;
+        await CacheManager.downloadAsync({
+          uri: i,
+          key: cacheKey,
+          options: {},
+        });
+        spines.push({
+          cacheKey: cacheKey,
+          // TODO: Fix to allow the user to selected which spine they want
+          selected: true,
+        });
+      }
+
+      const bookToAdd: Book = { ...bookDetails, spines };
+
+      console.log("Book to add:", bookToAdd);
+      addBook(bookToAdd);
+      router.back();
+      setAddingBook(false);
+    }, 1000);
   };
 
   // Card for description
@@ -142,6 +176,7 @@ export default function AddBookScreen() {
     <ScollViewFloatingButton
       onPress={() => onAddToLibrary()}
       buttonText="Add to Library"
+      loading={addingBook}
     >
       <Text className="text-gray-500 mb-1 ml-1" size="lg">
         Book Details
@@ -229,12 +264,13 @@ export default function AddBookScreen() {
           ))}
           {spineError &&
             bookDetails.author_name &&
-            primaryColor &&
+            coverPrimaryColor &&
             !spineImages?.length && (
               <SkiaBookSpine
-                primaryColor={primaryColor}
+                primaryColor={coverPrimaryColor}
                 title={bookDetails.title}
                 author={bookDetails.author_name?.join(", ") || ""}
+                canvasRef={canvasRef}
               />
             )}
 
