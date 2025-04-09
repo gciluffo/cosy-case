@@ -14,18 +14,23 @@ export interface Store {
   addBook: (book: Book) => void;
   removeBook: (bookId: string) => void;
   updateBook: (bookId: string, book: Partial<Book>) => void;
+  getBookByKey: (key: string) => Book | undefined;
   setUser: (user: User) => void;
   updateUser: (user: Partial<User>) => void;
 }
 
 const useStore = create<Store, [["zustand/persist", unknown]]>(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: {
         deviceId: "",
         isOnboarded: false,
       },
       books: [],
+      getBookByKey: (key: string) => {
+        const { books } = get();
+        return books.find((book) => book.key === key);
+      },
       addBook: (book: Book) =>
         set((state) => ({ books: [...state.books, book] })),
       removeBook: (bookId: string) =>

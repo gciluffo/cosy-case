@@ -83,7 +83,7 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
   return (
     <Image
       {...rest}
-      contentFit="fill"
+      contentFit="contain"
       source={{
         ...source,
         uri: imgUri,

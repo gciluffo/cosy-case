@@ -35,12 +35,18 @@ const BookSpine = (props: BookSpineProps) => {
   const { width, height } = book;
   const spine = book.spines.find((s) => s.selected);
 
+  console.log("spine", spine);
+
+  if (!spine?.cacheKey) {
+    return null;
+  }
+
   return (
     <CachedImage
       source={{
         uri: "",
       }}
-      cacheKey={spine!.cacheKey}
+      cacheKey={spine.cacheKey}
       style={{
         width: width,
         height: height,
@@ -158,13 +164,25 @@ const BookshelfScreen = () => {
     let currentShelfWidth = SHELF_HORIZONTAL_OFFSET * 2;
     let currentShelfIndex = 0;
     for (const book of books) {
-      const width = getBookSpineWidth(book.details?.number_of_pages || 200);
+      const spine = book.spines.find((s) => s.selected);
+
+      if (!spine) {
+        continue;
+      }
+
+      const { originalImageHeight, originalImageWidth } = spine;
       const height = book.details?.physical_dimensions
         ? getBookHeightPx(
             book.details.physical_dimensions,
             INDIVIDUAL_SHELF_HEIGHT - SHELF_VERTICAL_OFFSET + 17
           )
         : INDIVIDUAL_SHELF_HEIGHT - SHELF_VERTICAL_OFFSET + 17;
+      const width = getBookSpineWidth(
+        book.details?.number_of_pages || 200,
+        originalImageWidth || 80,
+        originalImageHeight || 200,
+        height
+      );
       const bookWidth = width;
 
       const bookWithDimensions = {

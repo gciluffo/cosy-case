@@ -46,6 +46,49 @@ export async function getBookDetails(key: string): Promise<OpenLibraryBook> {
   return data[`OLID:${formattedKey}`];
 }
 
+export function getWidthHeightFromUrl(signedUrl: string): {
+  width: number;
+  height: number;
+} {
+  const url = new URL(signedUrl);
+  const pathParts = url.pathname.split("/");
+  // filename = f"book_spine_{datetime.now().strftime('%Y%m%d_%H%M%S')}_w{image_width}_h{image_height}.jpg"
+  const fileName = pathParts[pathParts.length - 1];
+
+  const widthMatch = fileName.match(/_w(\d+)/);
+  const heightMatch = fileName.match(/_h(\d+)/);
+  const width = widthMatch ? parseInt(widthMatch[1], 10) : 0;
+  const height = heightMatch ? parseInt(heightMatch[1], 10) : 0;
+  return { width, height };
+}
+
+export async function getBookSpineBucketPathFromSignedUrl(
+  signedUrl: string,
+  key: string
+): Promise<string> {
+  const url = new URL(signedUrl);
+  const pathParts = url.pathname.split("/");
+  const formattedKey = key.split("/").pop();
+  const fileName = pathParts[pathParts.length - 1];
+  const path = `${formattedKey}/${fileName}`;
+
+  console.log("the path is:", `${BASE_URL}/signed-url/${path}`);
+
+  const response = await fetch(`${BASE_URL}/signed-url/${path}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch book images");
+  }
+
+  const data = await response.json();
+  return data.signed_url || "";
+}
+
 export async function getSpineImages(key: string): Promise<string[]> {
   const formattedKey = key.split("/").pop();
   const response = await fetch(

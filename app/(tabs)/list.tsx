@@ -1,11 +1,12 @@
 import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import { Card } from "@/components/ui/card";
 import useStore from "@/store";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { Image } from "expo-image";
 import CachedImage from "@/components/ChachedImage";
 import { isTablet, moderateScale } from "@/utils/scale";
+import { router } from "expo-router";
 
 export default function TabTwoScreen() {
   const { books } = useStore();
@@ -22,7 +23,17 @@ export default function TabTwoScreen() {
       ItemSeparatorComponent={() => <View style={{ marginVertical: 10 }} />}
       renderItem={({ item }) => (
         // <CachedImage />
-        <View className="rounded-lg p-2">
+        <TouchableOpacity
+          className="rounded-lg p-2"
+          onPress={() =>
+            router.push({
+              pathname: "/book-details",
+              params: {
+                bookKey: item.key,
+              },
+            })
+          }
+        >
           <Image
             source={{ uri: item.cover_url }}
             className="rounded-lg"
@@ -37,7 +48,7 @@ export default function TabTwoScreen() {
           >
             {item.title}
           </Text> */}
-        </View>
+        </TouchableOpacity>
       )}
       keyExtractor={(item) => item.key}
     />

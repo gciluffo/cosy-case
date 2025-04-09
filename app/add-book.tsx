@@ -1,4 +1,10 @@
-import { getBookDetails, getSpineImages, searchBookSpineByTitle } from "@/api";
+import {
+  getBookDetails,
+  getBookSpineBucketPathFromSignedUrl,
+  getSpineImages,
+  getWidthHeightFromUrl,
+  searchBookSpineByTitle,
+} from "@/api";
 import * as FileSystem from "expo-file-system";
 import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models/external";
 import { Image } from "expo-image";
@@ -9,6 +15,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
@@ -17,10 +24,11 @@ import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import SkiaBookSpine from "@/components/SkiaBookSpine";
 import useStore from "@/store";
-import { Book, Spine } from "@/models/book";
+import { Book, BookReview, BookStatus, Spine } from "@/models/book";
 import { getPrimaryColor } from "@/utils/image";
 import { useCanvasRef, makeImageFromView } from "@shopify/react-native-skia";
 import { CacheManager } from "@/components/ChachedImage";
+import InlinePicker from "@/components/InlinePicker";
 
 export default function AddBookScreen() {
   const [bookDetails, setBookDetails] = useState<
@@ -33,6 +41,9 @@ export default function AddBookScreen() {
     null
   );
   const [addingBook, setAddingBook] = useState(false);
+  const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState(BookStatus.READ);
+  const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
   const canvasRef = useCanvasRef();
   const params = useLocalSearchParams();
   const { book } = params;
@@ -70,6 +81,7 @@ export default function AddBookScreen() {
         if (images.length > 0) {
           setSpineImages(images);
           setSearchingSpineImage(false);
+          setSelectedSpine(images[0]);
           return;
         }
 
@@ -83,6 +95,7 @@ export default function AddBookScreen() {
 
         if (response?.signed_url) {
           setSpineImages([response.signed_url]);
+          setSelectedSpine(response.signed_url);
         } else {
           // show error message of somekind
           // and fallback image
@@ -122,9 +135,9 @@ export default function AddBookScreen() {
 
   const onAddToLibrary = () => {
     const spines: Spine[] = [];
+    setAddingBook(true);
 
     setTimeout(async () => {
-      setAddingBook(true);
       // you can pass an optional rectangle
       // to only save part of the image
       const image = canvasRef.current?.makeImageSnapshot();
@@ -139,26 +152,35 @@ export default function AddBookScreen() {
         spines.push({
           cacheKey: cacheKey,
           selected: spineImages.length === 0,
+          originalImageHeight: 200,
+          originalImageWidth: 60,
         });
       }
 
-      const images = await getSpineImages(bookDetails.key);
-      // console.log("Spine images:", images);
-      for (const i of images) {
-        const cacheKey = `${bookDetails.key}-spine-${i}`;
-        await CacheManager.downloadAsync({
-          uri: i,
-          key: cacheKey,
-          options: {},
-        });
-        spines.push({
-          cacheKey: cacheKey,
-          // TODO: Fix to allow the user to selected which spine they want
-          selected: true,
-        });
-      }
+      const signedUrl = await getBookSpineBucketPathFromSignedUrl(
+        selectedSpine!,
+        bookDetails.key
+      );
+      const cacheKey = `${bookDetails.key}-spine-${new Date().getTime()}`;
+      await CacheManager.downloadAsync({
+        uri: signedUrl,
+        key: cacheKey,
+        options: {},
+      });
+      const { width, height } = getWidthHeightFromUrl(signedUrl);
+      spines.push({
+        cacheKey: cacheKey,
+        selected: true,
+        originalImageHeight: height,
+        originalImageWidth: width,
+      });
 
-      const bookToAdd: Book = { ...bookDetails, spines };
+      const bookToAdd: Book = {
+        ...bookDetails,
+        status: selectedStatus,
+        review: selectedReview,
+        spines,
+      };
 
       console.log("Book to add:", bookToAdd);
       addBook(bookToAdd);
@@ -166,6 +188,8 @@ export default function AddBookScreen() {
       setAddingBook(false);
     }, 1000);
   };
+
+  // console.log("imageUrl", spineImages[0]);
 
   // Card for description
   // Star review
@@ -181,56 +205,85 @@ export default function AddBookScreen() {
       <Text className="text-gray-500 mb-1 ml-1" size="lg">
         Book Details
       </Text>
-      <Card>
-        <View className="flex-row gap-2 p-1">
-          <Image
-            source={bookDetails.cover_url}
-            style={styles.image}
-            className="flex-1"
-          />
-          <View className="flex-column  h-full">
-            <Text className="text-base font-semibold">{bookDetails.title}</Text>
-            <Text className="text-gray-500">
-              {bookDetails.author_name?.join(", ")}
-            </Text>
-            <Text className="text-gray-500">
-              {bookDetails.first_publish_year}
-            </Text>
-            {bookDetails?.details?.publishers && (
-              <Text className="text-gray-500">
-                {bookDetails?.details.publishers[0]}
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/add-book-details",
+            params: {
+              book: JSON.stringify(bookDetails),
+            },
+          })
+        }
+      >
+        <Card>
+          <View className="flex-row gap-2 p-1">
+            <Image
+              source={bookDetails.cover_url}
+              style={styles.image}
+              className="flex-1"
+            />
+            <View className="flex-column flex-1">
+              <Text className="text-base font-semibold">
+                {bookDetails.title}
               </Text>
-            )}
-            <Text>{bookDetails.key}</Text>
+              <Text className="text-gray-500">
+                {bookDetails.author_name?.join(", ")}
+              </Text>
+              <Text className="text-gray-500">
+                {bookDetails.first_publish_year}
+              </Text>
+              {bookDetails?.details?.publishers && (
+                <Text className="text-gray-500">
+                  {bookDetails?.details.publishers[0]}
+                </Text>
+              )}
+            </View>
+            <FontAwesome
+              name="chevron-right"
+              size={20}
+              color="gray"
+              className="flex-2 ml-auto mr-2 self-center"
+            />
           </View>
-          <FontAwesome
-            name="chevron-right"
-            size={20}
-            color="gray"
-            className="flex-2 ml-auto mr-2  self-center"
+        </Card>
+      </TouchableOpacity>
+
+      <View className="h-6" />
+      <Text className="text-gray-500 mb-1 ml-1" size="lg">
+        Reading Status
+      </Text>
+      <Card>
+        <View className="flex-row justify-between items-center">
+          <Text className="text-gray-500">Status</Text>
+          <InlinePicker
+            selectedValue={selectedStatus}
+            onValueChange={setSelectedStatus}
+            items={[
+              { label: "Read", value: "read" },
+              { label: "Currently Reading", value: "reading" },
+              { label: "Want to Read", value: "want-to-read" },
+            ]}
+            label="Status"
           />
         </View>
       </Card>
       <View className="h-6" />
       <Text className="text-gray-500 mb-1 ml-1" size="lg">
-        Book Status
+        Book Review
       </Text>
       <Card>
-        <View className="flex-row justify-between">
-          <Text className="text-gray-500">Status</Text>
-          <Text>Read</Text>
-        </View>
-      </Card>
-      <View className="h-6" />
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
-        Review
-      </Text>
-      <Card>
-        <View className="flex-row justify-between">
-          <Text className="text-gray-500">Status</Text>
-          <Text>
-            fowpekfpokwepfokwepof kwepfok wpeofkwpeofkwpoefkpw oekfpwoekf
-          </Text>
+        <View className="flex-row justify-between items-center">
+          <Text className="text-gray-500">Review</Text>
+          <InlinePicker
+            selectedValue={selectedReview}
+            onValueChange={setSelectedReview}
+            items={[
+              { label: "Good", value: "good" },
+              { label: "Okay", value: "okay" },
+              { label: "Bad", value: "bad" },
+            ]}
+            label="Status"
+          />
         </View>
       </Card>
       <View className="h-6" />
@@ -243,45 +296,51 @@ export default function AddBookScreen() {
         </Text>
       )}
       <Card>
-        <View className="flex-row gap-3">
-          {searchingSpineImage && (
-            <View style={styles.addContainer}>
-              <ActivityIndicator
-                size="small"
-                color="gray"
-                //   style={{ opacity: searchingSpineImage ? 1 : 0 }}
-              />
-            </View>
-          )}
-          {spineImages?.map((image, index) => (
-            <Image
-              key={index}
-              source={image}
-              style={[styles.spineImage]}
-              className="flex-1"
-              // resizeMode="contain"
-            />
-          ))}
-          {spineError &&
-            bookDetails.author_name &&
-            coverPrimaryColor &&
-            !spineImages?.length && (
-              <SkiaBookSpine
-                primaryColor={coverPrimaryColor}
-                title={bookDetails.title}
-                author={bookDetails.author_name?.join(", ") || ""}
-                canvasRef={canvasRef}
-              />
-            )}
-
-          <TouchableOpacity
-            style={styles.addContainer}
-            onPress={() => {
-              router.push("./book-spine-camera-view");
-            }}
-          >
-            <FontAwesome name="camera" size={20} color="gray" />
-          </TouchableOpacity>
+        <View style={{ flexDirection: "row" }}>
+          <View style={{ flex: 1 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View className="flex-row gap-3">
+                {searchingSpineImage && (
+                  <View style={styles.addContainer}>
+                    <ActivityIndicator size="small" color="gray" />
+                  </View>
+                )}
+                {spineImages?.map((image, index) => (
+                  <TouchableOpacity onPress={() => setSelectedSpine(image)}>
+                    <Image
+                      key={index}
+                      source={image}
+                      style={[
+                        styles.spineImage,
+                        selectedSpine === image && styles.selectedSpineImage,
+                      ]}
+                      className="flex-1"
+                      contentFit="cover"
+                    />
+                  </TouchableOpacity>
+                ))}
+                {spineError &&
+                  bookDetails.author_name &&
+                  coverPrimaryColor &&
+                  !spineImages?.length && (
+                    <SkiaBookSpine
+                      primaryColor={coverPrimaryColor}
+                      title={bookDetails.title}
+                      author={bookDetails.author_name?.join(", ") || ""}
+                      canvasRef={canvasRef}
+                    />
+                  )}
+                <TouchableOpacity
+                  style={styles.addContainer}
+                  onPress={() => {
+                    router.push("./book-spine-camera-view");
+                  }}
+                >
+                  <FontAwesome name="camera" size={20} color="gray" />
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
         </View>
       </Card>
     </ScollViewFloatingButton>
@@ -310,9 +369,14 @@ const styles = StyleSheet.create({
     // borderRadius: 8,
   },
   spineImage: {
-    height: 200,
+    height: 250,
     width: 50,
-    borderRadius: 8,
-    marginRight: 10,
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  selectedSpineImage: {
+    borderWidth: 3,
+    // blue border color
+    borderColor: "#007AFF",
   },
 });

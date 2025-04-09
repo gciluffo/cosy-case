@@ -1,24 +1,46 @@
 /**
- * Returns the width (in pixels) for a book spine based on page count.
- * @param pageCount - number of pages in the book
+ * Returns the rendered width (in pixels) for a book spine,
+ * based on page count and the original image dimensions.
+ *
+ * @param pageCount - Number of pages in the book
+ * @param originalWidth - Original image width in pixels
+ * @param originalHeight - Original image height in pixels
+ * @param targetHeight - Desired render height (in pixels)
  */
-export function getBookSpineWidth(pageCount: number): number {
-  const MIN_WIDTH = 30; // thin paperback
-  const MAX_WIDTH = 80; // super thick hardcover
+export function getBookSpineWidth(
+  pageCount: number,
+  originalWidth: number,
+  originalHeight: number,
+  targetHeight: number
+): number {
+  const MIN_THICKNESS = 30; // min "visual thickness" for thin books
+  const MAX_THICKNESS = 80; // max for thick books
   const MIN_PAGES = 50;
   const MAX_PAGES = 1000;
 
+  // Prevent division by zero or invalid dimensions
+  if (!originalWidth || !originalHeight || targetHeight <= 0)
+    return MIN_THICKNESS;
+
+  // Scale factor for original image dimensions
+  const baseAspectRatio = originalWidth / originalHeight;
+
+  // Determine thickness from page count
+  let visualThickness: number;
   if (!pageCount || pageCount < MIN_PAGES) {
-    return MIN_WIDTH;
+    visualThickness = MIN_THICKNESS;
+  } else if (pageCount >= MAX_PAGES) {
+    visualThickness = MAX_THICKNESS;
+  } else {
+    const ratio = (pageCount - MIN_PAGES) / (MAX_PAGES - MIN_PAGES);
+    visualThickness = MIN_THICKNESS + ratio * (MAX_THICKNESS - MIN_THICKNESS);
   }
 
-  if (pageCount >= MAX_PAGES) {
-    return MAX_WIDTH;
-  }
+  // Apply aspect ratio from original image at target height
+  const spineNaturalWidth = baseAspectRatio * targetHeight;
 
-  // Linear interpolation
-  const ratio = (pageCount - MIN_PAGES) / (MAX_PAGES - MIN_PAGES);
-  return Math.round(MIN_WIDTH + ratio * (MAX_WIDTH - MIN_WIDTH));
+  // Use the lesser of the visual thickness or natural scaled width
+  return Math.round(Math.min(spineNaturalWidth, visualThickness));
 }
 
 /**

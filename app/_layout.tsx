@@ -51,6 +51,20 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="add-book-details"
+          options={{
+            title: "Add to Library",
+            presentation: "modal",
+            headerBackButtonDisplayMode: "minimal",
+          }}
+        />
+        <Stack.Screen
+          name="book-details"
+          options={{
+            title: "",
+          }}
+        />
+        <Stack.Screen
           name="book-spine-camera-view"
           options={{
             title: "",

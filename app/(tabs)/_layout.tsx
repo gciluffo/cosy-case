@@ -1,15 +1,18 @@
 import { router, Tabs } from "expo-router";
 import React from "react";
-import { Platform, TouchableOpacity } from "react-native";
-
+import { Dimensions, Platform, TouchableOpacity } from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import TabBarBackground from "@/components/ui/TabBarBackground";
+import { TabBarBackground } from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { verticalScale } from "@/utils/scale";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+
+  const screenWidth = Dimensions.get("window").width;
 
   return (
     <Tabs
@@ -18,13 +21,27 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: "absolute",
+        tabBarItemStyle: { alignItems: "center", flexDirection: "row" },
+        tabBarStyle: {
+          position: "absolute",
+          right: 20,
+          width: 200,
+          marginLeft: screenWidth / 2 - 100,
+          marginBottom: Platform.OS === "android" ? 20 : 30,
+          elevation: 5,
+          backgroundColor: Colors[colorScheme ?? "light"].background,
+          borderRadius: 30,
+          height: verticalScale(45),
+          paddingBottom: 10,
+          paddingTop: 10,
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4,
           },
-          default: {},
-        }),
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
+        },
       }}
     >
       <Tabs.Screen
@@ -32,16 +49,16 @@ export default function TabLayout() {
         options={{
           title: "Case",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="book.pages" color={color} />
+            <MaterialCommunityIcons name="bookshelf" size={28} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="list"
         options={{
-          title: "List",
+          title: "Books",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="list.bullet" color={color} />
+            <IconSymbol size={28} name="book.pages" color={color} />
           ),
           headerShown: true,
           headerRight: () => (

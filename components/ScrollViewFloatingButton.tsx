@@ -8,7 +8,7 @@ import {
   Keyboard,
   ActivityIndicator,
 } from "react-native";
-import { Button, ButtonText } from "@/components/ui/button";
+import { Button, ButtonSpinner, ButtonText } from "@/components/ui/button";
 import React, { useEffect } from "react";
 import { isTablet } from "@/utils/scale";
 import { A } from "@expo/html-elements";
@@ -39,12 +39,12 @@ const ScollViewFloatingButton = React.memo((props: Props) => {
           style={styles.button}
           onPress={onPress}
           disabled={disabled || loading}
-          className={disabled || loading ? "bg-background-disabled" : undefined}
+          className={disabled || loading ? "bg-gray-300" : undefined}
         >
           {loading ? (
-            <ButtonText>
-              <ActivityIndicator size="small" color="white" />
-            </ButtonText>
+            <>
+              <ButtonSpinner />
+            </>
           ) : (
             <ButtonText>{buttonText}</ButtonText>
           )}
