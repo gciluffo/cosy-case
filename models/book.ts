@@ -24,4 +24,8 @@ export type Book = OpenLibraryBook &
     spines: Spine[];
     status: BookStatus;
     review: BookReview;
+    colors: {
+      primary: string;
+      secondary: string;
+    };
   };

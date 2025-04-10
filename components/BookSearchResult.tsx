@@ -34,8 +34,8 @@ export default function BookSearchResult(props: Props) {
       </View>
       <View className="flex-[1] space-y-1">
         <Button className="p-2 rounded-md" onPress={onAddToLibrary}>
-          <ButtonIcon as={AddIcon} className="ml-2" />
-          <ButtonText className="text-sm">Add</ButtonText>
+          <ButtonIcon as={AddIcon} />
+          <ButtonText>Add</ButtonText>
         </Button>
       </View>
     </View>

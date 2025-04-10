@@ -12,7 +12,6 @@ const InlinePicker = ({ label, selectedValue, onValueChange, items }) => {
         valueField="value"
         value={selectedValue}
         onChange={(item) => onValueChange(item.value)}
-        placeholder="Select an option"
         containerStyle={styles.dropdownContainer}
       />
     </View>
@@ -21,7 +20,7 @@ const InlinePicker = ({ label, selectedValue, onValueChange, items }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: "20%",
+    width: "25%",
   },
   label: {
     marginBottom: 4,
@@ -30,7 +29,7 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     borderRadius: 6,
-    width: 150,
+    width: 200,
     // shift container to the left a little
     marginLeft: scale(-80),
   },

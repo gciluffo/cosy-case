@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Canvas, Rect, Text, useFont } from "@shopify/react-native-skia";
-import { Dimensions, View } from "react-native";
-import { getPrimaryColor } from "@/utils/image";
+import { View } from "react-native";
 
 interface BookSpineProps {
-  primaryColor: string;
+  colors: {
+    primary: string;
+    secondary: string;
+  };
   title: string;
   author: string;
   width?: number;
@@ -17,7 +19,7 @@ const SkiaBookSpine: React.FC<BookSpineProps> = ({
   author,
   width = 60,
   height = 200,
-  primaryColor,
+  colors,
   canvasRef,
 }) => {
   const font = useFont(require("../assets/fonts/SpaceMono-Regular.ttf"), 12); // Load your own .ttf file
@@ -57,7 +59,13 @@ const SkiaBookSpine: React.FC<BookSpineProps> = ({
   return (
     <View style={{ width, height }}>
       <Canvas style={{ width, height }} ref={canvasRef}>
-        <Rect x={0} y={0} width={width} height={height} color={primaryColor} />
+        <Rect
+          x={0}
+          y={0}
+          width={width}
+          height={height}
+          color={colors.primary}
+        />
         {[...titleLines, ...authorLines].map((line, i) => (
           <Text
             key={i}

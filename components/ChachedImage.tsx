@@ -140,6 +140,16 @@ export const CacheManager = {
       throw error;
     }
   },
+  removeFromCache: async ({ key }: { key: string }) => {
+    const sanitizedKey = sanitizeCacheKey(key);
+    try {
+      await FileSystem.deleteAsync(`${IMAGE_CACHE_FOLDER}${sanitizedKey}.png`, {
+        idempotent: true,
+      });
+    } catch (error) {
+      console.error("Error removing from cache:", error);
+    }
+  },
 };
 
 export default CachedImage;

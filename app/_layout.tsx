@@ -61,7 +61,9 @@ export default function RootLayout() {
         <Stack.Screen
           name="book-details"
           options={{
-            title: "",
+            headerTransparent: true,
+            headerTitle: "",
+            headerTintColor: "white", // or any contrasting color for your back button
           }}
         />
         <Stack.Screen

@@ -25,7 +25,7 @@ import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import SkiaBookSpine from "@/components/SkiaBookSpine";
 import useStore from "@/store";
 import { Book, BookReview, BookStatus, Spine } from "@/models/book";
-import { getPrimaryColor } from "@/utils/image";
+import { getPrimaryAndSecondaryColors } from "@/utils/image";
 import { useCanvasRef, makeImageFromView } from "@shopify/react-native-skia";
 import { CacheManager } from "@/components/ChachedImage";
 import InlinePicker from "@/components/InlinePicker";
@@ -37,9 +37,10 @@ export default function AddBookScreen() {
   const [spineImages, setSpineImages] = useState<string[]>([]);
   const [searchingSpineImage, setSearchingSpineImage] = useState(false);
   const [spineError, setSpineError] = useState<string | null>(null);
-  const [coverPrimaryColor, setCoverPrimaryColor] = useState<string | null>(
-    null
-  );
+  const [coverColors, setCoverColors] = useState<{
+    primary: string;
+    secondary: string;
+  } | null>(null);
   const [addingBook, setAddingBook] = useState(false);
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState(BookStatus.READ);
@@ -122,9 +123,9 @@ export default function AddBookScreen() {
       }
 
       try {
-        const color = await getPrimaryColor(bookObject.cover_url);
-        console.log("Primary color:", color);
-        setCoverPrimaryColor(color);
+        const colors = await getPrimaryAndSecondaryColors(bookObject.cover_url);
+        // console.log("Primary color:", primary);
+        setCoverColors(colors);
       } catch (error) {}
     };
 
@@ -157,28 +158,34 @@ export default function AddBookScreen() {
         });
       }
 
-      const signedUrl = await getBookSpineBucketPathFromSignedUrl(
-        selectedSpine!,
-        bookDetails.key
-      );
-      const cacheKey = `${bookDetails.key}-spine-${new Date().getTime()}`;
-      await CacheManager.downloadAsync({
-        uri: signedUrl,
-        key: cacheKey,
-        options: {},
-      });
-      const { width, height } = getWidthHeightFromUrl(signedUrl);
-      spines.push({
-        cacheKey: cacheKey,
-        selected: true,
-        originalImageHeight: height,
-        originalImageWidth: width,
-      });
+      if (spineImages.length > 0) {
+        const signedUrl = await getBookSpineBucketPathFromSignedUrl(
+          selectedSpine!,
+          bookDetails.key
+        );
+        const cacheKey = `${bookDetails.key}-spine-${new Date().getTime()}`;
+        await CacheManager.downloadAsync({
+          uri: signedUrl,
+          key: cacheKey,
+          options: {},
+        });
+        const { width, height } = getWidthHeightFromUrl(signedUrl);
+        spines.push({
+          cacheKey: cacheKey,
+          selected: true,
+          originalImageHeight: height,
+          originalImageWidth: width,
+        });
+      }
 
       const bookToAdd: Book = {
         ...bookDetails,
         status: selectedStatus,
         review: selectedReview,
+        colors: {
+          primary: coverColors?.primary || "#000000",
+          secondary: coverColors?.secondary || "#FFFFFF",
+        },
         spines,
       };
 
@@ -260,8 +267,8 @@ export default function AddBookScreen() {
             onValueChange={setSelectedStatus}
             items={[
               { label: "Read", value: "read" },
-              { label: "Currently Reading", value: "reading" },
-              { label: "Want to Read", value: "want-to-read" },
+              { label: "Reading", value: "reading" },
+              { label: "Wishlist", value: "wishlist" },
             ]}
             label="Status"
           />
@@ -291,7 +298,7 @@ export default function AddBookScreen() {
         Spine Image
       </Text>
       {spineError && (
-        <Text className="text-red-500 mb-1 ml-1" size="sm">
+        <Text className="text-orange-500 mb-1 ml-1" size="sm">
           {spineError}
         </Text>
       )}
@@ -321,10 +328,10 @@ export default function AddBookScreen() {
                 ))}
                 {spineError &&
                   bookDetails.author_name &&
-                  coverPrimaryColor &&
+                  coverColors &&
                   !spineImages?.length && (
                     <SkiaBookSpine
-                      primaryColor={coverPrimaryColor}
+                      colors={coverColors}
                       title={bookDetails.title}
                       author={bookDetails.author_name?.join(", ") || ""}
                       canvasRef={canvasRef}
