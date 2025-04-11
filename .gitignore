@@ -78,3 +78,7 @@ yarn-error.*
 *.tsbuildinfo
 
 # @end expo-cli
+
+# local builds
+*.tar.gz
+*.ipa

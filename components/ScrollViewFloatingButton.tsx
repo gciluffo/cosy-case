@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   button: {
+    height: 50,
     margin: 10,
     width: "95%",
     borderRadius: 10,

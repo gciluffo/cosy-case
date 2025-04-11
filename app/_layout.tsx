@@ -70,6 +70,7 @@ export default function RootLayout() {
           name="book-spine-camera-view"
           options={{
             title: "",
+            // headerTransparent: true,
           }}
         />
       </Stack>

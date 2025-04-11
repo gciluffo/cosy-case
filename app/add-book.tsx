@@ -2,7 +2,6 @@ import {
   getBookDetails,
   getBookSpineBucketPathFromSignedUrl,
   getSpineImages,
-  getWidthHeightFromUrl,
   searchBookSpineByTitle,
 } from "@/api";
 import * as FileSystem from "expo-file-system";
@@ -25,7 +24,10 @@ import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import SkiaBookSpine from "@/components/SkiaBookSpine";
 import useStore from "@/store";
 import { Book, BookReview, BookStatus, Spine } from "@/models/book";
-import { getPrimaryAndSecondaryColors } from "@/utils/image";
+import {
+  getPrimaryAndSecondaryColors,
+  getWidthHeightFromUrl,
+} from "@/utils/image";
 import { useCanvasRef, makeImageFromView } from "@shopify/react-native-skia";
 import { CacheManager } from "@/components/ChachedImage";
 import InlinePicker from "@/components/InlinePicker";
@@ -47,8 +49,29 @@ export default function AddBookScreen() {
   const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
   const canvasRef = useCanvasRef();
   const params = useLocalSearchParams();
-  const { book } = params;
+  const { book, refetchSpineImages } = params;
   const { addBook } = useStore();
+
+  useEffect(() => {
+    const bookSpinesInit = async () => {
+      try {
+        const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
+        const images = await getSpineImages(bookObject.key);
+
+        if (images.length > 0) {
+          setSpineImages(images);
+          setSelectedSpine(images[0]);
+          return;
+        }
+      } catch (error) {
+      } finally {
+      }
+    };
+
+    if (refetchSpineImages) {
+      bookSpinesInit();
+    }
+  }, [refetchSpineImages]);
 
   useEffect(() => {
     const bookDetailsInit = async () => {
@@ -129,9 +152,11 @@ export default function AddBookScreen() {
       } catch (error) {}
     };
 
+    // if (!bookDetails) {
     bookDetailsInit();
     bookSpinesInit();
     bookSpinePrimaryColorInit();
+    // }
   }, [book]);
 
   const onAddToLibrary = () => {
@@ -152,13 +177,13 @@ export default function AddBookScreen() {
 
         spines.push({
           cacheKey: cacheKey,
-          selected: spineImages.length === 0,
+          selected: spineImages.length === 0 || selectedSpine === "placeholder",
           originalImageHeight: 200,
           originalImageWidth: 60,
         });
       }
 
-      if (spineImages.length > 0) {
+      if (spineImages.length > 0 && selectedSpine !== "placeholder") {
         const signedUrl = await getBookSpineBucketPathFromSignedUrl(
           selectedSpine!,
           bookDetails.key
@@ -170,6 +195,7 @@ export default function AddBookScreen() {
           options: {},
         });
         const { width, height } = getWidthHeightFromUrl(signedUrl);
+        console.log("Width and height:", width, height);
         spines.push({
           cacheKey: cacheKey,
           selected: true,
@@ -203,6 +229,7 @@ export default function AddBookScreen() {
   // Write any notes you have
   // Show section for getting spine images or uploading your own spine image
   // Add to library button
+  console.log({ selectedSpine });
   return (
     <ScollViewFloatingButton
       onPress={() => onAddToLibrary()}
@@ -322,25 +349,35 @@ export default function AddBookScreen() {
                         selectedSpine === image && styles.selectedSpineImage,
                       ]}
                       className="flex-1"
-                      contentFit="cover"
+                      contentFit="contain" // Ensures the entire image is visible without cropping
                     />
                   </TouchableOpacity>
                 ))}
-                {spineError &&
-                  bookDetails.author_name &&
-                  coverColors &&
-                  !spineImages?.length && (
+                {bookDetails.author_name && coverColors && (
+                  <TouchableOpacity
+                    onPress={() => setSelectedSpine("placeholder")}
+                    style={[
+                      selectedSpine === "placeholder" &&
+                        styles.selectedSpineImage,
+                    ]}
+                  >
                     <SkiaBookSpine
                       colors={coverColors}
                       title={bookDetails.title}
                       author={bookDetails.author_name?.join(", ") || ""}
                       canvasRef={canvasRef}
                     />
-                  )}
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   style={styles.addContainer}
                   onPress={() => {
-                    router.push("./book-spine-camera-view");
+                    router.push({
+                      pathname: "/book-spine-camera-view",
+                      params: {
+                        book,
+                      },
+                    });
                   }}
                 >
                   <FontAwesome name="camera" size={20} color="gray" />
@@ -357,7 +394,6 @@ export default function AddBookScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    // backgroundColor: "#fff",
   },
   addContainer: {
     width: 80,
@@ -366,14 +402,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     justifyContent: "center",
     alignItems: "center",
-    // marginTop: 10,
-    // marginBottom: 10,
-    // alignSelf: "center",
   },
   image: {
     width: 80,
     height: 100,
-    // borderRadius: 8,
   },
   spineImage: {
     height: 250,
@@ -383,7 +415,15 @@ const styles = StyleSheet.create({
   },
   selectedSpineImage: {
     borderWidth: 3,
-    // blue border color
     borderColor: "#007AFF",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderRadius: 3,
   },
 });

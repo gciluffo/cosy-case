@@ -15,16 +15,25 @@ interface BookSpineProps {
 }
 
 const SkiaBookSpine: React.FC<BookSpineProps> = ({
-  title,
-  author,
+  title = "Unknown Title",
+  author = "Unknown Author",
   width = 60,
-  height = 200,
+  height = 250,
   colors,
   canvasRef,
 }) => {
+  const [loaded, setLoaded] = React.useState(false);
   const font = useFont(require("../assets/fonts/SpaceMono-Regular.ttf"), 12); // Load your own .ttf file
 
-  if (!font) return null;
+  React.useEffect(() => {
+    if (font) {
+      setLoaded(true);
+    }
+  }, [font]);
+
+  if (!font || !loaded) {
+    return null;
+  }
 
   const padding = 4;
   const maxLineWidth = width - 2 * padding;
@@ -57,27 +66,31 @@ const SkiaBookSpine: React.FC<BookSpineProps> = ({
   const startY = (height - totalTextHeight) / 2;
 
   return (
-    <View style={{ width, height }}>
-      <Canvas style={{ width, height }} ref={canvasRef}>
-        <Rect
-          x={0}
-          y={0}
-          width={width}
-          height={height}
-          color={colors.primary}
-        />
-        {[...titleLines, ...authorLines].map((line, i) => (
-          <Text
-            key={i}
-            x={padding}
-            y={startY + i * lineHeight}
-            text={line}
-            font={font}
-            color="white"
-          />
-        ))}
-      </Canvas>
-    </View>
+    <>
+      {loaded && (
+        <View style={{ width, height }}>
+          <Canvas style={{ width, height }} ref={canvasRef}>
+            <Rect
+              x={0}
+              y={0}
+              width={width}
+              height={height}
+              color={colors.primary || "black"}
+            />
+            {[...titleLines, ...authorLines].map((line, i) => (
+              <Text
+                key={i}
+                x={padding}
+                y={startY + i * lineHeight}
+                text={line}
+                font={font}
+                color="white"
+              />
+            ))}
+          </Canvas>
+        </View>
+      )}
+    </>
   );
 };
 

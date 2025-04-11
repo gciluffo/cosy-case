@@ -8,8 +8,6 @@ export async function getPrimaryAndSecondaryColors(
     fallback: "#CCCCCC",
   });
 
-  console.log("Image colors result:", result);
-
   if (result.platform === "android") {
     return {
       primary: result.dominant || "#CCCCCC",
@@ -22,4 +20,31 @@ export async function getPrimaryAndSecondaryColors(
       secondary: iosResult.secondary || "#CCCCCC",
     };
   }
+}
+
+export function getWidthHeightFromUrl(signedUrl: string): {
+  width: number;
+  height: number;
+} {
+  const url = new URL(signedUrl);
+  const pathParts = url.pathname.split("/");
+  // filename = f"book_spine_{datetime.now().strftime('%Y%m%d_%H%M%S')}_w{image_width}_h{image_height}.jpg"
+  const fileName = pathParts[pathParts.length - 1];
+
+  const widthMatch = fileName.match(/_w(\d+)/);
+  const heightMatch = fileName.match(/_h(\d+)/);
+  const width = widthMatch ? parseInt(widthMatch[1], 10) : 0;
+  const height = heightMatch ? parseInt(heightMatch[1], 10) : 0;
+  return { width, height };
+}
+
+export function getObjectKeyFromSignedUrl(signedUrl: string): {
+  objectKey: string;
+  bucketName: string;
+} {
+  const url = new URL(signedUrl);
+  const pathParts = url.pathname.split("/");
+  const objectKey = pathParts.slice(2).join("/");
+  const bucketName = pathParts[1];
+  return { objectKey, bucketName };
 }

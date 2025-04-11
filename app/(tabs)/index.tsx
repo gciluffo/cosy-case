@@ -35,7 +35,9 @@ const BookSpine = (props: BookSpineProps) => {
   const { width, height } = book;
   const spine = book.spines.find((s) => s.selected);
 
-  console.log("spine", spine);
+  if (book.title.toLowerCase() === "the blind side") {
+    console.log("THE SPINE", spine);
+  }
 
   if (!spine?.cacheKey) {
     return null;
@@ -48,6 +50,7 @@ const BookSpine = (props: BookSpineProps) => {
       }}
       cacheKey={spine.cacheKey}
       style={{
+        // backgroundColor: "red",
         width: width,
         height: height,
         borderRadius: 1,

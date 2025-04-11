@@ -46,22 +46,6 @@ export async function getBookDetails(key: string): Promise<OpenLibraryBook> {
   return data[`OLID:${formattedKey}`];
 }
 
-export function getWidthHeightFromUrl(signedUrl: string): {
-  width: number;
-  height: number;
-} {
-  const url = new URL(signedUrl);
-  const pathParts = url.pathname.split("/");
-  // filename = f"book_spine_{datetime.now().strftime('%Y%m%d_%H%M%S')}_w{image_width}_h{image_height}.jpg"
-  const fileName = pathParts[pathParts.length - 1];
-
-  const widthMatch = fileName.match(/_w(\d+)/);
-  const heightMatch = fileName.match(/_h(\d+)/);
-  const width = widthMatch ? parseInt(widthMatch[1], 10) : 0;
-  const height = heightMatch ? parseInt(heightMatch[1], 10) : 0;
-  return { width, height };
-}
-
 export async function getBookSpineBucketPathFromSignedUrl(
   signedUrl: string,
   key: string
@@ -142,3 +126,51 @@ export async function searchBookSpineByTitle(
   const data = await response.json();
   return data;
 }
+
+export const uploadImageForSpineDetection = async (
+  file: any,
+  key: string,
+  title: string,
+  author: string
+): Promise<{
+  message: string;
+  signed_urls: string[];
+  title_score: number;
+  author_score: number;
+}> => {
+  const formattedKey = key.split("/").pop();
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("workId", formattedKey!);
+  formData.append("title", title);
+  formData.append("author", author);
+
+  const response = await fetch(`${BASE_URL}/get-spine-from-image`, {
+    method: "POST",
+    body: formData,
+  });
+
+  const result = await response.json();
+  return result;
+};
+
+export const confirmCroppedImage = async (
+  objectKey: string,
+  key: string
+): Promise<void> => {
+  const formattedKey = key.split("/").pop();
+  const response = await fetch(`${BASE_URL}/confirm-cropped-image`, {
+    method: "POST",
+    body: JSON.stringify({
+      object_key: objectKey,
+      workId: formattedKey,
+    }),
+    redirect: "follow",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const result = await response.json();
+  return result;
+};
