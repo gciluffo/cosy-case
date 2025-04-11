@@ -24,26 +24,34 @@ export async function searchBooks(searchTerm: string) {
   }
 
   const data = await response.json();
+  // console.log("Search results:", data);
   return data.docs || [];
 }
 
-export async function getBookDetails(key: string): Promise<OpenLibraryBook> {
+export async function getBookDetails(
+  workKey: string,
+  editionKey: string
+): Promise<OpenLibraryBook> {
   // key is formatted as /works/OL1234567W
   // Get id after the last /
-  const formattedKey = key.split("/").pop();
-  const response = await fetch(`${BASE_URL}/book/${formattedKey}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const formattedWorkKey = workKey.split("/").pop();
+  const formattedEditionKey = editionKey.split("/").pop();
+  const response = await fetch(
+    `${BASE_URL}/book?workKey=${formattedWorkKey}&editionKey=${formattedEditionKey}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
   if (!response.ok) {
     throw new Error("Failed to fetch book details");
   }
 
   const data = await response.json();
-  return data[`OLID:${formattedKey}`];
+  return data;
 }
 
 export async function getBookSpineBucketPathFromSignedUrl(

@@ -4,7 +4,6 @@ import {
   getSpineImages,
   searchBookSpineByTitle,
 } from "@/api";
-import * as FileSystem from "expo-file-system";
 import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models/external";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
@@ -18,7 +17,6 @@ import {
 } from "react-native";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
-import { Icon } from "@/components/ui/icon";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import SkiaBookSpine from "@/components/SkiaBookSpine";
@@ -28,7 +26,7 @@ import {
   getPrimaryAndSecondaryColors,
   getWidthHeightFromUrl,
 } from "@/utils/image";
-import { useCanvasRef, makeImageFromView } from "@shopify/react-native-skia";
+import { useCanvasRef } from "@shopify/react-native-skia";
 import { CacheManager } from "@/components/ChachedImage";
 import InlinePicker from "@/components/InlinePicker";
 
@@ -81,7 +79,11 @@ export default function AddBookScreen() {
         }
 
         const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
-        const details = await getBookDetails(bookObject.key);
+        const details = await getBookDetails(
+          bookObject.key,
+          bookObject.editions.docs[0].key
+        );
+        console.log("Book details:", details);
         // TODO: Get rating for book, seperate open library endpoint
         setBookDetails({ ...bookObject, ...details });
       } catch (error) {
@@ -121,8 +123,7 @@ export default function AddBookScreen() {
           setSpineImages([response.signed_url]);
           setSelectedSpine(response.signed_url);
         } else {
-          // show error message of somekind
-          // and fallback image
+          setSelectedSpine("placeholder");
         }
       } catch (error) {
         if (
@@ -153,6 +154,7 @@ export default function AddBookScreen() {
     };
 
     // if (!bookDetails) {
+    console.log("book key", JSON.parse(book as string).key);
     bookDetailsInit();
     bookSpinesInit();
     bookSpinePrimaryColorInit();
@@ -195,7 +197,6 @@ export default function AddBookScreen() {
           options: {},
         });
         const { width, height } = getWidthHeightFromUrl(signedUrl);
-        console.log("Width and height:", width, height);
         spines.push({
           cacheKey: cacheKey,
           selected: true,
@@ -240,14 +241,14 @@ export default function AddBookScreen() {
         Book Details
       </Text>
       <TouchableOpacity
-        onPress={() =>
+        onPress={() => {
           router.push({
             pathname: "/add-book-details",
             params: {
               book: JSON.stringify(bookDetails),
             },
-          })
-        }
+          });
+        }}
       >
         <Card>
           <View className="flex-row gap-2 p-1">
@@ -266,10 +267,27 @@ export default function AddBookScreen() {
               <Text className="text-gray-500">
                 {bookDetails.first_publish_year}
               </Text>
-              {bookDetails?.details?.publishers && (
+              {bookDetails?.publishers && (
                 <Text className="text-gray-500">
-                  {bookDetails?.details.publishers[0]}
+                  {bookDetails?.publishers[0]}
                 </Text>
+              )}
+              {/* // show ratings */}
+              {bookDetails?.ratings && (
+                <View className="flex-row gap-1">
+                  <FontAwesome
+                    name="star"
+                    size={14}
+                    color="#FFD700"
+                    className="self-center"
+                  />
+                  <Text className="text-gray-500">
+                    {bookDetails?.ratings.summary.average.toFixed(1)}
+                  </Text>
+                  <Text className="text-gray-500">
+                    ({bookDetails?.ratings.summary.count} ratings)
+                  </Text>
+                </View>
               )}
             </View>
             <FontAwesome

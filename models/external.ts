@@ -6,89 +6,49 @@ export interface OpenLibraryBookSearchResponse {
 }
 
 export interface OpenLibraryBookSearch {
+  author_name: string[];
+  cover_edition_key: string;
+  first_publish_year: number;
   key: string;
   title: string;
-  author_name: string[];
-  cover_i?: number;
-  first_publish_year: number;
-  author_key: string[];
-  cover_edition_key: string;
   cover_url: string;
-  edition_count: number;
-  has_fulltext: boolean;
-  ia?: string[];
-  language?: string[];
-  lending_edition_s?: string;
-  lending_identifier_s?: string;
+  editions: {
+    numFound: number;
+    start: number;
+    numFoundExact: boolean;
+    docs: Array<{
+      key: string;
+      title: string;
+    }>;
+  };
 }
 
 export interface OpenLibraryBook {
-  bib_key: string;
-  info_url: string;
-  preview: string;
-  preview_url: string;
-  thumbnail_url: string;
-  details: BookDetails;
-}
-
-interface BookDetails {
-  identifiers: Identifiers;
-  series?: string[];
-  covers?: number[];
-  languages?: { key: string }[];
-  genres?: string[];
-  source_records?: string[];
+  author: string | null;
+  description: string | null;
+  isbn_10: string[];
+  isbn_13: string[] | null;
+  lauguages: Array<{ key: string }>; // Note: original key is "lauguages" (typo?), usually it's "languages"
+  number_of_pages: number | null;
+  physical_dimensions: string | null;
+  publish_date: string;
+  publishers: string[];
+  subject_people: string[];
+  subject_places: string[];
+  subject_times: string[] | null;
+  subjects: string[];
   title: string;
-  edition_name?: string;
-  subjects?: string[];
-  publish_country?: string;
-  by_statement?: string;
-  type: { key: string };
-  location?: string[];
-  publishers?: string[];
-  description?: string;
-  physical_format?: string;
-  key: string;
-  authors?: Author[];
-  publish_places?: string[];
-  oclc_number?: string[];
-  pagination?: string;
-  classifications?: Record<string, unknown>;
-  notes?: string;
-  number_of_pages?: number;
-  publish_date?: string;
-  copyright_date?: string;
-  works?: { key: string }[];
-  ocaid?: string;
-  isbn_10?: string[];
-  isbn_13?: string[];
-  oclc_numbers?: string[];
-  lc_classifications?: string[];
-  latest_revision?: number;
-  revision?: number;
-  created: DateTimeValue;
-  last_modified: DateTimeValue;
-  // "physical_dimensions": "1 x 1 x 1 inches",
-  physical_dimensions?: string;
+  subtitle: string | null;
+  ratings: RatingSummary;
 }
 
-interface Identifiers {
-  alibris_id?: string[];
-  google?: string[];
-  librarything?: string[];
-  goodreads?: string[];
-}
-
-interface Author {
-  key: string;
-  name: string;
-}
-
-interface DateTimeValue {
-  type: string;
-  value: string;
-}
-
-export interface OpenLibraryBookResponse {
-  [key: string]: OpenLibraryBook;
+interface RatingSummary {
+  summary: {
+    average: number;
+    count: number;
+    sortable: number;
+  };
+  counts: {
+    [rating: string]: number; // keys like "1", "2", "3", etc.
+  };
 }
