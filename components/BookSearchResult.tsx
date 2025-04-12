@@ -3,26 +3,48 @@ import { Image } from "expo-image";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText, ButtonIcon } from "@/components/ui/button";
 import { AddIcon } from "./ui/icon";
+import { useState } from "react";
 
 interface Props {
   title: string;
   author?: string;
   imageUrl: string;
   onAddToLibrary: () => void;
+  isBookAlreadyInLibrary: () => boolean;
   rating?: number;
 }
 
 export default function BookSearchResult(props: Props) {
-  const { title, imageUrl, rating, onAddToLibrary, author } = props;
+  const [noImage, setNoImage] = useState(false);
+
+  const {
+    title,
+    imageUrl,
+    rating,
+    onAddToLibrary,
+    author,
+    isBookAlreadyInLibrary,
+  } = props;
 
   return (
     <View className="flex flex-row items-center gap-2 p-1">
-      <Image
-        source={imageUrl}
-        style={styles.image}
-        className="flex-1"
-        // resizeMode="cover"
-      />
+      {noImage || !imageUrl ? (
+        <View style={[styles.image, { backgroundColor: "lightgrey" }]}></View>
+      ) : (
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.image}
+          contentFit="contain"
+          onLoad={(event) => {
+            const { width, height } = event.source;
+            if (width === 1 && height === 1) {
+              setNoImage(true);
+            }
+          }}
+          onError={() => setNoImage(true)}
+          cachePolicy={"memory-disk"}
+        />
+      )}
       <View className="flex-[2]">
         <Text className="text-base font-semibold">{props.title}</Text>
         {props.author && (
@@ -33,7 +55,11 @@ export default function BookSearchResult(props: Props) {
         )}
       </View>
       <View className="flex-[1] space-y-1">
-        <Button className="p-2 rounded-md" onPress={onAddToLibrary}>
+        <Button
+          disabled={isBookAlreadyInLibrary()}
+          className="p-2 rounded-md"
+          onPress={onAddToLibrary}
+        >
           <ButtonIcon as={AddIcon} />
           <ButtonText>Add</ButtonText>
         </Button>
@@ -46,6 +72,6 @@ const styles = StyleSheet.create({
   image: {
     width: 80,
     height: 100,
-    // borderRadius: 8,
+    borderRadius: 8,
   },
 });

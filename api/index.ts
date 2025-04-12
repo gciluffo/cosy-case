@@ -182,3 +182,28 @@ export const confirmCroppedImage = async (
   const result = await response.json();
   return result;
 };
+
+export const getTrendingBooks = async (
+  time: string
+): Promise<
+  {
+    title: string;
+    workId: string;
+    cover_url: string;
+  }[]
+> => {
+  const response = await fetch(`${BASE_URL}/trending-books/${time}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "max-age=86400", // Cache for 1 day (86400 seconds)
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch trending books");
+  }
+
+  const data = await response.json();
+  return data;
+};

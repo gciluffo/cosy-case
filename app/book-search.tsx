@@ -1,13 +1,22 @@
 import { searchBooks } from "@/api";
 import { SearchIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
-import { useEffect, useState } from "react";
-import { TextInput, View, StyleSheet, FlatList } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  TextInput,
+  View,
+  StyleSheet,
+  FlatList,
+  ScrollView,
+} from "react-native";
 import { Text } from "@/components/ui/text";
 import BookSearchResult from "@/components/BookSearchResult";
 import { OpenLibraryBookSearch } from "@/models/external";
 import { Skeleton } from "@/components/ui/skeleton";
 import { router } from "expo-router";
+import useStore from "@/store";
+import SearchInput from "@/components/SearchInput";
+import TrendingBooksView from "@/views/TrendingBooksView";
 
 export default function BookSearch() {
   const [searchText, setSearchText] = useState("");
@@ -15,6 +24,7 @@ export default function BookSearch() {
     []
   );
   const [loading, setLoading] = useState(false);
+  const { books } = useStore();
 
   useEffect(() => {
     if (searchText?.length < 3) {
@@ -44,6 +54,8 @@ export default function BookSearch() {
     };
   }, [searchText]);
 
+  // console.log("Search results:", searchResults);
+
   const onAddToLibrary = (book: OpenLibraryBookSearch) => {
     router.push({
       pathname: "/add-book",
@@ -53,24 +65,30 @@ export default function BookSearch() {
     });
   };
 
+  const isBookAlreadyInLibrary = useCallback(
+    (book: OpenLibraryBookSearch) => {
+      return books.some((b) => b.key === book.key);
+    },
+    [books]
+  );
+
   return (
-    <View>
+    <View className="m-4">
       {/* // Animate a cancel button and move it to the header */}
-      <Input style={styles.searchInput}>
-        <InputSlot className="pl-3">
-          <InputIcon as={SearchIcon} />
-        </InputSlot>
-        <InputField
-          placeholder="Search..."
-          onChange={(e) => {
-            setSearchText(e.nativeEvent.text);
-          }}
-        />
-      </Input>
+      <SearchInput
+        value={searchText}
+        setSearchText={setSearchText}
+        onCancel={() => {
+          setSearchText("");
+          setSearchResults([]);
+        }}
+      />
+
+      <View className="h-5" />
 
       {loading && (
         <FlatList
-          style={{ padding: 10 }}
+          // style={{ padding: 10 }}
           contentContainerStyle={{ paddingBottom: 100 }}
           data={Array(10).fill(null)} // Display 5 skeleton rows
           keyExtractor={(_, index) => `skeleton-${index}`}
@@ -88,7 +106,6 @@ export default function BookSearch() {
                 style={{
                   width: 50,
                   height: 50,
-                  backgroundColor: "#e0e0e0",
                   borderRadius: 5,
                   marginRight: 10,
                 }}
@@ -98,7 +115,6 @@ export default function BookSearch() {
                   speed={4}
                   style={{
                     height: 15,
-                    backgroundColor: "#e0e0e0",
                     borderRadius: 5,
                     marginBottom: 5,
                     width: "70%",
@@ -108,7 +124,6 @@ export default function BookSearch() {
                   speed={4}
                   style={{
                     height: 15,
-                    backgroundColor: "#e0e0e0",
                     borderRadius: 5,
                     width: "50%",
                   }}
@@ -119,7 +134,6 @@ export default function BookSearch() {
                 style={{
                   width: 50,
                   height: 30,
-                  backgroundColor: "#e0e0e0",
                   borderRadius: 5,
                   marginLeft: 10,
                 }}
@@ -129,9 +143,8 @@ export default function BookSearch() {
         />
       )}
 
-      {searchResults.length > 0 && (
+      {searchResults.length > 0 ? (
         <FlatList
-          style={{ padding: 10 }}
           contentContainerStyle={{ paddingBottom: 100 }}
           data={searchResults}
           keyExtractor={(item) => item.key}
@@ -142,31 +155,21 @@ export default function BookSearch() {
               imageUrl={item.cover_url}
               author={item.author_name?.[0]}
               onAddToLibrary={() => onAddToLibrary(item)}
+              isBookAlreadyInLibrary={() => isBookAlreadyInLibrary(item)}
             />
           )}
         />
+      ) : (
+        <ScrollView
+          contentContainerStyle={{
+            paddingBottom: 60,
+          }}
+        >
+          <TrendingBooksView />
+        </ScrollView>
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  searchInput: {
-    // make it look like an apple search bar you might find in the app store
-    borderRadius: 15,
-    backgroundColor: "#f0f0f0",
-    padding: 10,
-    margin: 10,
-    height: 40,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-});
+const styles = StyleSheet.create({});

@@ -1,7 +1,7 @@
 import "@/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
@@ -9,6 +9,8 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { TouchableOpacity } from "react-native";
+import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -40,6 +42,15 @@ export default function RootLayout() {
           name="book-search"
           options={{
             title: "Search",
+            headerRight: () => (
+              <TouchableOpacity
+                onPress={() => {
+                  router.push("/book-search");
+                }}
+              >
+                <FontAwesome name="barcode" size={24} color="black" />
+              </TouchableOpacity>
+            ),
           }}
         />
         <Stack.Screen

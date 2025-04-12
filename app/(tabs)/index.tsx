@@ -89,6 +89,7 @@ const Bookshelf: React.FC<BookShelfProps> = ({ shelves, shelfConfig }) => {
                 marginVertical: offset.y,
               }}
               showsHorizontalScrollIndicator={false}
+              scrollEnabled={false}
             />
           </ImageBackground>
         );
@@ -169,14 +170,14 @@ const BookshelfScreen = () => {
       }
 
       const { originalImageHeight, originalImageWidth } = spine;
-      const height = book.details?.physical_dimensions
+      const height = book?.physical_dimensions
         ? getBookHeightPx(
-            book.details.physical_dimensions,
+            book?.physical_dimensions,
             INDIVIDUAL_SHELF_HEIGHT - SHELF_VERTICAL_OFFSET + 17
           )
         : INDIVIDUAL_SHELF_HEIGHT - SHELF_VERTICAL_OFFSET + 17;
       const width = getBookSpineWidth(
-        book.details?.number_of_pages || 200,
+        book?.number_of_pages || 200,
         originalImageWidth || 80,
         originalImageHeight || 200,
         height
