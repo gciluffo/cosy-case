@@ -30,12 +30,12 @@ export async function searchBooks(searchTerm: string) {
 
 export async function getBookDetails(
   workKey: string,
-  editionKey: string
+  editionKey?: string
 ): Promise<OpenLibraryBook> {
   // key is formatted as /works/OL1234567W
   // Get id after the last /
   const formattedWorkKey = workKey.split("/").pop();
-  const formattedEditionKey = editionKey.split("/").pop();
+  const formattedEditionKey = editionKey ? editionKey.split("/").pop() : "";
   const response = await fetch(
     `${BASE_URL}/book?workKey=${formattedWorkKey}&editionKey=${formattedEditionKey}`,
     {

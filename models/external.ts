@@ -25,7 +25,13 @@ export interface OpenLibraryBookSearch {
 
 export interface OpenLibraryBook {
   author: string | null;
-  description: string | null;
+  description:
+    | string
+    | {
+        value: string;
+        type: string;
+      }
+    | null;
   isbn_10: string[];
   isbn_13: string[] | null;
   lauguages: Array<{ key: string }>; // Note: original key is "lauguages" (typo?), usually it's "languages"
@@ -40,6 +46,9 @@ export interface OpenLibraryBook {
   title: string;
   subtitle: string | null;
   ratings: RatingSummary;
+  cover_url: string;
+  edition_key: string;
+  key: string;
 }
 
 interface RatingSummary {

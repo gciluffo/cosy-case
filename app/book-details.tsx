@@ -18,43 +18,99 @@ import { LinearGradient } from "expo-linear-gradient";
 import { isColorDark } from "@/utils/color";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
 import { CacheManager } from "@/components/ChachedImage";
+import { Book } from "@/models/book";
+import { getBookDetails } from "@/api";
+import { OpenLibraryBook } from "@/models/external";
+import { Card } from "@/components/ui/card";
 
 export default function BookDetails() {
+  const [localBook, setLocalBook] = useState<Book | null>(null);
+  const [remoteBook, setRemoteBook] = useState<OpenLibraryBook | null>(null);
+  const [loading, setLoading] = useState(false);
   const [coverColors, setColorCovers] = useState<{
     primary: string;
     secondary: string;
   } | null>(null);
   const { removeBook, getBookByKey } = useStore();
   const params = useLocalSearchParams();
-  const { bookKey } = params;
-  const book = getBookByKey(bookKey as string);
+  const { localBookKey, bookKey } = params;
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        if (localBookKey) {
+          const book = getBookByKey(localBookKey as string);
+          if (book) {
+            console.log("Book found in local storage", book);
+            setLocalBook(book);
+          }
+        }
+
+        // if bookKey is not null, get the book from api
+        if (bookKey) {
+          setLoading(true);
+          const book = await getBookDetails(bookKey as string);
+          setRemoteBook(book);
+        }
+      } catch (error) {}
+      // if localBookKey is not null, get the book from the store
+    };
+
+    init();
+  }, [localBookKey, bookKey]);
+
+  //   console.log({
+  //     localBook,
+  //     remoteBook,
+  //   });
 
   // TODO: Remove
   useEffect(() => {
     const bookSpinePrimaryColorInit = async () => {
-      if (!book?.cover_url) {
+      if (coverColors) {
         return;
       }
 
-      try {
-        const colors = await getPrimaryAndSecondaryColors(book.cover_url);
-        // console.log("Primary color:", color);
+      if (localBook?.colors) {
+        setColorCovers(localBook?.colors);
+      }
+
+      if (localBook?.cover_url) {
+        const colors = await getPrimaryAndSecondaryColors(localBook.cover_url);
         setColorCovers(colors);
-      } catch (error) {}
+      }
+
+      if (remoteBook?.cover_url) {
+        const colors = await getPrimaryAndSecondaryColors(remoteBook.cover_url);
+        setColorCovers(colors);
+      }
     };
 
     bookSpinePrimaryColorInit();
-  }, [book]);
+  }, [localBook, remoteBook]);
 
   const removeFromLibrary = () => {
     // remove all assets on file
-    const cacheKeys = book?.spines.map((item) => item.cacheKey);
+    const cacheKeys = localBook?.spines.map((item) => item.cacheKey);
     if (cacheKeys?.length) {
       cacheKeys.forEach((key) => {
         CacheManager.removeFromCache({ key });
       });
     }
-    removeBook(bookKey as string);
+    removeBook(localBookKey as string);
+  };
+
+  const renderDescription = (book: Book | OpenLibraryBook) => {
+    if (
+      typeof book.description === "object" &&
+      book.description?.type === "/type/text"
+    ) {
+      return <Text>{book.description.value}</Text>;
+    } else if (typeof book.description === "string") {
+      return <Text>{book.description}</Text>;
+    } else {
+      return <Text>No description available</Text>;
+    }
   };
 
   return (
@@ -64,9 +120,7 @@ export default function BookDetails() {
         <>
           <LinearGradient
             colors={
-              coverColors
-                ? [coverColors?.primary, coverColors?.secondary]
-                : ["#ffffff", "#ffffff"]
+              coverColors ? [coverColors?.primary, "black"] : ["white", "black"]
             }
             style={{
               height: verticalScale(450),
@@ -76,71 +130,104 @@ export default function BookDetails() {
           >
             <Image
               style={styles.image}
-              source={book?.cover_url}
+              source={localBook?.cover_url || remoteBook?.cover_url}
               contentFit="contain"
               transition={500}
             />
             <View className="justify-center items-center mt-2">
               <Heading
                 size="xl"
-                className={
-                  isColorDark(coverColors?.primary || "#ffffff")
-                    ? "color-typography-white"
-                    : "color-typography-black"
-                }
+                className="color-typography-white"
                 style={{
                   textAlign: "center",
                 }}
               >
-                {book?.title}
+                {localBook?.title || remoteBook?.title}
               </Heading>
-              <Text
-                className={
-                  isColorDark(coverColors?.primary || "#ffffff")
-                    ? "color-typography-white"
-                    : "color-typography-black"
-                }
-              >
-                {book?.author_name?.join(", ")}
+              <Text className="color-typography-white">
+                {localBook?.author || remoteBook?.author}
               </Text>
             </View>
-            <View className="mt-10" />
-            <Button
-              onPress={removeFromLibrary}
-              size="xl"
-              style={{
-                backgroundColor: isColorDark(coverColors?.primary || "#ffffff")
-                  ? "#ffffff"
-                  : "#000000",
-                borderRadius: 10,
-                padding: 10,
-              }}
-            >
-              <ButtonIcon
-                as={TrashIcon}
-                color={
-                  isColorDark(coverColors?.primary || "#ffffff")
-                    ? "#000000"
-                    : "#ffffff"
-                }
-              />
-              <ButtonText>
-                <Text
-                  className={
-                    isColorDark(coverColors?.primary || "#ffffff")
-                      ? "color-typography-black"
-                      : "color-typography-white"
-                  }
+            {localBook && (
+              <>
+                <View className="h-10" />
+                <Button
+                  onPress={removeFromLibrary}
+                  size="xl"
+                  style={{
+                    backgroundColor: "white",
+                    borderRadius: 10,
+                    padding: 10,
+                    zIndex: 1,
+                  }}
                 >
-                  Remove from library
-                </Text>
-              </ButtonText>
-            </Button>
+                  <ButtonIcon as={TrashIcon} color="black" />
+                  <ButtonText>
+                    <Text>Remove from library</Text>
+                  </ButtonText>
+                </Button>
+              </>
+            )}
           </LinearGradient>
         </>
       )}
     >
-      <View style={styles.content}></View>
+      <View style={styles.content}>
+        <Heading>About</Heading>
+        <Card className="radius-lg p-4">
+          <View className="flex-row justify-between">
+            <Text className="text-gray-500">Title</Text>
+            <Text>{localBook?.title || remoteBook?.title}</Text>
+          </View>
+          <View className="h-[1px] bg-gray-200 my-3" />
+          <View className="flex-row justify-between">
+            <Text className="text-gray-500">Subtitle</Text>
+            <Text>{localBook?.subtitle || remoteBook?.subtitle}</Text>
+          </View>
+          <View className="h-[1px] bg-gray-200 my-3" />
+          <View className="flex-row justify-between">
+            <Text className="text-gray-500">Author</Text>
+            <Text>{localBook?.author || remoteBook?.author}</Text>
+          </View>
+          <View className="h-[1px] bg-gray-200 my-3" />
+          <View className="flex-row justify-between">
+            <Text className="text-gray-500">Publisher</Text>
+            <Text>
+              {localBook?.publishers?.length ? localBook?.publishers[0] : "N/A"}
+            </Text>
+          </View>
+          <View className="h-[1px] bg-gray-200 my-3" />
+          <View className="flex-row justify-between">
+            <Text className="text-gray-500">Year Published</Text>
+            <Text>{localBook?.publish_date || remoteBook?.publish_date}</Text>
+          </View>
+          <View className="h-[1px] bg-gray-200 my-3" />
+          <View className="flex-row justify-between">
+            <Text className="text-gray-500">ISBN-13</Text>
+            <Text>{localBook?.isbn_13 || remoteBook?.isbn_13}</Text>
+          </View>
+          <View className="h-[1px] bg-gray-200 my-3" />
+          <View className="flex-row justify-between">
+            <Text className="text-gray-500">ISBN-10</Text>
+            <Text>{localBook?.isbn_10 || remoteBook?.isbn_13}</Text>
+          </View>
+          <View className="h-[1px] bg-gray-200 my-3" />
+          <View className="flex-row justify-between">
+            <Text className="text-gray-500">Number Pages</Text>
+            <Text>
+              {localBook?.number_of_pages || remoteBook?.number_of_pages}
+            </Text>
+          </View>
+        </Card>
+        <View className="h-[20px]" />
+        <Text className="text-gray-500 mb-1 ml-2">Description</Text>
+        <Card className="radius-lg p-4">
+          <View style={{ maxHeight: 200 }}>
+            {localBook && renderDescription(localBook)}
+            {remoteBook && renderDescription(remoteBook)}
+          </View>
+        </Card>
+      </View>
     </ParallaxScrollView>
   );
 }
@@ -165,6 +252,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     padding: 10,
-    height: "100%",
+    // height: "100%",
   },
 });

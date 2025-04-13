@@ -6,9 +6,22 @@ import { Text } from "@/components/ui/text";
 
 export default function AddBookDetails() {
   const params = useLocalSearchParams();
-  const book: OpenLibraryBook & OpenLibraryBookSearch = JSON.parse(
-    params.book as string
-  );
+  const book: OpenLibraryBook = JSON.parse(params.book as string);
+
+  console.log("AddBookDetails", book);
+
+  const renderDescription = () => {
+    if (
+      typeof book.description === "object" &&
+      book.description?.type === "/type/text"
+    ) {
+      return <Text>{book.description.value}</Text>;
+    } else if (typeof book.description === "string") {
+      return <Text>{book.description}</Text>;
+    } else {
+      return <Text>No description available</Text>;
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -26,12 +39,12 @@ export default function AddBookDetails() {
         <View className="h-[1px] bg-gray-200 my-3" />
         <View className="flex-row justify-between">
           <Text className="text-gray-500">Author</Text>
-          <Text>{book?.author_name?.join(", ")}</Text>
+          <Text>{book?.author}</Text>
         </View>
         <View className="h-[1px] bg-gray-200 my-3" />
         <View className="flex-row justify-between">
           <Text className="text-gray-500">Publisher</Text>
-          <Text>{book?.publishers || ""}</Text>
+          <Text>{book?.publishers?.length ? book?.publishers[0] : "N/A"}</Text>
         </View>
         <View className="h-[1px] bg-gray-200 my-3" />
         <View className="flex-row justify-between">
@@ -55,12 +68,14 @@ export default function AddBookDetails() {
         </View>
       </Card>
       <View className="h-[20px]" />
-      <Text className="text-gray-500 mb-1 ml-2">Description</Text>
-      <Card className="radius-lg p-4">
-        <ScrollView>
-          <Text>{book?.description}</Text>
-        </ScrollView>
-      </Card>
+      {book.description && (
+        <>
+          <Text className="text-gray-500 mb-1 ml-2">Description</Text>
+          <Card className="radius-lg p-4">
+            <ScrollView>{renderDescription()}</ScrollView>
+          </Card>
+        </>
+      )}
     </ScrollView>
   );
 }

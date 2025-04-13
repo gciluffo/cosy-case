@@ -143,7 +143,7 @@ export default function BookSearch() {
         />
       )}
 
-      {searchResults.length > 0 ? (
+      {searchResults.length && (
         <FlatList
           contentContainerStyle={{ paddingBottom: 100 }}
           data={searchResults}
@@ -159,7 +159,9 @@ export default function BookSearch() {
             />
           )}
         />
-      ) : (
+      )}
+
+      {!searchText && (
         <ScrollView
           contentContainerStyle={{
             paddingBottom: 60,

@@ -35,6 +35,10 @@ const BookSpine = (props: BookSpineProps) => {
   const { width, height } = book;
   const spine = book.spines.find((s) => s.selected);
 
+  if (book.title.toLowerCase() === "the lord of the rings") {
+    console.log("BookSpine", book.title, spine, width, height);
+  }
+
   if (!spine?.cacheKey) {
     return null;
   }
@@ -182,11 +186,12 @@ const BookshelfScreen = () => {
         originalImageHeight || 200,
         height
       );
-      const bookWidth = width;
+      // const bookWidth = originalImageWidth > 300 ? 300 : originalImageWidth;
+      const bookWidth = width!;
 
       const bookWithDimensions = {
         ...book,
-        width,
+        width: bookWidth,
         height,
       };
 

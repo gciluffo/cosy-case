@@ -35,7 +35,7 @@ const SkiaBookSpine: React.FC<BookSpineProps> = ({
     return null;
   }
 
-  const padding = 4;
+  const padding = 2;
   const maxLineWidth = width - 2 * padding;
   const lineHeight = font.getSize() + 2;
 
@@ -77,16 +77,21 @@ const SkiaBookSpine: React.FC<BookSpineProps> = ({
               height={height}
               color={colors.primary || "black"}
             />
-            {[...titleLines, ...authorLines].map((line, i) => (
-              <Text
-                key={i}
-                x={padding}
-                y={startY + i * lineHeight}
-                text={line}
-                font={font}
-                color="white"
-              />
-            ))}
+            {[...titleLines, ...authorLines].map((line, i) => {
+              const isTitle = i < titleLines.length;
+              const adjustedY =
+                startY + i * lineHeight + (isTitle ? 0 : lineHeight); // Add spacing before author lines
+              return (
+                <Text
+                  key={i}
+                  x={padding}
+                  y={adjustedY}
+                  text={line}
+                  font={font}
+                  color="white"
+                />
+              );
+            })}
           </Canvas>
         </View>
       )}

@@ -31,9 +31,9 @@ import { CacheManager } from "@/components/ChachedImage";
 import InlinePicker from "@/components/InlinePicker";
 
 export default function AddBookScreen() {
-  const [bookDetails, setBookDetails] = useState<
-    OpenLibraryBook & OpenLibraryBookSearch & { primaryColor?: string }
-  >({} as any);
+  const [bookDetails, setBookDetails] = useState<OpenLibraryBook>(
+    {} as OpenLibraryBook
+  );
   const [spineImages, setSpineImages] = useState<string[]>([]);
   const [searchingSpineImage, setSearchingSpineImage] = useState(false);
   const [spineError, setSpineError] = useState<string | null>(null);
@@ -47,13 +47,13 @@ export default function AddBookScreen() {
   const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
   const canvasRef = useCanvasRef();
   const params = useLocalSearchParams();
-  const { book, refetchSpineImages } = params;
   const { addBook } = useStore();
+  const { book, refetchSpineImages } = params;
+  const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
 
   useEffect(() => {
     const bookSpinesInit = async () => {
       try {
-        const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
         const images = await getSpineImages(bookObject.key);
 
         if (images.length > 0) {
@@ -99,7 +99,6 @@ export default function AddBookScreen() {
         // if no spine images do search
         setSearchingSpineImage(true);
 
-        const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
         const images = await getSpineImages(bookObject.key);
 
         // console.log("Spine images:", images);
@@ -141,7 +140,6 @@ export default function AddBookScreen() {
     };
 
     const bookSpinePrimaryColorInit = async () => {
-      const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
       if (!bookObject.cover_url) {
         return;
       }
@@ -207,6 +205,8 @@ export default function AddBookScreen() {
 
       const bookToAdd: Book = {
         ...bookDetails,
+        cover_url: bookObject.cover_url,
+        cover_urls: [bookObject.cover_url, bookDetails.cover_url],
         status: selectedStatus,
         review: selectedReview,
         colors: {
@@ -253,26 +253,23 @@ export default function AddBookScreen() {
         <Card>
           <View className="flex-row gap-2 p-1">
             <Image
-              source={bookDetails.cover_url}
+              source={bookObject.cover_url}
               style={styles.image}
-              className="flex-1"
+              contentFit="contain"
             />
             <View className="flex-column flex-1">
               <Text className="text-base font-semibold">
-                {bookDetails.title}
+                {bookObject.title || bookDetails.title}
               </Text>
               <Text className="text-gray-500">
-                {bookDetails.author_name?.join(", ")}
+                {bookObject.author_name?.join() || bookDetails.author}
               </Text>
-              <Text className="text-gray-500">
-                {bookDetails.first_publish_year}
-              </Text>
+              <Text className="text-gray-500">{bookDetails.publish_date}</Text>
               {bookDetails?.publishers && (
                 <Text className="text-gray-500">
                   {bookDetails?.publishers[0]}
                 </Text>
               )}
-              {/* // show ratings */}
               {bookDetails?.ratings && (
                 <View className="flex-row gap-1">
                   <FontAwesome
@@ -313,7 +310,7 @@ export default function AddBookScreen() {
             items={[
               { label: "Read", value: "read" },
               { label: "Reading", value: "reading" },
-              { label: "Wishlist", value: "wishlist" },
+              { label: "TBR", value: "tbr" },
             ]}
             label="Status"
           />
@@ -371,7 +368,7 @@ export default function AddBookScreen() {
                     />
                   </TouchableOpacity>
                 ))}
-                {bookDetails.author_name && coverColors && (
+                {bookDetails.author && coverColors && (
                   <TouchableOpacity
                     onPress={() => setSelectedSpine("placeholder")}
                     style={[
@@ -382,7 +379,7 @@ export default function AddBookScreen() {
                     <SkiaBookSpine
                       colors={coverColors}
                       title={bookDetails.title}
-                      author={bookDetails.author_name?.join(", ") || ""}
+                      author={bookDetails.author || ""}
                       canvasRef={canvasRef}
                     />
                   </TouchableOpacity>

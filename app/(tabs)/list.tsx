@@ -29,7 +29,7 @@ export default function TabTwoScreen() {
             router.push({
               pathname: "/book-details",
               params: {
-                bookKey: item.key,
+                localBookKey: item.key,
               },
             })
           }
@@ -40,14 +40,6 @@ export default function TabTwoScreen() {
             style={styles.image}
             contentFit="contain"
           />
-          {/* <Text
-            className="text-gray-500"
-            style={{
-              maxWidth: 110,
-            }}
-          >
-            {item.title}
-          </Text> */}
         </TouchableOpacity>
       )}
       keyExtractor={(item) => item.key}
