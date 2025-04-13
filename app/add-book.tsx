@@ -43,7 +43,7 @@ export default function AddBookScreen() {
   } | null>(null);
   const [addingBook, setAddingBook] = useState(false);
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState(BookStatus.READ);
+  const [selectedStatus, setSelectedStatus] = useState(BookStatus.FINISHED);
   const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
   const canvasRef = useCanvasRef();
   const params = useLocalSearchParams();
@@ -308,9 +308,9 @@ export default function AddBookScreen() {
             selectedValue={selectedStatus}
             onValueChange={setSelectedStatus}
             items={[
-              { label: "Read", value: "read" },
-              { label: "Reading", value: "reading" },
-              { label: "TBR", value: "tbr" },
+              { label: "Finished", value: "finished", icon: "check" },
+              { label: "Reading", value: "reading", icon: "book" },
+              { label: "TBR", value: "tbr", icon: "heart" },
             ]}
             label="Status"
           />
@@ -327,9 +327,9 @@ export default function AddBookScreen() {
             selectedValue={selectedReview}
             onValueChange={setSelectedReview}
             items={[
-              { label: "Good", value: "good" },
-              { label: "Okay", value: "okay" },
-              { label: "Bad", value: "bad" },
+              { label: "Good", value: "good", icon: "star" },
+              { label: "Okay", value: "okay", icon: "star-half" },
+              { label: "Bad", value: "bad", icon: "star-o" },
             ]}
             label="Status"
           />

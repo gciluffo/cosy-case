@@ -10,7 +10,7 @@ export type Spine = {
 export enum BookStatus {
   READING = "reading",
   TBR = "tbr",
-  READ = "read",
+  FINISHED = "finished",
 }
 
 export enum BookReview {
