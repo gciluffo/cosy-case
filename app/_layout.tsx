@@ -58,7 +58,7 @@ export default function RootLayout() {
           options={{
             title: "Add to Library",
             presentation: "modal",
-            headerBackButtonDisplayMode: "minimal",
+            headerBackButtonDisplayMode: "generic",
           }}
         />
         <Stack.Screen
@@ -66,7 +66,7 @@ export default function RootLayout() {
           options={{
             title: "Add to Library",
             presentation: "modal",
-            headerBackButtonDisplayMode: "minimal",
+            headerBackButtonDisplayMode: "generic",
           }}
         />
         <Stack.Screen
@@ -75,6 +75,7 @@ export default function RootLayout() {
             headerTransparent: true,
             headerTitle: "",
             headerTintColor: "white", // or any contrasting color for your back button
+            headerBackButtonDisplayMode: "generic",
           }}
         />
         <Stack.Screen

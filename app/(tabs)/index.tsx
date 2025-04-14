@@ -102,53 +102,9 @@ const Bookshelf: React.FC<BookShelfProps> = ({ shelves, shelfConfig }) => {
   );
 };
 
-// Example Usage
 const BookshelfScreen = () => {
   const [shelves, setShelves] = React.useState<Book[][]>([]);
   const { books } = useStore();
-
-  // const books: any[] = [
-  //   {
-  //     details: {
-  //       number_of_pages: 200,
-  //     },
-  //   },
-  //   {
-  //     details: {
-  //       number_of_pages: 1000,
-  //     },
-  //   },
-  //   {
-  //     details: {
-  //       number_of_pages: 380,
-  //     },
-  //   },
-  //   {
-  //     details: {
-  //       number_of_pages: 910,
-  //     },
-  //   },
-  //   {
-  //     details: {
-  //       number_of_pages: 220,
-  //     },
-  //   },
-  //   {
-  //     details: {
-  //       number_of_pages: 291,
-  //     },
-  //   },
-  //   {
-  //     details: {
-  //       number_of_pages: 50,
-  //     },
-  //   },
-  //   {
-  //     details: {
-  //       number_of_pages: 90,
-  //     },
-  //   },
-  // ];
 
   useEffect(() => {
     // TODO: Move to shelf config

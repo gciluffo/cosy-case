@@ -1,17 +1,9 @@
 import { searchBooks } from "@/api";
-import { SearchIcon } from "@/components/ui/icon";
-import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { useCallback, useEffect, useState } from "react";
-import {
-  TextInput,
-  View,
-  StyleSheet,
-  FlatList,
-  ScrollView,
-} from "react-native";
+import { View, StyleSheet, FlatList, ScrollView } from "react-native";
 import { Text } from "@/components/ui/text";
 import BookSearchResult from "@/components/BookSearchResult";
-import { OpenLibraryBookSearch } from "@/models/external";
+import { OpenLibraryBookSearch } from "@/models/open-library";
 import { Skeleton } from "@/components/ui/skeleton";
 import { router } from "expo-router";
 import useStore from "@/store";
@@ -60,7 +52,13 @@ export default function BookSearch() {
     router.push({
       pathname: "/add-book",
       params: {
-        book: JSON.stringify(book),
+        book: JSON.stringify({
+          key: book.key,
+          edition: book.editions.docs[0].key,
+          title: book.title,
+          author: book.author_name?.join(", ") || "",
+          cover_url: book.cover_url,
+        }),
       },
     });
   };
@@ -88,7 +86,6 @@ export default function BookSearch() {
 
       {loading && (
         <FlatList
-          // style={{ padding: 10 }}
           contentContainerStyle={{ paddingBottom: 100 }}
           data={Array(10).fill(null)} // Display 5 skeleton rows
           keyExtractor={(_, index) => `skeleton-${index}`}

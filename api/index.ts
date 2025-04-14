@@ -1,4 +1,8 @@
-import { OpenLibraryBook } from "@/models/external";
+import {
+  GoogleBookDetails,
+  GoogleBooksSearchResponse,
+} from "@/models/google-books";
+import { OpenLibraryBook } from "@/models/open-library";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.2.53:8000";
 
@@ -28,14 +32,39 @@ export async function searchBooks(searchTerm: string) {
   return data.docs || [];
 }
 
+export async function searchBooksV2(
+  searchTerm: string
+): Promise<GoogleBooksSearchResponse> {
+  const response = await fetch(
+    `${BASE_URL}/search-v2?q=${encodeURIComponent(searchTerm)}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch books");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
 export async function getBookDetails(
   workKey: string,
   editionKey?: string
 ): Promise<OpenLibraryBook> {
-  // key is formatted as /works/OL1234567W
-  // Get id after the last /
-  const formattedWorkKey = workKey.split("/").pop();
-  const formattedEditionKey = editionKey ? editionKey.split("/").pop() : "";
+  const formattedWorkKey = workKey.includes("/")
+    ? workKey.split("/").pop()
+    : workKey;
+  let formattedEditionKey;
+  if (editionKey && editionKey.includes("/")) {
+    formattedEditionKey = editionKey.split("/").pop();
+  }
+
   const response = await fetch(
     `${BASE_URL}/book?workKey=${formattedWorkKey}&editionKey=${formattedEditionKey}`,
     {
@@ -45,6 +74,24 @@ export async function getBookDetails(
       },
     }
   );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch book details");
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+export async function getBookDetailsV2(
+  bookId: string
+): Promise<GoogleBookDetails> {
+  const response = await fetch(`${BASE_URL}/books-v2/${bookId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch book details");

@@ -8,7 +8,7 @@ import { useState } from "react";
 interface Props {
   title: string;
   author?: string;
-  imageUrl: string;
+  imageUrl?: string;
   onAddToLibrary: () => void;
   isBookAlreadyInLibrary: () => boolean;
   rating?: number;
@@ -26,13 +26,21 @@ export default function BookSearchResult(props: Props) {
     isBookAlreadyInLibrary,
   } = props;
 
+  // Idk why google returns http links for images
+  const convertToHttps = (url: string) => {
+    if (url.startsWith("http://")) {
+      return url.replace("http://", "https://");
+    }
+    return url;
+  };
+
   return (
     <View className="flex flex-row items-center gap-2 p-1">
       {noImage || !imageUrl ? (
         <View style={[styles.image, { backgroundColor: "lightgrey" }]}></View>
       ) : (
         <Image
-          source={{ uri: imageUrl }}
+          source={{ uri: convertToHttps(imageUrl) }}
           style={styles.image}
           contentFit="contain"
           onLoad={(event) => {
@@ -41,7 +49,10 @@ export default function BookSearchResult(props: Props) {
               setNoImage(true);
             }
           }}
-          onError={() => setNoImage(true)}
+          onError={(e) => {
+            // console.log("Error loading image", e);
+            setNoImage(true);
+          }}
           cachePolicy={"memory-disk"}
         />
       )}

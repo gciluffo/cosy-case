@@ -61,3 +61,5 @@ interface RatingSummary {
     [rating: string]: number; // keys like "1", "2", "3", etc.
   };
 }
+
+export interface GoogleSearchResponse {}

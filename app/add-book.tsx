@@ -4,7 +4,7 @@ import {
   getSpineImages,
   searchBookSpineByTitle,
 } from "@/api";
-import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models/external";
+import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models/open-library";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -30,6 +30,14 @@ import { useCanvasRef } from "@shopify/react-native-skia";
 import { CacheManager } from "@/components/ChachedImage";
 import InlinePicker from "@/components/InlinePicker";
 
+export interface AddBookParam {
+  key: string;
+  edition: string;
+  title: string;
+  author: string;
+  cover_url: string;
+}
+
 export default function AddBookScreen() {
   const [bookDetails, setBookDetails] = useState<OpenLibraryBook>(
     {} as OpenLibraryBook
@@ -49,7 +57,7 @@ export default function AddBookScreen() {
   const params = useLocalSearchParams();
   const { addBook } = useStore();
   const { book, refetchSpineImages } = params;
-  const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
+  const bookObject: AddBookParam = JSON.parse(book as string);
 
   useEffect(() => {
     const bookSpinesInit = async () => {
@@ -78,10 +86,9 @@ export default function AddBookScreen() {
           return;
         }
 
-        const bookObject: OpenLibraryBookSearch = JSON.parse(book as string);
         const details = await getBookDetails(
           bookObject.key,
-          bookObject.editions.docs[0].key
+          bookObject.edition
         );
         console.log("Book details:", details);
         // TODO: Get rating for book, seperate open library endpoint
@@ -112,7 +119,7 @@ export default function AddBookScreen() {
 
         const response = await searchBookSpineByTitle(
           bookObject.title,
-          bookObject.author_name?.join(", ") || "",
+          bookObject.author,
           bookObject.key
         );
 
@@ -262,7 +269,7 @@ export default function AddBookScreen() {
                 {bookObject.title || bookDetails.title}
               </Text>
               <Text className="text-gray-500">
-                {bookObject.author_name?.join() || bookDetails.author}
+                {bookObject.author || bookDetails.author}
               </Text>
               <Text className="text-gray-500">{bookDetails.publish_date}</Text>
               {bookDetails?.publishers && (

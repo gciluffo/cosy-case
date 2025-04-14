@@ -9,7 +9,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { Text } from "@/components/ui/text";
 import { confirmCroppedImage, uploadImageForSpineDetection } from "@/api";
-import { OpenLibraryBookSearch } from "@/models/external";
+import { OpenLibraryBookSearch } from "@/models/open-library";
 import CroppedImageConfirm from "@/components/ImageEditor";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 

@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { OpenLibraryBook, OpenLibraryBookSearch } from "@/models/external";
+import { OpenLibraryBook, OpenLibraryBookSearch } from "@/models/open-library";
 import { useLocalSearchParams } from "expo-router";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { Text } from "@/components/ui/text";
