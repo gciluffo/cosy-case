@@ -54,6 +54,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="case-config"
+        options={{
+          title: "Configure",
+          headerShown: true,
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="cog" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="list"
         options={{
           title: "Books",

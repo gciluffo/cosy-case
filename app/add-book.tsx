@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
+  FlatList,
 } from "react-native";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
@@ -29,6 +30,9 @@ import {
 import { useCanvasRef } from "@shopify/react-native-skia";
 import { CacheManager } from "@/components/ChachedImage";
 import InlinePicker from "@/components/InlinePicker";
+import { Heading } from "@/components/ui/heading";
+import CompactBookShelf from "@/components/CompactBookShelf";
+import { scale, verticalScale } from "@/utils/scale";
 
 export interface AddBookParam {
   key: string;
@@ -39,6 +43,7 @@ export interface AddBookParam {
 }
 
 export default function AddBookScreen() {
+  const { addBookToCase, cases, updateCase } = useStore();
   const [bookDetails, setBookDetails] = useState<OpenLibraryBook>(
     {} as OpenLibraryBook
   );
@@ -53,9 +58,11 @@ export default function AddBookScreen() {
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState(BookStatus.FINISHED);
   const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
+  const [selectedShelves, setSelectedShelves] = useState<string[]>([
+    cases[0].name,
+  ]);
   const canvasRef = useCanvasRef();
   const params = useLocalSearchParams();
-  const { addBook } = useStore();
   const { book, refetchSpineImages } = params;
   const bookObject: AddBookParam = JSON.parse(book as string);
 
@@ -90,7 +97,7 @@ export default function AddBookScreen() {
           bookObject.key,
           bookObject.edition
         );
-        console.log("Book details:", details);
+        // console.log("Book details:", details);
         // TODO: Get rating for book, seperate open library endpoint
         setBookDetails({ ...bookObject, ...details });
       } catch (error) {
@@ -159,7 +166,7 @@ export default function AddBookScreen() {
     };
 
     // if (!bookDetails) {
-    console.log("book key", JSON.parse(book as string).key);
+    // console.log("book key", JSON.parse(book as string).key);
     bookDetailsInit();
     bookSpinesInit();
     bookSpinePrimaryColorInit();
@@ -173,22 +180,22 @@ export default function AddBookScreen() {
     setTimeout(async () => {
       // you can pass an optional rectangle
       // to only save part of the image
-      const image = canvasRef.current?.makeImageSnapshot();
-      console.log("Canvas image:", image);
-      if (image) {
-        const cacheKey = `${bookDetails.key}-spine-placeholder`;
-        await CacheManager.saveBytesToCache({
-          image,
-          key: cacheKey,
-        });
+      // const image = canvasRef.current?.makeImageSnapshot();
+      // console.log("Canvas image:", image);
+      // if (image) {
+      //   const cacheKey = `${bookDetails.key}-spine-placeholder`;
+      //   await CacheManager.saveBytesToCache({
+      //     image,
+      //     key: cacheKey,
+      //   });
 
-        spines.push({
-          cacheKey: cacheKey,
-          selected: spineImages.length === 0 || selectedSpine === "placeholder",
-          originalImageHeight: 200,
-          originalImageWidth: 60,
-        });
-      }
+      //   spines.push({
+      //     cacheKey: cacheKey,
+      //     selected: spineImages.length === 0 || selectedSpine === "placeholder",
+      //     originalImageHeight: 200,
+      //     originalImageWidth: 60,
+      //   });
+      // }
 
       if (spineImages.length > 0 && selectedSpine !== "placeholder") {
         const signedUrl = await getBookSpineBucketPathFromSignedUrl(
@@ -224,7 +231,11 @@ export default function AddBookScreen() {
       };
 
       console.log("Book to add:", bookToAdd);
-      addBook(bookToAdd);
+      // addBookToCase("default", bookToAdd);
+      for (const shelf of selectedShelves) {
+        addBookToCase(shelf, bookToAdd);
+      }
+
       router.back();
       setAddingBook(false);
     }, 1000);
@@ -352,62 +363,94 @@ export default function AddBookScreen() {
         </Text>
       )}
       <Card>
-        <View style={{ flexDirection: "row" }}>
-          <View style={{ flex: 1 }}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View className="flex-row gap-3">
-                {searchingSpineImage && (
-                  <View style={styles.addContainer}>
-                    <ActivityIndicator size="small" color="gray" />
-                  </View>
-                )}
-                {spineImages?.map((image, index) => (
-                  <TouchableOpacity onPress={() => setSelectedSpine(image)}>
-                    <Image
-                      key={index}
-                      source={image}
-                      style={[
-                        styles.spineImage,
-                        selectedSpine === image && styles.selectedSpineImage,
-                      ]}
-                      className="flex-1"
-                      contentFit="contain" // Ensures the entire image is visible without cropping
-                    />
-                  </TouchableOpacity>
-                ))}
-                {bookDetails.author && coverColors && (
-                  <TouchableOpacity
-                    onPress={() => setSelectedSpine("placeholder")}
+        <View className="flex-row">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex-row gap-3">
+              {searchingSpineImage && (
+                <View style={styles.addContainer}>
+                  <ActivityIndicator size="small" color="gray" />
+                </View>
+              )}
+              {spineImages?.map((image, index) => (
+                <TouchableOpacity onPress={() => setSelectedSpine(image)}>
+                  <Image
+                    key={index}
+                    source={image}
                     style={[
-                      selectedSpine === "placeholder" &&
-                        styles.selectedSpineImage,
+                      styles.spineImage,
+                      selectedSpine === image && styles.itemSelected,
                     ]}
-                  >
-                    <SkiaBookSpine
-                      colors={coverColors}
-                      title={bookDetails.title}
-                      author={bookDetails.author || ""}
-                      canvasRef={canvasRef}
-                    />
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  style={styles.addContainer}
-                  onPress={() => {
-                    router.push({
-                      pathname: "/book-spine-camera-view",
-                      params: {
-                        book,
-                      },
-                    });
-                  }}
-                >
-                  <FontAwesome name="camera" size={20} color="gray" />
+                    className="flex-1"
+                    contentFit="contain" // Ensures the entire image is visible without cropping
+                  />
                 </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
+              ))}
+              {bookDetails.author && coverColors && (
+                <TouchableOpacity
+                  onPress={() => setSelectedSpine("placeholder")}
+                  style={[
+                    selectedSpine === "placeholder" && styles.itemSelected,
+                  ]}
+                >
+                  <SkiaBookSpine
+                    colors={coverColors}
+                    title={bookDetails.title}
+                    author={bookDetails.author || ""}
+                    canvasRef={canvasRef}
+                  />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={styles.addContainer}
+                onPress={() => {
+                  router.push({
+                    pathname: "/book-spine-camera-view",
+                    params: {
+                      book,
+                    },
+                  });
+                }}
+              >
+                <FontAwesome name="camera" size={20} color="gray" />
+              </TouchableOpacity>
+            </View>
+            <View className="h-5" />
+          </ScrollView>
         </View>
+      </Card>
+      <View className="h-6" />
+      <Text className="text-gray-500 mb-1 ml-1" size="lg">
+        Case
+      </Text>
+      <Card>
+        <FlatList
+          horizontal={true}
+          data={cases}
+          renderItem={({ item, index }) => (
+            <View className="flex" key={item.name}>
+              <TouchableOpacity
+                style={[
+                  selectedShelves.includes(item.name) && styles.itemSelected,
+                ]}
+              >
+                <CompactBookShelf
+                  bookCase={item}
+                  caseWidth={scale(120)}
+                  caseHeight={verticalScale(100)}
+                  shelfHeight={verticalScale(33)}
+                />
+              </TouchableOpacity>
+              <Text>{item.name}</Text>
+            </View>
+          )}
+          ListFooterComponent={() => {
+            return (
+              <TouchableOpacity className="ml-4" style={styles.addContainer}>
+                <FontAwesome name="plus" size={20} color="gray" />
+              </TouchableOpacity>
+            );
+          }}
+        />
       </Card>
     </ScollViewFloatingButton>
   );
@@ -435,7 +478,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginRight: 5,
   },
-  selectedSpineImage: {
+  itemSelected: {
     borderWidth: 3,
     borderColor: "#007AFF",
     shadowColor: "#000",

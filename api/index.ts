@@ -4,7 +4,8 @@ import {
 } from "@/models/google-books";
 import { OpenLibraryBook } from "@/models/open-library";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.2.53:8000";
+// const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.2.53:8000";
+const BASE_URL = "http://localhost:8000";
 
 export async function searchBooks(searchTerm: string) {
   console.log(
@@ -65,15 +66,15 @@ export async function getBookDetails(
     formattedEditionKey = editionKey.split("/").pop();
   }
 
-  const response = await fetch(
-    `${BASE_URL}/book?workKey=${formattedWorkKey}&editionKey=${formattedEditionKey}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  const url = `${BASE_URL}/books?workKey=${formattedWorkKey}&editionKey=${formattedEditionKey}`;
+  console.log("getting book details", "url:", url);
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch book details");

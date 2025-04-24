@@ -1,85 +1,42 @@
 import React, { useEffect } from "react";
-import { Dimensions, FlatList, StyleSheet, View } from "react-native";
+import { Dimensions, FlatList, View } from "react-native";
 import useStore from "@/store";
-import { Book } from "@/models/book";
-import { ImageBackground } from "expo-image";
+import { Book, BookCase } from "@/models/book";
 import { scale, verticalScale } from "@/utils/scale";
-import CachedImage from "@/components/ChachedImage";
 import { getBookHeightPx, getBookSpineWidth } from "@/utils/books";
+import { Shelf } from "@/components/Shelf";
+import BookSpine from "@/components/BookSpine";
 
-const SHELF_WIDTH = Dimensions.get("window").width * 0.95;
-const SHELF_HEIGHT = Dimensions.get("window").height * 0.8;
-const SHELF_VERTICAL_OFFSET = verticalScale(20);
-const SHELF_HORIZONTAL_OFFSET = scale(30);
+const MAX_WIDTH = Dimensions.get("window").width * 0.95;
+const MAX_HEIGHT = Dimensions.get("window").height * 0.8;
 const INDIVIDUAL_SHELF_HEIGHT = 120;
 
 interface BookShelfProps {
   shelves: Book[][];
-  shelfConfig: {
-    topUri: string;
-    middleUri: string;
-    bottomUri: string;
-    offset: {
-      x: number;
-      y: number;
-    };
-  };
+  bookCase: BookCase;
 }
-
-interface BookSpineProps {
-  book: Book & { width: number; height: number };
-}
-
-const BookSpine = (props: BookSpineProps) => {
-  const { book } = props;
-  const { width, height } = book;
-  const spine = book.spines.find((s) => s.selected);
-
-  if (book.title.toLowerCase() === "the lord of the rings") {
-    console.log("BookSpine", book.title, spine, width, height);
-  }
-
-  if (!spine?.cacheKey) {
-    return null;
-  }
-
-  return (
-    <CachedImage
-      source={{
-        uri: "",
-      }}
-      cacheKey={spine.cacheKey}
-      style={{
-        width: width,
-        height: height,
-        borderRadius: 1,
-      }}
-    />
-  );
-};
 
 // Bookshelf component using Skia
-const Bookshelf: React.FC<BookShelfProps> = ({ shelves, shelfConfig }) => {
-  const { topUri, middleUri, bottomUri, offset } = shelfConfig;
+const Bookshelf = (props: BookShelfProps) => {
+  const { shelves, bookCase } = props;
+  // offsetXPercent: scale(30),
+  // offsetYPercent: verticalScale(20),
 
-  const getShelfImage = (index: number, length: number) => {
-    if (index === 0) {
-      return topUri;
-    }
-    if (index === length - 1) {
-      return bottomUri;
-    }
-    return middleUri;
-  };
+  // console.log({
+  //   shelfWidth: MAX_WIDTH,
+  //   shelfHeight: INDIVIDUAL_SHELF_HEIGHT,
+  // });
 
   return (
     <View className="flex-1 items-center justify-center">
       {shelves.map((shelfBooks, index) => {
         return (
-          <ImageBackground
-            source={getShelfImage(index, shelves.length)}
-            style={styles.shelfBackground}
-            resizeMode="stretch"
+          <Shelf
+            index={index}
+            bookCase={bookCase}
+            width={MAX_WIDTH + 10}
+            height={verticalScale(INDIVIDUAL_SHELF_HEIGHT)}
+            numShelves={shelves.length}
           >
             <FlatList
               horizontal
@@ -88,14 +45,11 @@ const Bookshelf: React.FC<BookShelfProps> = ({ shelves, shelfConfig }) => {
               renderItem={({ item }: { item: any }) => {
                 return <BookSpine book={item} key={item.key} />;
               }}
-              contentContainerStyle={{
-                marginHorizontal: offset.x,
-                marginVertical: offset.y,
-              }}
+              contentContainerStyle={{ alignItems: "flex-end" }} // Makes sure spines align bottom
               showsHorizontalScrollIndicator={false}
               scrollEnabled={false}
             />
-          </ImageBackground>
+          </Shelf>
         );
       })}
     </View>
@@ -104,10 +58,20 @@ const Bookshelf: React.FC<BookShelfProps> = ({ shelves, shelfConfig }) => {
 
 const BookshelfScreen = () => {
   const [shelves, setShelves] = React.useState<Book[][]>([]);
-  const { books } = useStore();
+  const { cases } = useStore();
+  const selectedCase = cases.find((c) => c.isSelected);
+  const books = selectedCase?.books || [];
 
   useEffect(() => {
-    // TODO: Move to shelf config
+    if (!selectedCase) {
+      return;
+    }
+
+    // offsetXPercent: scale(30),
+    // offsetYPercent: verticalScale(20),
+    // const { offsetX, offsetY } = selectedCase;
+    const offsetX = scale(30);
+    const offsetY = verticalScale(20);
     const tempShelves: (Book & {
       width: number;
       height: number;
@@ -115,12 +79,12 @@ const BookshelfScreen = () => {
 
     // Initialize shelves
     let totalShelfHeight = 0;
-    while (totalShelfHeight < SHELF_HEIGHT) {
+    while (totalShelfHeight < MAX_HEIGHT) {
       tempShelves.push([]);
       totalShelfHeight += verticalScale(INDIVIDUAL_SHELF_HEIGHT);
     }
 
-    let currentShelfWidth = SHELF_HORIZONTAL_OFFSET * 2;
+    let currentShelfWidth = offsetX * 2;
     let currentShelfIndex = 0;
     for (const book of books) {
       const spine = book.spines.find((s) => s.selected);
@@ -133,16 +97,15 @@ const BookshelfScreen = () => {
       const height = book?.physical_dimensions
         ? getBookHeightPx(
             book?.physical_dimensions,
-            INDIVIDUAL_SHELF_HEIGHT - SHELF_VERTICAL_OFFSET + 17
+            INDIVIDUAL_SHELF_HEIGHT - offsetY + 17
           )
-        : INDIVIDUAL_SHELF_HEIGHT - SHELF_VERTICAL_OFFSET + 17;
+        : INDIVIDUAL_SHELF_HEIGHT - offsetY + 17;
       const width = getBookSpineWidth(
         book?.number_of_pages || 200,
         originalImageWidth || 80,
         originalImageHeight || 200,
         height
       );
-      // const bookWidth = originalImageWidth > 300 ? 300 : originalImageWidth;
       const bookWidth = width!;
 
       const bookWithDimensions = {
@@ -151,7 +114,7 @@ const BookshelfScreen = () => {
         height,
       };
 
-      if (currentShelfWidth + bookWidth < SHELF_WIDTH) {
+      if (currentShelfWidth + bookWidth < MAX_WIDTH) {
         tempShelves[currentShelfIndex].push(bookWithDimensions);
         currentShelfWidth += bookWidth;
       } else {
@@ -163,30 +126,13 @@ const BookshelfScreen = () => {
     }
 
     setShelves(tempShelves);
-  }, [books]);
+  }, [selectedCase]);
 
   return (
-    <Bookshelf
-      shelves={shelves}
-      shelfConfig={{
-        topUri: require("../../assets/images/top-shelf-birch.png"),
-        middleUri: require("../../assets/images/middle-shelf-birch.png"),
-        bottomUri: require("../../assets/images/bottom-shelf-birch.png"),
-        offset: {
-          x: SHELF_HORIZONTAL_OFFSET,
-          y: SHELF_VERTICAL_OFFSET,
-        },
-      }}
-    />
+    <>
+      {selectedCase && <Bookshelf shelves={shelves} bookCase={selectedCase} />}
+    </>
   );
 };
-
-const styles = StyleSheet.create({
-  shelfBackground: {
-    // TODO: Refactor this when we add a flating navbar
-    height: verticalScale(INDIVIDUAL_SHELF_HEIGHT),
-    width: SHELF_WIDTH + 10,
-  },
-});
 
 export default BookshelfScreen;

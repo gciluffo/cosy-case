@@ -7,9 +7,22 @@ import { Image } from "expo-image";
 import CachedImage from "@/components/ChachedImage";
 import { isTablet, moderateScale } from "@/utils/scale";
 import { router } from "expo-router";
+import { useMemo } from "react";
+import { Book } from "@/models/book";
 
 export default function TabTwoScreen() {
-  const { books } = useStore();
+  const { cases } = useStore();
+
+  const allBooks = useMemo(() => {
+    const books = cases.reduce((acc, bookCase) => {
+      const books = bookCase.books.map((book) => ({
+        ...book,
+        key: book.key,
+      }));
+      return [...acc, ...books];
+    }, [] as Book[]);
+    return books;
+  }, [cases]);
 
   return (
     <FlatList
@@ -18,7 +31,7 @@ export default function TabTwoScreen() {
         marginHorizontal: isTablet ? moderateScale(100) : 0,
       }}
       style={styles.list}
-      data={books}
+      data={allBooks}
       numColumns={3}
       ItemSeparatorComponent={() => <View style={{ marginVertical: 10 }} />}
       renderItem={({ item }) => (

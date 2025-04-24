@@ -64,7 +64,7 @@ const InlinePicker = (props: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: "30%",
+    width: "32%",
   },
   dropdownContainer: {
     borderRadius: 6,

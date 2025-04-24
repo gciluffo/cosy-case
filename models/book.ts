@@ -29,3 +29,14 @@ export type Book = OpenLibraryBook & {
     secondary: string;
   };
 };
+
+export interface BookCase {
+  name: string;
+  topImageKey: string;
+  middleImageKey: string;
+  bottomImageKey: string;
+  offsetXPercent: number;
+  offsetYPercent: number;
+  isSelected: boolean;
+  books: Book[];
+}
