@@ -7,7 +7,7 @@ import {
 import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models/open-library";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -33,6 +33,8 @@ import InlinePicker from "@/components/InlinePicker";
 import { Heading } from "@/components/ui/heading";
 import CompactBookShelf from "@/components/CompactBookShelf";
 import { scale, verticalScale } from "@/utils/scale";
+import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
+import { captureRef } from "react-native-view-shot";
 
 export interface AddBookParam {
   key: string;
@@ -61,7 +63,7 @@ export default function AddBookScreen() {
   const [selectedShelves, setSelectedShelves] = useState<string[]>([
     cases[0].name,
   ]);
-  const canvasRef = useCanvasRef();
+  const spineRef = useRef(null);
   const params = useLocalSearchParams();
   const { book, refetchSpineImages } = params;
   const bookObject: AddBookParam = JSON.parse(book as string);
@@ -173,29 +175,33 @@ export default function AddBookScreen() {
     // }
   }, [book]);
 
-  const onAddToLibrary = () => {
+  const onAddToLibrary = async () => {
     const spines: Spine[] = [];
     setAddingBook(true);
 
-    setTimeout(async () => {
-      // you can pass an optional rectangle
-      // to only save part of the image
-      // const image = canvasRef.current?.makeImageSnapshot();
-      // console.log("Canvas image:", image);
-      // if (image) {
-      //   const cacheKey = `${bookDetails.key}-spine-placeholder`;
-      //   await CacheManager.saveBytesToCache({
-      //     image,
-      //     key: cacheKey,
-      //   });
+    try {
+      console.log("Canvas ref:", spineRef);
+      const uri = await captureRef(spineRef, {
+        width: 50,
+        height: 250,
+        quality: 1,
+      });
+      console.log("view uri:", uri);
+      if (uri) {
+        const cacheKey = `${bookDetails.key}-spine-placeholder`;
+        await CacheManager.downloadAsync({
+          uri: uri,
+          key: cacheKey,
+          options: {},
+        });
 
-      //   spines.push({
-      //     cacheKey: cacheKey,
-      //     selected: spineImages.length === 0 || selectedSpine === "placeholder",
-      //     originalImageHeight: 200,
-      //     originalImageWidth: 60,
-      //   });
-      // }
+        spines.push({
+          cacheKey: cacheKey,
+          selected: spineImages.length === 0 || selectedSpine === "placeholder",
+          originalImageHeight: 250,
+          originalImageWidth: 50,
+        });
+      }
 
       if (spineImages.length > 0 && selectedSpine !== "placeholder") {
         const signedUrl = await getBookSpineBucketPathFromSignedUrl(
@@ -238,7 +244,9 @@ export default function AddBookScreen() {
 
       router.back();
       setAddingBook(false);
-    }, 1000);
+    } catch (error) {
+      console.error("Error adding book to library:", error);
+    }
   };
 
   // console.log("imageUrl", spineImages[0]);
@@ -392,11 +400,17 @@ export default function AddBookScreen() {
                     selectedSpine === "placeholder" && styles.itemSelected,
                   ]}
                 >
-                  <SkiaBookSpine
+                  {/* <SkiaBookSpine
                     colors={coverColors}
                     title={bookDetails.title}
                     author={bookDetails.author || ""}
                     canvasRef={canvasRef}
+                  /> */}
+                  <PlaceholderBookSpine
+                    colors={coverColors}
+                    title={bookDetails.title}
+                    author={bookDetails.author || ""}
+                    viewRef={spineRef}
                   />
                 </TouchableOpacity>
               )}

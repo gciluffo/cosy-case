@@ -22,8 +22,6 @@ export default function CompactBookShelf(props: BookShelfProps) {
   const offsetX = scale(30);
   const offsetY = verticalScale(20);
 
-  //   console.log({ offsetX, offsetY, caseHeight, caseWidth, shelfHeight });
-
   useEffect(() => {
     const tempShelves: (Book & {
       width: number;
@@ -79,17 +77,6 @@ export default function CompactBookShelf(props: BookShelfProps) {
     setShelves(tempShelves);
   }, [bookCase]);
 
-  const bookVerticalOffset = shelfHeight / caseHeight;
-  const bookHorizontalOffset = caseWidth / shelfHeight;
-
-  //   console.log({
-  //     bookVerticalOffset,
-  //     bookHorizontalOffset,
-  //     shelfHeight,
-  //     caseHeight,
-  //     caseWidth,
-  //   });
-
   return (
     <>
       {shelves.map((shelfBooks, index) => {
@@ -101,20 +88,11 @@ export default function CompactBookShelf(props: BookShelfProps) {
             height={shelfHeight}
             numShelves={shelves.length}
           >
-            <FlatList
-              horizontal
-              data={shelfBooks}
-              keyExtractor={(item) => item.key}
-              renderItem={({ item }: { item: any }) => {
-                return <BookSpine book={item} key={item.key} />;
-              }}
-              // style={{
-              //   marginHorizontal: bookHorizontalOffset,
-              //   marginVertical: 5,
-              // }}
-              showsHorizontalScrollIndicator={false}
-              scrollEnabled={false}
-            />
+            <View style={{ flexDirection: "row" }}>
+              {shelfBooks.map((book: any) => (
+                <BookSpine book={book} key={book.key} />
+              ))}
+            </View>
           </Shelf>
         );
       })}

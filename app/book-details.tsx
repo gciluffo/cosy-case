@@ -10,7 +10,7 @@ import { getPrimaryAndSecondaryColors } from "@/utils/image";
 import { scale, verticalScale } from "@/utils/scale";
 import { Heading } from "@/components/ui/heading";
 import { LinearGradient } from "expo-linear-gradient";
-import { TrashIcon } from "@/components/ui/icon";
+import { AddIcon, TrashIcon } from "@/components/ui/icon";
 import { CacheManager } from "@/components/ChachedImage";
 import { Book } from "@/models/book";
 import { getBookDetails } from "@/api";
@@ -211,9 +211,9 @@ export default function BookDetails() {
                     zIndex: 1,
                   }}
                 >
-                  <ButtonIcon as={TrashIcon} color="black" />
+                  <ButtonIcon as={AddIcon} color="black" />
                   <ButtonText>
-                    <Text>Remove from library</Text>
+                    <Text>Add to library</Text>
                   </ButtonText>
                 </Button>
               </>

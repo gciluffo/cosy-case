@@ -14,9 +14,7 @@ export interface User {
 
 export interface Store {
   user: User;
-  books: Book[];
   cases: BookCase[];
-  addBook: (book: Book) => void;
   addBookToCase: (caseName: string, book: Book) => void;
   removeBookFromCase: (bookId: string, caseName: string) => void;
   addCase: (bookCase: BookCase) => void;
@@ -24,7 +22,6 @@ export interface Store {
   updateCase: (caseName: string, bookCase: Partial<BookCase>) => void;
   getCaseByName: (caseName: string) => BookCase | undefined;
   removeBook: (bookId: string) => void;
-  updateBook: (bookId: string, book: Partial<Book>) => void;
   getBookByKey: (key: string) => Book | undefined;
   setUser: (user: User) => void;
   updateUser: (user: Partial<User>) => void;
@@ -94,19 +91,14 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
           if (foundBook) return foundBook;
         }
       },
-      addBook: (book: Book) =>
-        set((state) => ({ books: [...state.books, book] })),
-      removeBook: (bookId: string) =>
-        set((state) => ({
-          books: state.books.filter((book) => book.key !== bookId),
-        })),
-
-      updateBook: (bookId: string, book: Partial<Book>) =>
-        set((state) => ({
-          books: state.books.map((b) =>
-            b.key === bookId ? { ...b, ...book } : b
-          ),
-        })),
+      removeBook: (bookId: string) => {
+        const { cases } = get();
+        const newCases = cases.map((bookCase) => ({
+          ...bookCase,
+          books: bookCase.books.filter((b) => b.key !== bookId),
+        }));
+        set({ cases: newCases });
+      },
       setUser: (user: User) => set({ user }),
       updateUser: (user: Partial<User>) =>
         set((state) => ({ user: { ...state.user, ...user } })),

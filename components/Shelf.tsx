@@ -56,7 +56,7 @@ export function Shelf(props: ShelfProps) {
         width,
         paddingHorizontal: horizontalPadding,
         paddingVertical: verticalPadding,
-        justifyContent: "flex-end",
+        justifyContent: "center",
       }}
       resizeMode="stretch"
     >
