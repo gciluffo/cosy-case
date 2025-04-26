@@ -60,9 +60,7 @@ export default function AddBookScreen() {
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState(BookStatus.FINISHED);
   const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
-  const [selectedShelves, setSelectedShelves] = useState<string[]>([
-    cases[0].name,
-  ]);
+  const [selectedShelves, setSelectedShelves] = useState<string[]>(["default"]);
   const spineRef = useRef(null);
   const params = useLocalSearchParams();
   const { book, refetchSpineImages } = params;
@@ -256,7 +254,7 @@ export default function AddBookScreen() {
   // Write any notes you have
   // Show section for getting spine images or uploading your own spine image
   // Add to library button
-  console.log({ selectedSpine });
+  // console.log({ selectedSpine });
   return (
     <ScollViewFloatingButton
       onPress={() => onAddToLibrary()}
@@ -446,6 +444,19 @@ export default function AddBookScreen() {
                 style={[
                   selectedShelves.includes(item.name) && styles.itemSelected,
                 ]}
+                onPress={() => {
+                  if (item.name === "default") {
+                    return;
+                  }
+
+                  if (selectedShelves.includes(item.name)) {
+                    setSelectedShelves(
+                      selectedShelves.filter((shelf) => shelf !== item.name)
+                    );
+                  } else {
+                    setSelectedShelves([...selectedShelves, item.name]);
+                  }
+                }}
               >
                 <CompactBookShelf
                   bookCase={item}
@@ -457,6 +468,9 @@ export default function AddBookScreen() {
               <Text>{item.name}</Text>
             </View>
           )}
+          ItemSeparatorComponent={() => {
+            return <View className="m-2" />;
+          }}
           ListFooterComponent={() => {
             return (
               <TouchableOpacity className="ml-4" style={styles.addContainer}>

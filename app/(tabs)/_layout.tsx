@@ -47,19 +47,38 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Case",
+          title: "Display",
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="bookshelf" size={28} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="case-config"
+        name="case-list"
         options={{
-          title: "Configure",
+          title: "Cases",
           headerShown: true,
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="cog" size={28} color={color} />
+            <MaterialCommunityIcons name="book-edit" size={28} color={color} />
+          ),
+          headerRight: () => (
+            <TouchableOpacity onPress={() => router.push("/add-case")}>
+              <IconSymbol
+                size={24}
+                name="plus"
+                color={Colors[colorScheme ?? "light"].tint}
+                style={{
+                  marginRight: 16,
+                  padding: 8,
+                  borderRadius: 12,
+                  opacity: 0.8,
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                }}
+              />
+            </TouchableOpacity>
           ),
         }}
       />

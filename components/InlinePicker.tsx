@@ -5,6 +5,7 @@ import { View, StyleSheet } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { FontAwesome } from "@expo/vector-icons"; // Example: Using Ionicons for the custom icon
 import { Text } from "@/components/ui/text";
+import { captializeFirstLetter } from "@/utils/string";
 
 interface Props {
   label: string;
@@ -32,13 +33,15 @@ const InlinePicker = (props: Props) => {
           <Entypo name="select-arrows" size={18} color="black" />
         )}
         renderLeftIcon={() => (
-          // get icon from selected time
-          <FontAwesome
-            name={items.find((i) => i.value === selectedValue)?.icon as any}
-            size={18}
-            color="black"
-            style={{ marginRight: 5 }}
-          />
+          <View className="flex-row items-center">
+            <FontAwesome
+              name={items.find((i) => i.value === selectedValue)?.icon as any}
+              size={18}
+              color="black"
+              style={{ marginRight: 5 }}
+            />
+            <Text>{items.find((i) => i.value === selectedValue)?.label}</Text>
+          </View>
         )}
         renderItem={(item) => (
           <View
@@ -63,17 +66,13 @@ const InlinePicker = (props: Props) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: "32%",
-  },
+  container: {},
   dropdownContainer: {
     borderRadius: 6,
     width: 200,
     marginLeft: scale(-80),
   },
-  dropdown: {
-    // paddingHorizontal: 10, // Adjust padding to reduce space
-  },
+  dropdown: {},
   placeholder: {
     fontSize: 14,
     color: "#999",

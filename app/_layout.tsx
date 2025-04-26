@@ -62,6 +62,14 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="add-case"
+          options={{
+            title: "Add Bookcase",
+            presentation: "modal",
+            headerBackButtonDisplayMode: "generic",
+          }}
+        />
+        <Stack.Screen
           name="add-book-details"
           options={{
             title: "Add to Library",
@@ -76,6 +84,24 @@ export default function RootLayout() {
             headerTitle: "",
             headerTintColor: "white", // or any contrasting color for your back button
             headerBackButtonDisplayMode: "generic",
+          }}
+        />
+        <Stack.Screen
+          name="case-details"
+          options={{
+            headerTransparent: true,
+            headerTitle: "",
+            headerTintColor: "white", // or any contrasting color for your back button
+            headerBackButtonDisplayMode: "generic",
+            headerRight: () => (
+              <TouchableOpacity
+              // onPress={() => {
+              //   router.push("/book-search");
+              // }}
+              >
+                <FontAwesome name="share" size={24} color="white" />
+              </TouchableOpacity>
+            ),
           }}
         />
         <Stack.Screen

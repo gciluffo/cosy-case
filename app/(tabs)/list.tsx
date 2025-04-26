@@ -21,7 +21,10 @@ export default function TabTwoScreen() {
       }));
       return [...acc, ...books];
     }, [] as Book[]);
-    return books;
+    const uniqueBooks = books.filter(
+      (book, index, self) => self.findIndex((b) => b.key === book.key) === index
+    );
+    return uniqueBooks;
   }, [cases]);
 
   return (
