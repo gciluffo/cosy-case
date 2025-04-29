@@ -473,7 +473,13 @@ export default function AddBookScreen() {
           }}
           ListFooterComponent={() => {
             return (
-              <TouchableOpacity className="ml-4" style={styles.addContainer}>
+              <TouchableOpacity
+                className="ml-4"
+                style={styles.addContainer}
+                onPress={() => {
+                  router.push("/add-case");
+                }}
+              >
                 <FontAwesome name="plus" size={20} color="gray" />
               </TouchableOpacity>
             );

@@ -2,11 +2,9 @@ import { Heading } from "@/components/ui/heading";
 import { BookCase } from "@/models/book";
 import useStore from "@/store";
 import { scale, verticalScale } from "@/utils/scale";
-import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import {
   View,
   StyleSheet,
-  ScrollView,
   FlatList,
   TouchableOpacity,
   Dimensions,

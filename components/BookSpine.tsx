@@ -11,7 +11,7 @@ const BookSpine = (props: BookSpineProps) => {
   const spine = book.spines.find((s) => s.selected);
 
   //   if (book.title.toLowerCase() === "the way of kings") {
-  console.log("BookSpine", book.title, spine, width, height);
+  // console.log("BookSpine", book.title, spine, width, height);
   //   }
 
   if (!spine?.cacheKey) {

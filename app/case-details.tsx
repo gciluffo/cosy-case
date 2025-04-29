@@ -1,16 +1,26 @@
-import CollapsibleDescription from "@/components/CollapsibleDescription";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ButtonIcon, ButtonText } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
-import { TrashIcon, AddIcon } from "@/components/ui/icon";
+import { TrashIcon } from "@/components/ui/icon";
 import { scale, verticalScale } from "@/utils/scale";
-import { View, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  TextInput,
+  SwitchChangeEvent,
+} from "react-native";
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import useStore from "@/store";
 import { LinearGradient } from "expo-linear-gradient";
 import { Text } from "@/components/ui/text";
 import CompactBookShelf from "@/components/CompactBookShelf";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { useState } from "react";
+import colors from "tailwindcss/colors";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - 20;
 const CASE_HEIGHT = verticalScale(100);
@@ -19,8 +29,33 @@ const SHELF_HEIGHT = verticalScale(33);
 export default function CaseDetails() {
   const params = useLocalSearchParams();
   const { caseName } = params;
-  const { getCaseByName } = useStore();
+  const { getCaseByName, removeCase, cases, updateCase } = useStore();
   const bookCase = getCaseByName(caseName as string);
+  const [caseNameInput, setCaseName] = useState<string>(caseName as string);
+  const [isDefault, setIsDefault] = useState(bookCase?.isSelected);
+
+  console.log("bookCase", {
+    name: bookCase?.name,
+    isSelected: bookCase?.isSelected,
+  });
+
+  const onDefaultCaseSelected = (event: SwitchChangeEvent) => {
+    const isDefault = event.nativeEvent.value;
+    // update selected case to this value/
+    // if true, de-selected all other cases in state
+    // if false, set default case to selected
+    for (const c of cases) {
+      updateCase(c.name, { isSelected: false });
+    }
+
+    if (isDefault) {
+      updateCase(bookCase?.name!, { isSelected: true });
+    } else {
+      updateCase("default", { isSelected: true });
+    }
+
+    setIsDefault(isDefault);
+  };
 
   return (
     <ParallaxScrollView
@@ -55,56 +90,87 @@ export default function CaseDetails() {
                 {bookCase?.name}
               </Heading>
             </View>
-            {/* {isInLibrary() ? (
-              <>
-                <View className="h-10" />
-                <Button
-                  onPress={removeFromLibrary}
-                  size="xl"
-                  style={{
-                    backgroundColor: "white",
-                    borderRadius: 10,
-                    padding: 10,
-                    zIndex: 1,
-                  }}
-                >
-                  <ButtonIcon as={TrashIcon} color="black" />
-                  <ButtonText>
-                    <Text>Remove from library</Text>
-                  </ButtonText>
-                </Button>
-              </>
-            ) : (
-              <>
-                <View className="h-10" />
-                <Button
-                  onPress={addToLibrary}
-                  size="xl"
-                  style={{
-                    backgroundColor: "white",
-                    borderRadius: 10,
-                    padding: 10,
-                    zIndex: 1,
-                  }}
-                >
-                  <ButtonIcon as={AddIcon} color="black" />
-                  <ButtonText>
-                    <Text>Add to library</Text>
-                  </ButtonText>
-                </Button>
-              </>
-            )} */}
+            <View className="h-10" />
+            {bookCase?.name !== "default" && (
+              <Button
+                onPress={() => {
+                  removeCase(bookCase?.name!);
+                  router.back();
+                }}
+                size="xl"
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: 10,
+                  padding: 10,
+                  zIndex: 1,
+                }}
+              >
+                <ButtonIcon as={TrashIcon} color="black" />
+                <ButtonText>
+                  <Text>Remove case</Text>
+                </ButtonText>
+              </Button>
+            )}
           </LinearGradient>
         </>
       )}
     >
       <View style={styles.content}>
-        <Heading>Description</Heading>
-        <View className="h-5" />
-      </View>
+        {bookCase?.name !== "default" && (
+          <View className="flex-row justify-between items-center">
+            <Text className="text-gray-500">Default Display</Text>
+            <Switch
+              size="md"
+              trackColor={{
+                false: colors.neutral[300],
+                true: colors.neutral[600],
+              }}
+              thumbColor={colors.neutral[50]}
+              ios_backgroundColor={colors.neutral[300]}
+              value={isDefault}
+              onChange={onDefaultCaseSelected}
+            />
+          </View>
+        )}
 
-      {/* Show book spine management stuff here? */}
-      <View></View>
+        <View className="h-5" />
+        <View className="flex-row justify-between items-center">
+          <Text className="text-gray-500">Name</Text>
+          <TouchableOpacity className="flex-row items-center">
+            <TextInput
+              value={caseNameInput}
+              onChangeText={(text) => setCaseName(text)}
+              placeholder={caseNameInput}
+            />
+          </TouchableOpacity>
+        </View>
+        <View className="h-5" />
+        <Heading>Books</Heading>
+        {bookCase && bookCase?.books?.length > 0 && (
+          <View className="flex-row flex-wrap gap-1">
+            {bookCase?.books.map((book) => (
+              <TouchableOpacity
+                className="rounded-lg p-2"
+                onPress={() =>
+                  router.push({
+                    pathname: "/book-details",
+                    params: {
+                      localBookKey: book.key,
+                    },
+                  })
+                }
+              >
+                <Image
+                  source={{ uri: book.cover_url }}
+                  className="rounded-lg"
+                  style={styles.bookImage}
+                  contentFit="contain"
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
     </ParallaxScrollView>
   );
 }
@@ -114,6 +180,18 @@ const styles = StyleSheet.create({
     width: scale(150),
     height: scale(200),
     borderRadius: 10,
+  },
+  bookImage: {
+    width: scale(50),
+    height: scale(80),
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -127,10 +205,15 @@ const styles = StyleSheet.create({
     marginTop: -60,
     backgroundColor: "white",
     padding: 20,
+    paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  list: {
+    padding: 10,
+    marginBottom: 10,
   },
 });

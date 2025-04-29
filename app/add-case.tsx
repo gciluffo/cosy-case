@@ -4,19 +4,26 @@ import { BookCase } from "@/models/book";
 import { BOOK_CASES } from "@/utils/bookcase";
 import { scale, verticalScale } from "@/utils/scale";
 import { useState } from "react";
-import { FlatList, View, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  FlatList,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+} from "react-native";
 import { Text } from "@/components/ui/text";
 import useStore from "@/store";
 import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
-import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { router } from "expo-router";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 
 export default function AddCase() {
-  const { addCase, cases } = useStore();
+  const { addCase, cases, updateCase } = useStore();
   const [bookCases, setBookCases] = useState<BookCase[]>(BOOK_CASES);
   const [caseName, setCaseName] = useState<string>(`case ${cases.length + 1}`);
+  const [isDefault, setIsDefault] = useState(false);
 
   const renderShelf = (bookCase: BookCase) => {
     return (
@@ -47,10 +54,16 @@ export default function AddCase() {
       bottomImageKey: selectedStyle!.bottomImageKey,
       offsetXPercent: selectedStyle!.offsetXPercent,
       offsetYPercent: selectedStyle!.offsetYPercent,
-      isSelected: false,
+      isSelected: isDefault,
       books: [],
     };
     addCase(newCase);
+
+    // if case is default then set the others to false
+    for (const c of cases) {
+      updateCase(c.name, { isSelected: false });
+    }
+
     router.back();
   };
 
@@ -86,15 +99,10 @@ export default function AddCase() {
         <View className="flex-row justify-between items-center">
           <Text className="text-gray-500">Name</Text>
           <TouchableOpacity className="flex-row items-center">
-            <Text>{caseName}</Text>
-            <FontAwesome
-              className="ml-2"
-              name="pencil"
-              size={16}
-              color="black"
-              onPress={() => {
-                setCaseName(caseName);
-              }}
+            <TextInput
+              value={caseName}
+              onChangeText={(text) => setCaseName(text)}
+              placeholder={caseName}
             />
           </TouchableOpacity>
         </View>
@@ -115,6 +123,8 @@ export default function AddCase() {
             }}
             thumbColor={colors.neutral[50]}
             ios_backgroundColor={colors.neutral[300]}
+            value={isDefault}
+            onChange={(event) => setIsDefault(event.nativeEvent.value)}
           />
         </View>
       </Card>

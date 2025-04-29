@@ -30,28 +30,20 @@ export default function PlaceholderBookSpine(props: Props) {
         alignItems: "center",
       }}
     >
-      {/* <View
-        style={{
-          height: 0,
-          width: "100%",
-          borderStyle: "dashed",
-          borderWidth: 1,
-          borderColor: colors.secondary,
-        }}
-      /> */}
       <View
         style={{
           transform: [{ rotate: "90deg" }],
-          width: height, // Swap width and height for rotated text
+          width: height,
           alignItems: "center",
         }}
       >
         <Text
           style={{
             color: isColorDark(colors.primary) ? "#fff" : "#000",
-            fontSize: 16,
+            fontSize: 12,
             fontWeight: "bold",
             textAlign: "center",
+            lineHeight: 13,
           }}
         >
           {title}
@@ -59,7 +51,7 @@ export default function PlaceholderBookSpine(props: Props) {
         <Text
           style={{
             color: isColorDark(colors.primary) ? "#fff" : "#000",
-            fontSize: 14,
+            fontSize: 12,
             textAlign: "center",
           }}
         >
