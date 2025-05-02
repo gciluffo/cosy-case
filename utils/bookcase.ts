@@ -6,7 +6,7 @@ export const BOOK_CASES: BookCase[] = [
     topImageKey: "birchTop",
     middleImageKey: "birchMiddle",
     bottomImageKey: "birchBottom",
-    offsetXPercent: 0.04,
+    offsetXPercent: 0.05,
     offsetYPercent: 0.07,
     isSelected: true,
     books: [],

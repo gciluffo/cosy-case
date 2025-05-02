@@ -82,6 +82,7 @@ export default function CompactBookShelf(props: BookShelfProps) {
       {shelves.map((shelfBooks, index) => {
         return (
           <Shelf
+            key={index}
             index={index}
             bookCase={bookCase}
             width={caseWidth}

@@ -45,7 +45,7 @@ export interface AddBookParam {
 }
 
 export default function AddBookScreen() {
-  const { addBookToCase, cases, updateCase } = useStore();
+  const { addBooksToCase, cases, updateCase } = useStore();
   const [bookDetails, setBookDetails] = useState<OpenLibraryBook>(
     {} as OpenLibraryBook
   );
@@ -237,7 +237,7 @@ export default function AddBookScreen() {
       console.log("Book to add:", bookToAdd);
       // addBookToCase("default", bookToAdd);
       for (const shelf of selectedShelves) {
-        addBookToCase(shelf, bookToAdd);
+        addBooksToCase(shelf, [bookToAdd]);
       }
 
       router.back();
@@ -247,14 +247,6 @@ export default function AddBookScreen() {
     }
   };
 
-  // console.log("imageUrl", spineImages[0]);
-
-  // Card for description
-  // Star review
-  // Write any notes you have
-  // Show section for getting spine images or uploading your own spine image
-  // Add to library button
-  // console.log({ selectedSpine });
   return (
     <ScollViewFloatingButton
       onPress={() => onAddToLibrary()}

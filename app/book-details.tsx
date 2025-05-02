@@ -35,7 +35,7 @@ export default function BookDetails() {
         if (localBookKey) {
           const book = getBookByKey(localBookKey as string);
           if (book) {
-            console.log("Book found in local storage", book);
+            // console.log("Book found in local storage", book);
             setLocalBook(book);
           }
         }

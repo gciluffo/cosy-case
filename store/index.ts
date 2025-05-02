@@ -15,7 +15,7 @@ export interface User {
 export interface Store {
   user: User;
   cases: BookCase[];
-  addBookToCase: (caseName: string, book: Book) => void;
+  addBooksToCase: (caseName: string, books: Book[]) => void;
   removeBookFromCase: (bookId: string, caseName: string) => void;
   addCase: (bookCase: BookCase) => void;
   removeCase: (caseName: string) => void;
@@ -41,7 +41,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
           topImageKey: "birchTop",
           middleImageKey: "birchMiddle",
           bottomImageKey: "birchBottom",
-          offsetXPercent: 0.04,
+          offsetXPercent: 0.05,
           offsetYPercent: 0.07,
           isSelected: true,
           books: [],
@@ -61,13 +61,13 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
         })),
       getCaseByName: (caseName: string) =>
         get().cases.find((bookCase) => bookCase.name === caseName),
-      addBookToCase: (caseName: string, book: Book) =>
+      addBooksToCase: (caseName: string, books: Book[]) =>
         set((state) => ({
           cases: state.cases.map((bookCase) =>
             bookCase.name === caseName
               ? {
                   ...bookCase,
-                  books: [...bookCase.books, book],
+                  books: [...bookCase.books, ...books],
                 }
               : bookCase
           ),

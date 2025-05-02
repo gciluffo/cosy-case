@@ -1,10 +1,6 @@
-import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
-import { Card } from "@/components/ui/card";
 import useStore from "@/store";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
-import { Text } from "@/components/ui/text";
 import { Image } from "expo-image";
-import CachedImage from "@/components/ChachedImage";
 import { isTablet, moderateScale } from "@/utils/scale";
 import { router } from "expo-router";
 import { useMemo } from "react";

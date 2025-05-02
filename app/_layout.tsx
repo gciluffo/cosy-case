@@ -111,6 +111,13 @@ export default function RootLayout() {
             // headerTransparent: true,
           }}
         />
+        <Stack.Screen
+          name="add-book-from-library"
+          options={{
+            title: "Select Books to Add",
+            presentation: "modal",
+          }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </GluestackUIProvider>

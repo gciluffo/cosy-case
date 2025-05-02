@@ -17,7 +17,6 @@ import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import { router } from "expo-router";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
 
 export default function AddCase() {
   const { addCase, cases, updateCase } = useStore();

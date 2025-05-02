@@ -1,7 +1,16 @@
+import {
+  Actionsheet,
+  ActionsheetContent,
+  ActionsheetItem,
+  ActionsheetItemText,
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+  ActionsheetBackdrop,
+} from "@/components/ui/actionsheet";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ButtonIcon, ButtonText } from "@/components/ui/button";
+import { ButtonIcon } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
-import { TrashIcon } from "@/components/ui/icon";
+import { AddIcon, TrashIcon } from "@/components/ui/icon";
 import { scale, verticalScale } from "@/utils/scale";
 import {
   View,
@@ -17,10 +26,11 @@ import useStore from "@/store";
 import { LinearGradient } from "expo-linear-gradient";
 import { Text } from "@/components/ui/text";
 import CompactBookShelf from "@/components/CompactBookShelf";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonText } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import colors from "tailwindcss/colors";
+import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - 20;
 const CASE_HEIGHT = verticalScale(100);
@@ -31,6 +41,8 @@ export default function CaseDetails() {
   const { caseName } = params;
   const { getCaseByName, removeCase, cases, updateCase } = useStore();
   const bookCase = getCaseByName(caseName as string);
+  const [showActionsheet, setShowActionsheet] = useState(false);
+  const handleClose = () => setShowActionsheet(false);
   const [caseNameInput, setCaseName] = useState<string>(caseName as string);
   const [isDefault, setIsDefault] = useState(bookCase?.isSelected);
 
@@ -93,17 +105,12 @@ export default function CaseDetails() {
             <View className="h-10" />
             {bookCase?.name !== "default" && (
               <Button
+                className="bg-white rounded-lg"
                 onPress={() => {
                   removeCase(bookCase?.name!);
                   router.back();
                 }}
                 size="xl"
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: 10,
-                  padding: 10,
-                  zIndex: 1,
-                }}
               >
                 <ButtonIcon as={TrashIcon} color="black" />
                 <ButtonText>
@@ -111,6 +118,19 @@ export default function CaseDetails() {
                 </ButtonText>
               </Button>
             )}
+            <View className="h-5" />
+            <Button
+              className="bg-white rounded-lg"
+              onPress={() => {
+                setShowActionsheet(true);
+              }}
+              size="xl"
+            >
+              <ButtonIcon as={AddIcon} color="black" />
+              <ButtonText>
+                <Text>Add Books</Text>
+              </ButtonText>
+            </Button>
           </LinearGradient>
         </>
       )}
@@ -118,7 +138,8 @@ export default function CaseDetails() {
       <View style={styles.content}>
         {bookCase?.name !== "default" && (
           <View className="flex-row justify-between items-center">
-            <Text className="text-gray-500">Default Display</Text>
+            {/* <Text className="text-gray-500">Default Display</Text> */}
+            <Heading>Default Display</Heading>
             <Switch
               size="md"
               trackColor={{
@@ -135,21 +156,24 @@ export default function CaseDetails() {
 
         <View className="h-5" />
         <View className="flex-row justify-between items-center">
-          <Text className="text-gray-500">Name</Text>
+          {/* <Text className="text-gray-500">Name</Text> */}
+          <Heading>Name</Heading>
           <TouchableOpacity className="flex-row items-center">
             <TextInput
               value={caseNameInput}
               onChangeText={(text) => setCaseName(text)}
               placeholder={caseNameInput}
+              style={{}}
             />
           </TouchableOpacity>
         </View>
         <View className="h-5" />
         <Heading>Books</Heading>
-        {bookCase && bookCase?.books?.length > 0 && (
+        {bookCase && bookCase?.books?.length > 0 ? (
           <View className="flex-row flex-wrap gap-1">
             {bookCase?.books.map((book) => (
               <TouchableOpacity
+                key={book.key}
                 className="rounded-lg p-2"
                 onPress={() =>
                   router.push({
@@ -169,8 +193,45 @@ export default function CaseDetails() {
               </TouchableOpacity>
             ))}
           </View>
-        )}
+        ) : null}
       </View>
+
+      <Actionsheet isOpen={showActionsheet} onClose={handleClose}>
+        <ActionsheetBackdrop />
+        <ActionsheetContent>
+          <ActionsheetDragIndicatorWrapper>
+            <ActionsheetDragIndicator />
+          </ActionsheetDragIndicatorWrapper>
+          <ActionsheetItem
+            onPress={() => {
+              handleClose();
+              router.push({
+                pathname: "/book-search",
+              });
+            }}
+          >
+            <ActionsheetItemText size="lg">Search Books</ActionsheetItemText>
+          </ActionsheetItem>
+          <ActionsheetItem onPress={handleClose}>
+            <ActionsheetItemText size="lg">Scan Books</ActionsheetItemText>
+          </ActionsheetItem>
+          <ActionsheetItem
+            onPress={() => {
+              handleClose();
+              router.push({
+                pathname: "/add-book-from-library",
+                params: {
+                  caseName: bookCase?.name,
+                },
+              });
+            }}
+          >
+            <ActionsheetItemText size="lg">
+              Add from Library
+            </ActionsheetItemText>
+          </ActionsheetItem>
+        </ActionsheetContent>
+      </Actionsheet>
     </ParallaxScrollView>
   );
 }
@@ -182,7 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   bookImage: {
-    width: scale(50),
+    width: scale(62),
     height: scale(80),
     shadowColor: "#000",
     shadowOffset: {

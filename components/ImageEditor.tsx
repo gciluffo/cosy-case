@@ -18,7 +18,6 @@ export default function CroppedImageConfirm(props: Props) {
           marginTop: 20,
           height: "80%",
           width: "auto",
-          resizeMode: "contain",
         }}
         source={{ uri: image }}
       />
