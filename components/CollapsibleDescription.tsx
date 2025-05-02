@@ -17,9 +17,11 @@ export default function CollapsibleDescription(props: Props) {
           <Text>
             {description.slice(0, 250)}
             {"... "}
-            <Text size="xs" onPress={() => setIsCollapsed(false)}>
-              See more
-            </Text>
+            {description.length > 250 && (
+              <Text size="xs" onPress={() => setIsCollapsed(false)}>
+                See more
+              </Text>
+            )}
           </Text>
         </>
       ) : (

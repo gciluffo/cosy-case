@@ -33,7 +33,7 @@ export default function SearchInput(props: Props) {
         </InputSlot>
         <InputField
           value={value}
-          placeholder="Search by book title"
+          placeholder="Search by book title and/or author"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           onChange={(e) => {

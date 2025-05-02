@@ -48,3 +48,11 @@ export function getObjectKeyFromSignedUrl(signedUrl: string): {
   const bucketName = pathParts[1];
   return { objectKey, bucketName };
 }
+
+// Idk why google returns http links for images
+export const convertToHttps = (url: string) => {
+  if (url.startsWith("http://")) {
+    return url.replace("http://", "https://");
+  }
+  return url;
+};

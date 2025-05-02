@@ -4,6 +4,7 @@ import { Text } from "@/components/ui/text";
 import { Button, ButtonText, ButtonIcon } from "@/components/ui/button";
 import { AddIcon } from "./ui/icon";
 import { useState } from "react";
+import { convertToHttps } from "@/utils/image";
 
 interface Props {
   title: string;
@@ -25,14 +26,6 @@ export default function BookSearchResult(props: Props) {
     author,
     isBookAlreadyInLibrary,
   } = props;
-
-  // Idk why google returns http links for images
-  const convertToHttps = (url: string) => {
-    if (url.startsWith("http://")) {
-      return url.replace("http://", "https://");
-    }
-    return url;
-  };
 
   return (
     <View className="flex flex-row items-center gap-2 p-1">

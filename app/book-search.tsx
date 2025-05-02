@@ -1,4 +1,4 @@
-import { searchBooks } from "@/api";
+import { searchBooks, searchBooksV2 } from "@/api";
 import { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, FlatList, ScrollView } from "react-native";
 import { Text } from "@/components/ui/text";
@@ -9,6 +9,8 @@ import { router } from "expo-router";
 import useStore from "@/store";
 import SearchInput from "@/components/SearchInput";
 import TrendingBooksView from "@/views/TrendingBooksView";
+import { Book } from "@/models/book";
+import { convertToHttps } from "@/utils/image";
 
 export default function BookSearch() {
   const [searchText, setSearchText] = useState("");
@@ -16,7 +18,6 @@ export default function BookSearch() {
     []
   );
   const [loading, setLoading] = useState(false);
-  const { books } = useStore();
 
   useEffect(() => {
     if (searchText?.length < 3) {
@@ -29,7 +30,18 @@ export default function BookSearch() {
       try {
         setLoading(true);
         const response = await searchBooks(searchText);
-        // console.log("Search results:", response);
+        for (const book of response) {
+          if (!book.cover_url) {
+            console.log("making call");
+            const response = await searchBooksV2(searchText);
+            const bookUrl =
+              response?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+
+            if (bookUrl) {
+              book.cover_url = convertToHttps(bookUrl);
+            }
+          }
+        }
         setSearchResults(response);
       } catch (error) {
         console.error("Error fetching books:", error);
@@ -63,16 +75,15 @@ export default function BookSearch() {
     });
   };
 
-  const isBookAlreadyInLibrary = useCallback(
-    (book: OpenLibraryBookSearch) => {
-      return books.some((b) => b.key === book.key);
-    },
-    [books]
-  );
+  // const isBookAlreadyInLibrary = useCallback(
+  //   (book: OpenLibraryBookSearch) => {
+  //     return books.some((b: Book) => b.key === book.key);
+  //   },
+  //   [books]
+  // );
 
   return (
     <View className="m-4">
-      {/* // Animate a cancel button and move it to the header */}
       <SearchInput
         value={searchText}
         setSearchText={setSearchText}
@@ -152,7 +163,8 @@ export default function BookSearch() {
               imageUrl={item.cover_url}
               author={item.author_name?.[0]}
               onAddToLibrary={() => onAddToLibrary(item)}
-              isBookAlreadyInLibrary={() => isBookAlreadyInLibrary(item)}
+              // isBookAlreadyInLibrary={() => isBookAlreadyInLibrary(item)}
+              isBookAlreadyInLibrary={() => false}
             />
           )}
         />

@@ -4,7 +4,7 @@ import {
   getSpineImages,
   searchBookSpineByTitle,
 } from "@/api";
-import { OpenLibraryBookSearch, OpenLibraryBook } from "@/models/open-library";
+import { OpenLibraryBook } from "@/models/open-library";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -20,17 +20,14 @@ import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
-import SkiaBookSpine from "@/components/SkiaBookSpine";
 import useStore from "@/store";
 import { Book, BookReview, BookStatus, Spine } from "@/models/book";
 import {
   getPrimaryAndSecondaryColors,
   getWidthHeightFromUrl,
 } from "@/utils/image";
-import { useCanvasRef } from "@shopify/react-native-skia";
 import { CacheManager } from "@/components/ChachedImage";
 import InlinePicker from "@/components/InlinePicker";
-import { Heading } from "@/components/ui/heading";
 import CompactBookShelf from "@/components/CompactBookShelf";
 import { scale, verticalScale } from "@/utils/scale";
 import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
@@ -295,10 +292,10 @@ export default function AddBookScreen() {
                     className="self-center"
                   />
                   <Text className="text-gray-500">
-                    {bookDetails?.ratings.summary.average.toFixed(1)}
+                    {bookDetails?.ratings?.summary?.average?.toFixed(1)}
                   </Text>
                   <Text className="text-gray-500">
-                    ({bookDetails?.ratings.summary.count} ratings)
+                    ({bookDetails?.ratings?.summary?.count} ratings)
                   </Text>
                 </View>
               )}
