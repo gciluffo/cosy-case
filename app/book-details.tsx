@@ -12,12 +12,17 @@ import { Heading } from "@/components/ui/heading";
 import { LinearGradient } from "expo-linear-gradient";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
 import { CacheManager } from "@/components/ChachedImage";
-import { Book } from "@/models/book";
+import { Book, BookReview, BookStatus } from "@/models/book";
 import { getBookDetails } from "@/api";
 import { OpenLibraryBook } from "@/models/open-library";
 import CollapsibleDescription from "@/components/CollapsibleDescription";
+import { Card } from "@/components/ui/card";
+import InlinePicker from "@/components/InlinePicker";
 
 export default function BookDetails() {
+  const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState(BookStatus.FINISHED);
+  const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
   const [localBook, setLocalBook] = useState<Book | null>(null);
   const [remoteBook, setRemoteBook] = useState<OpenLibraryBook | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,6 +42,12 @@ export default function BookDetails() {
           if (book) {
             // console.log("Book found in local storage", book);
             setLocalBook(book);
+            const selectedSpine = book.spines.find((item) => item.selected);
+            if (selectedSpine) {
+              setSelectedSpine(selectedSpine.cacheKey);
+            }
+            setSelectedStatus(book.status);
+            setSelectedReview(book.review);
           }
         }
 
@@ -282,8 +293,60 @@ export default function BookDetails() {
         <View className="h-[20px]" />
       </View>
 
-      {/* Show book spine management stuff here? */}
-      <View></View>
+      <View className="h-6" />
+      {localBook && (
+        <View className="px-4 pb-20">
+          <Text className="text-gray-500 mb-1 ml-1" size="lg">
+            Reading Status
+          </Text>
+          <Card>
+            <View className="flex-row justify-between items-center">
+              <Text className="text-gray-500">Status</Text>
+              <InlinePicker
+                selectedValue={selectedStatus}
+                onValueChange={(value: BookStatus) => {
+                  setSelectedStatus(value);
+                  if (localBook) {
+                    localBook.status = value;
+                    setLocalBook({ ...localBook });
+                  }
+                }}
+                items={[
+                  { label: "Finished", value: "finished", icon: "check" },
+                  { label: "Reading", value: "reading", icon: "book" },
+                  { label: "TBR", value: "tbr", icon: "heart" },
+                ]}
+                label="Status"
+              />
+            </View>
+          </Card>
+          <View className="h-6" />
+          <Text className="text-gray-500 mb-1 ml-1" size="lg">
+            Book Review
+          </Text>
+          <Card>
+            <View className="flex-row justify-between items-center">
+              <Text className="text-gray-500">Review</Text>
+              <InlinePicker
+                selectedValue={selectedReview}
+                onValueChange={(value: BookReview) => {
+                  setSelectedReview(value);
+                  if (localBook) {
+                    localBook.review = value;
+                    setLocalBook({ ...localBook });
+                  }
+                }}
+                items={[
+                  { label: "Good", value: "good", icon: "star" },
+                  { label: "Okay", value: "okay", icon: "star-half" },
+                  { label: "Bad", value: "bad", icon: "star-o" },
+                ]}
+                label="Status"
+              />
+            </View>
+          </Card>
+        </View>
+      )}
     </ParallaxScrollView>
   );
 }
