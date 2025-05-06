@@ -11,7 +11,7 @@ interface Props {
   author?: string;
   imageUrl?: string;
   onAddToLibrary: () => void;
-  isBookAlreadyInLibrary: () => boolean;
+  isBookAlreadyInLibrary: boolean;
   rating?: number;
 }
 
@@ -60,12 +60,25 @@ export default function BookSearchResult(props: Props) {
       </View>
       <View className="flex-[1] space-y-1">
         <Button
-          disabled={isBookAlreadyInLibrary()}
           className="p-2 rounded-md"
+          disabled={isBookAlreadyInLibrary}
+          style={
+            isBookAlreadyInLibrary && {
+              backgroundColor: "lightgrey",
+              borderColor: "lightgrey",
+              borderWidth: 1,
+            }
+          }
           onPress={onAddToLibrary}
         >
-          <ButtonIcon as={AddIcon} />
-          <ButtonText>Add</ButtonText>
+          {isBookAlreadyInLibrary ? (
+            <ButtonText>In Library</ButtonText>
+          ) : (
+            <>
+              <ButtonIcon as={AddIcon} />
+              <ButtonText>Add</ButtonText>
+            </>
+          )}
         </Button>
       </View>
     </View>

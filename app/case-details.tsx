@@ -46,10 +46,10 @@ export default function CaseDetails() {
   const [caseNameInput, setCaseName] = useState<string>(caseName as string);
   const [isDefault, setIsDefault] = useState(bookCase?.isSelected);
 
-  console.log("bookCase", {
-    name: bookCase?.name,
-    isSelected: bookCase?.isSelected,
-  });
+  // console.log("bookCase", {
+  //   name: bookCase?.name,
+  //   isSelected: bookCase?.isSelected,
+  // });
 
   const onDefaultCaseSelected = (event: SwitchChangeEvent) => {
     const isDefault = event.nativeEvent.value;
@@ -212,7 +212,14 @@ export default function CaseDetails() {
           >
             <ActionsheetItemText size="lg">Search Books</ActionsheetItemText>
           </ActionsheetItem>
-          <ActionsheetItem onPress={handleClose}>
+          <ActionsheetItem
+            onPress={() => {
+              handleClose();
+              router.push({
+                pathname: "/add-book-scan",
+              });
+            }}
+          >
             <ActionsheetItemText size="lg">Scan Books</ActionsheetItemText>
           </ActionsheetItem>
           <ActionsheetItem

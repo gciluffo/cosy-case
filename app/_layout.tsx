@@ -45,7 +45,7 @@ export default function RootLayout() {
             headerRight: () => (
               <TouchableOpacity
                 onPress={() => {
-                  router.push("/book-search");
+                  router.push("/add-book-scan");
                 }}
               >
                 <FontAwesome name="barcode" size={24} color="black" />
@@ -116,6 +116,15 @@ export default function RootLayout() {
           options={{
             title: "Select Books to Add",
             presentation: "modal",
+          }}
+        />
+        <Stack.Screen
+          name="add-book-scan"
+          options={{
+            headerTransparent: true,
+            headerTitle: "Scan barcode",
+            headerTintColor: "white", // or any contrasting color for your back button
+            headerBackButtonDisplayMode: "generic",
           }}
         />
       </Stack>

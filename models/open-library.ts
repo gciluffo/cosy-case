@@ -21,6 +21,7 @@ export interface OpenLibraryBookSearch {
       title: string;
     }>;
   };
+  isbn?: string;
 }
 
 export interface OpenLibraryBook {

@@ -18,6 +18,7 @@ export default function BookSearch() {
     []
   );
   const [loading, setLoading] = useState(false);
+  const { cases } = useStore();
 
   useEffect(() => {
     if (searchText?.length < 3) {
@@ -75,12 +76,10 @@ export default function BookSearch() {
     });
   };
 
-  // const isBookAlreadyInLibrary = useCallback(
-  //   (book: OpenLibraryBookSearch) => {
-  //     return books.some((b: Book) => b.key === book.key);
-  //   },
-  //   [books]
-  // );
+  const isBookAlreadyInLibrary = (book: OpenLibraryBookSearch) => {
+    const formattedKey = book.key.split("/").pop();
+    return cases.some((c) => c.books.find((b) => b.key === formattedKey));
+  };
 
   return (
     <View className="m-4">
@@ -163,8 +162,7 @@ export default function BookSearch() {
               imageUrl={item.cover_url}
               author={item.author_name?.[0]}
               onAddToLibrary={() => onAddToLibrary(item)}
-              // isBookAlreadyInLibrary={() => isBookAlreadyInLibrary(item)}
-              isBookAlreadyInLibrary={() => false}
+              isBookAlreadyInLibrary={isBookAlreadyInLibrary(item)}
             />
           )}
         />
