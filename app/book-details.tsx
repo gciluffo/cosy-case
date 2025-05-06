@@ -1,28 +1,33 @@
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
 import useStore from "@/store";
 import { router, useLocalSearchParams } from "expo-router";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { Image } from "expo-image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getPrimaryAndSecondaryColors } from "@/utils/image";
 import { scale, verticalScale } from "@/utils/scale";
 import { Heading } from "@/components/ui/heading";
 import { LinearGradient } from "expo-linear-gradient";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
-import { CacheManager } from "@/components/ChachedImage";
+import CachedImage, { CacheManager } from "@/components/ChachedImage";
 import { Book, BookReview, BookStatus } from "@/models/book";
 import { getBookDetails } from "@/api";
 import { OpenLibraryBook } from "@/models/open-library";
 import CollapsibleDescription from "@/components/CollapsibleDescription";
 import { Card } from "@/components/ui/card";
 import InlinePicker from "@/components/InlinePicker";
+import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 
 export default function BookDetails() {
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState(BookStatus.FINISHED);
-  const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
   const [localBook, setLocalBook] = useState<Book | null>(null);
   const [remoteBook, setRemoteBook] = useState<OpenLibraryBook | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,9 +35,9 @@ export default function BookDetails() {
     primary: string;
     secondary: string;
   } | null>(null);
-  const { removeBook, getBookByKey } = useStore();
+  const { removeBook, getBookByKey, updateBook, cases } = useStore();
   const params = useLocalSearchParams();
-  const { localBookKey, bookKey } = params;
+  const { localBookKey, bookKey, cover_url } = params;
 
   useEffect(() => {
     const init = async () => {
@@ -40,14 +45,11 @@ export default function BookDetails() {
         if (localBookKey) {
           const book = getBookByKey(localBookKey as string);
           if (book) {
-            // console.log("Book found in local storage", book);
             setLocalBook(book);
             const selectedSpine = book.spines.find((item) => item.selected);
             if (selectedSpine) {
               setSelectedSpine(selectedSpine.cacheKey);
             }
-            setSelectedStatus(book.status);
-            setSelectedReview(book.review);
           }
         }
 
@@ -58,6 +60,7 @@ export default function BookDetails() {
           setRemoteBook(book);
         }
       } catch (error) {
+        console.error("Error fetching book details:", error);
       } finally {
         setLoading(false);
       }
@@ -67,12 +70,6 @@ export default function BookDetails() {
     init();
   }, [localBookKey, bookKey]);
 
-  //   console.log({
-  //     localBook,
-  //     remoteBook,
-  //   });
-
-  // TODO: Remove
   useEffect(() => {
     const bookSpinePrimaryColorInit = async () => {
       if (coverColors) {
@@ -81,6 +78,11 @@ export default function BookDetails() {
 
       if (localBook?.colors) {
         setColorCovers(localBook?.colors);
+      }
+
+      if (cover_url) {
+        const colors = await getPrimaryAndSecondaryColors(cover_url as string);
+        setColorCovers(colors);
       }
 
       if (localBook?.cover_url) {
@@ -110,6 +112,7 @@ export default function BookDetails() {
 
   const addToLibrary = () => {
     const book = localBook || remoteBook;
+    const coverUrl = localBook?.cover_url || cover_url;
 
     if (!book) {
       return;
@@ -123,16 +126,31 @@ export default function BookDetails() {
           edition: book.edition_key,
           title: book.title,
           author: book.author,
-          cover_url: book.cover_url,
+          cover_url: coverUrl,
         }),
       },
     });
   };
 
-  const isInLibrary = () => {
+  const isInLibrary = useMemo(() => {
     const book = getBookByKey((localBookKey as string) || (bookKey as string));
     return !!book;
-  };
+  }, [bookKey, localBookKey, cases]);
+
+  useEffect(() => {
+    if (isInLibrary && !localBook) {
+      const book = getBookByKey(
+        (localBookKey as string) || (bookKey as string)
+      );
+      if (book) {
+        setLocalBook(book);
+        const selectedSpine = book.spines.find((item) => item.selected);
+        if (selectedSpine) {
+          setSelectedSpine(selectedSpine.cacheKey);
+        }
+      }
+    }
+  }, [isInLibrary]);
 
   const getDescription = (book: Book | OpenLibraryBook) => {
     if (
@@ -172,7 +190,9 @@ export default function BookDetails() {
           >
             <Image
               style={styles.image}
-              source={localBook?.cover_url || remoteBook?.cover_url}
+              source={
+                cover_url || localBook?.cover_url || remoteBook?.cover_url
+              }
               contentFit="contain"
               transition={500}
             />
@@ -190,7 +210,7 @@ export default function BookDetails() {
                 {localBook?.author || remoteBook?.author}
               </Text>
             </View>
-            {isInLibrary() ? (
+            {isInLibrary ? (
               <>
                 <View className="h-10" />
                 <Button
@@ -293,59 +313,146 @@ export default function BookDetails() {
         <View className="h-[20px]" />
       </View>
 
-      <View className="h-6" />
-      {localBook && (
-        <View className="px-4 pb-20">
-          <Text className="text-gray-500 mb-1 ml-1" size="lg">
-            Reading Status
-          </Text>
-          <Card>
-            <View className="flex-row justify-between items-center">
-              <Text className="text-gray-500">Status</Text>
-              <InlinePicker
-                selectedValue={selectedStatus}
-                onValueChange={(value: BookStatus) => {
-                  setSelectedStatus(value);
-                  if (localBook) {
-                    localBook.status = value;
-                    setLocalBook({ ...localBook });
-                  }
-                }}
-                items={[
-                  { label: "Finished", value: "finished", icon: "check" },
-                  { label: "Reading", value: "reading", icon: "book" },
-                  { label: "TBR", value: "tbr", icon: "heart" },
-                ]}
-                label="Status"
-              />
-            </View>
-          </Card>
-          <View className="h-6" />
-          <Text className="text-gray-500 mb-1 ml-1" size="lg">
-            Book Review
-          </Text>
-          <Card>
-            <View className="flex-row justify-between items-center">
-              <Text className="text-gray-500">Review</Text>
-              <InlinePicker
-                selectedValue={selectedReview}
-                onValueChange={(value: BookReview) => {
-                  setSelectedReview(value);
-                  if (localBook) {
-                    localBook.review = value;
-                    setLocalBook({ ...localBook });
-                  }
-                }}
-                items={[
-                  { label: "Good", value: "good", icon: "star" },
-                  { label: "Okay", value: "okay", icon: "star-half" },
-                  { label: "Bad", value: "bad", icon: "star-o" },
-                ]}
-                label="Status"
-              />
-            </View>
-          </Card>
-        </View>
+      <View className="h-6 bg-gray-100" />
+      {isInLibrary && localBook && (
+        <>
+          <View className="px-4 bg-gray-100">
+            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+              Reading Status
+            </Text>
+            <Card>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-gray-500">Status</Text>
+                <InlinePicker
+                  dropdownPosition="top"
+                  selectedValue={localBook.status}
+                  onValueChange={(value: BookStatus) => {
+                    if (localBook) {
+                      localBook.status = value;
+                      setLocalBook({ ...localBook });
+                      updateBook(localBook.key, {
+                        ...localBook,
+                        status: value,
+                      });
+                    }
+                  }}
+                  items={[
+                    { label: "Finished", value: "finished", icon: "check" },
+                    { label: "Reading", value: "reading", icon: "book" },
+                    { label: "TBR", value: "tbr", icon: "heart" },
+                  ]}
+                  label="Status"
+                />
+              </View>
+            </Card>
+            <View className="h-6" />
+            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+              Book Review
+            </Text>
+            <Card>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-gray-500">Review</Text>
+                <InlinePicker
+                  selectedValue={localBook.review}
+                  dropdownPosition="top"
+                  onValueChange={(value: BookReview) => {
+                    if (localBook) {
+                      localBook.review = value;
+                      setLocalBook({ ...localBook });
+                      updateBook(localBook.key, {
+                        ...localBook,
+                        review: value,
+                      });
+                    }
+                  }}
+                  items={[
+                    { label: "Good", value: "good", icon: "star" },
+                    { label: "Okay", value: "okay", icon: "star-half" },
+                    { label: "Bad", value: "bad", icon: "star-o" },
+                  ]}
+                  label="Status"
+                />
+              </View>
+            </Card>
+            <View className="h-6" />
+            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+              Spine Image
+            </Text>
+            <Card>
+              <View className="flex-row">
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View className="flex-row gap-3">
+                    {localBook.spines?.map((image, index) => (
+                      <TouchableOpacity
+                        onPress={() => {
+                          setSelectedSpine(image.cacheKey);
+                          const updatedSpines = localBook.spines.map(
+                            (item) => ({
+                              ...item,
+                              selected: item.cacheKey === image.cacheKey,
+                            })
+                          );
+                          updateBook(localBook.key, {
+                            ...localBook,
+                            spines: updatedSpines,
+                          });
+                        }}
+                      >
+                        <CachedImage
+                          source={{
+                            uri: "",
+                          }}
+                          cacheKey={image.cacheKey}
+                          style={[
+                            styles.spineImage,
+                            selectedSpine === image.cacheKey &&
+                              styles.itemSelected,
+                          ]}
+                          contentFit="contain"
+                        />
+                      </TouchableOpacity>
+                    ))}
+                    {/* {bookDetails.author && coverColors && (
+                      <TouchableOpacity
+                        onPress={() => setSelectedSpine("placeholder")}
+                        style={[
+                          selectedSpine === "placeholder" &&
+                            styles.itemSelected,
+                        ]}
+                      >
+                        <PlaceholderBookSpine
+                          colors={coverColors}
+                          title={bookDetails.title}
+                          author={bookDetails.author || ""}
+                          viewRef={spineRef}
+                        />
+                      </TouchableOpacity>
+                    )} */}
+                    <TouchableOpacity
+                      style={styles.addContainer}
+                      onPress={() => {
+                        router.push({
+                          pathname: "/book-spine-camera-view",
+                          params: {
+                            book: JSON.stringify({
+                              key: localBook?.key,
+                              title: localBook?.title,
+                              author: localBook?.author,
+                            }),
+                          },
+                        });
+                      }}
+                    >
+                      <FontAwesome name="camera" size={20} color="gray" />
+                    </TouchableOpacity>
+                  </View>
+                  <View className="h-5" />
+                </ScrollView>
+              </View>
+            </Card>
+          </View>
+          <View className="h-20" />
+        </>
       )}
     </ParallaxScrollView>
   );
@@ -374,5 +481,32 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  spineImage: {
+    height: 250,
+    width: 50,
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  itemSelected: {
+    borderWidth: 3,
+    borderColor: "#007AFF",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderRadius: 3,
+  },
+  addContainer: {
+    width: 80,
+    height: 100,
+    borderRadius: 25,
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

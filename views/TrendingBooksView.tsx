@@ -1,15 +1,16 @@
 import { getTrendingBooks } from "@/api";
 import { Heading } from "@/components/ui/heading";
 import { useEffect, useState } from "react";
-import { View, StyleSheet, FlatList } from "react-native";
+import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { Text } from "@/components/ui/text";
 import { Skeleton } from "@/components/ui/skeleton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 
 interface TrendingBook {
   title: string;
-  workId: string;
+  bookId: string;
   cover_url: string;
 }
 
@@ -41,7 +42,7 @@ const LoadingHorizontalFlatList = () => {
 
 const Book = (props: TrendingBook) => {
   const [noImage, setNoImage] = useState(false);
-  const { title, workId, cover_url } = props;
+  const { title, bookId, cover_url } = props;
 
   return (
     <View className="flex flex-col">
@@ -141,7 +142,23 @@ export default function TrendingBooksView() {
   }, []);
 
   const renderBook = ({ item }: { item: TrendingBook }) => (
-    <Book title={item.title} workId={item.workId} cover_url={item.cover_url} />
+    <TouchableOpacity
+      onPress={() => {
+        router.push({
+          pathname: "/book-details",
+          params: {
+            cover_url: item.cover_url,
+            bookKey: item.bookId,
+          },
+        });
+      }}
+    >
+      <Book
+        title={item.title}
+        bookId={item.bookId}
+        cover_url={item.cover_url}
+      />
+    </TouchableOpacity>
   );
 
   return (
@@ -151,7 +168,7 @@ export default function TrendingBooksView() {
         <FlatList
           data={todayBooks}
           renderItem={renderBook}
-          keyExtractor={(item) => item.workId}
+          keyExtractor={(item) => item.bookId}
           horizontal
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
@@ -169,7 +186,7 @@ export default function TrendingBooksView() {
         <FlatList
           data={yearlyBooks}
           renderItem={renderBook}
-          keyExtractor={(item) => item.workId}
+          keyExtractor={(item) => item.bookId}
           horizontal
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
@@ -183,7 +200,7 @@ export default function TrendingBooksView() {
         <FlatList
           data={allTimeBooks}
           renderItem={renderBook}
-          keyExtractor={(item) => item.workId}
+          keyExtractor={(item) => item.bookId}
           horizontal
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ width: 10 }} />}

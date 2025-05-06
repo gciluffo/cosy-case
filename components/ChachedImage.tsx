@@ -41,7 +41,7 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
     return () => {
       componentIsMounted.current = false;
     };
-  }, []);
+  }, [cacheKey]);
 
   const loadImageAsync = async () => {
     try {

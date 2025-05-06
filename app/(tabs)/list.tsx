@@ -46,12 +46,16 @@ export default function TabTwoScreen() {
             })
           }
         >
-          <Image
-            source={{ uri: item.cover_url }}
-            className="rounded-lg"
-            style={styles.image}
-            contentFit="contain"
-          />
+          {item.cover_url ? (
+            <Image
+              source={{ uri: item.cover_url }}
+              className="rounded-lg"
+              style={styles.image}
+              contentFit="contain"
+            />
+          ) : (
+            <View style={{ ...styles.image, backgroundColor: "grey" }} />
+          )}
         </TouchableOpacity>
       )}
       keyExtractor={(item) => item.key}

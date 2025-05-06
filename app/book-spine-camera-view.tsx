@@ -13,6 +13,13 @@ import { OpenLibraryBookSearch } from "@/models/open-library";
 import CroppedImageConfirm from "@/components/ImageEditor";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 
+interface Params {
+  key: string;
+  title: string;
+  author_name: string[];
+  author: string;
+}
+
 export default function ScanSpine() {
   const [permission, requestPermission] = useCameraPermissions();
   const [uploading, setUploading] = useState(false);
@@ -20,7 +27,7 @@ export default function ScanSpine() {
   const cameraRef = useRef<CameraView>(null);
   const params = useLocalSearchParams();
   const { book } = params;
-  const bookParsed: OpenLibraryBookSearch = JSON.parse(book as string);
+  const bookParsed: Params = JSON.parse(book as string);
 
   // if (!permission) {
   //   return <View />;
@@ -69,7 +76,7 @@ export default function ScanSpine() {
         file,
         bookParsed.key,
         bookParsed.title,
-        bookParsed.author_name.join(", ")
+        bookParsed?.author_name?.join(", ") || bookParsed?.author
       );
 
       console.log("Upload result:", res);

@@ -12,10 +12,12 @@ interface Props {
   selectedValue: string;
   onValueChange: React.Dispatch<React.SetStateAction<any>>;
   items: Array<{ icon: string; label: string; value: string }>;
+  dropdownPosition: "top" | "bottom";
 }
 
 const InlinePicker = (props: Props) => {
-  const { label, selectedValue, onValueChange, items } = props;
+  const { label, selectedValue, onValueChange, items, dropdownPosition } =
+    props;
 
   return (
     <View style={styles.container}>
@@ -27,8 +29,7 @@ const InlinePicker = (props: Props) => {
         onChange={(item) => onValueChange(item.value)}
         containerStyle={styles.dropdownContainer}
         style={styles.dropdown}
-        placeholderStyle={styles.placeholder}
-        selectedTextStyle={styles.selectedText}
+        dropdownPosition={dropdownPosition}
         renderRightIcon={() => (
           <Entypo name="select-arrows" size={18} color="black" />
         )}
@@ -68,20 +69,11 @@ const InlinePicker = (props: Props) => {
 const styles = StyleSheet.create({
   container: {},
   dropdownContainer: {
-    borderRadius: 6,
-    width: 200,
-    marginLeft: scale(-80),
+    // borderRadius: 6,
+    width: 120,
+    marginLeft: scale(-10),
   },
   dropdown: {},
-  placeholder: {
-    fontSize: 14,
-    color: "#999",
-  },
-  selectedText: {
-    fontSize: 14,
-    textAlign: "left", // Ensure text aligns properly
-    paddingRight: 0, // Remove extra padding near the arrow
-  },
 });
 
 export default InlinePicker;

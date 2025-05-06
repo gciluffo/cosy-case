@@ -66,7 +66,11 @@ export async function getBookDetails(
     formattedEditionKey = editionKey.split("/").pop();
   }
 
-  const url = `${BASE_URL}/books?workKey=${formattedWorkKey}&editionKey=${formattedEditionKey}`;
+  let url = `${BASE_URL}/books?workKey=${formattedWorkKey}`;
+  if (formattedEditionKey) {
+    url += `&editionKey=${formattedEditionKey}`;
+  }
+
   console.log("getting book details", "url:", url);
 
   const response = await fetch(url, {
@@ -236,7 +240,7 @@ export const getTrendingBooks = async (
 ): Promise<
   {
     title: string;
-    workId: string;
+    bookId: string;
     cover_url: string;
   }[]
 > => {

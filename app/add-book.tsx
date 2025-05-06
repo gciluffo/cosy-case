@@ -48,6 +48,7 @@ export default function AddBookScreen() {
   );
   const [spineImages, setSpineImages] = useState<string[]>([]);
   const [searchingSpineImage, setSearchingSpineImage] = useState(false);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [spineError, setSpineError] = useState<string | null>(null);
   const [coverColors, setCoverColors] = useState<{
     primary: string;
@@ -90,6 +91,7 @@ export default function AddBookScreen() {
           return;
         }
 
+        setLoadingDetails(true);
         const details = await getBookDetails(
           bookObject.key,
           bookObject.edition
@@ -99,6 +101,8 @@ export default function AddBookScreen() {
         setBookDetails({ ...bookObject, ...details });
       } catch (error) {
         console.error("Error fetching book details:", error);
+      } finally {
+        setLoadingDetails(false);
       }
     };
 
@@ -162,12 +166,9 @@ export default function AddBookScreen() {
       } catch (error) {}
     };
 
-    // if (!bookDetails) {
-    // console.log("book key", JSON.parse(book as string).key);
     bookDetailsInit();
     bookSpinesInit();
     bookSpinePrimaryColorInit();
-    // }
   }, [book]);
 
   const onAddToLibrary = async () => {
@@ -175,13 +176,11 @@ export default function AddBookScreen() {
     setAddingBook(true);
 
     try {
-      console.log("Canvas ref:", spineRef);
       const uri = await captureRef(spineRef, {
         width: 50,
         height: 250,
         quality: 1,
       });
-      console.log("view uri:", uri);
       if (uri) {
         const cacheKey = `${bookDetails.key}-spine-placeholder`;
         await CacheManager.downloadAsync({
@@ -249,6 +248,7 @@ export default function AddBookScreen() {
       onPress={() => onAddToLibrary()}
       buttonText="Add to Library"
       loading={addingBook}
+      disabled={selectedSpine === null || !bookDetails}
     >
       <Text className="text-gray-500 mb-1 ml-1" size="lg">
         Book Details
@@ -320,6 +320,7 @@ export default function AddBookScreen() {
           <InlinePicker
             selectedValue={selectedStatus}
             onValueChange={setSelectedStatus}
+            dropdownPosition="bottom"
             items={[
               { label: "Finished", value: "finished", icon: "check" },
               { label: "Reading", value: "reading", icon: "book" },
@@ -337,6 +338,7 @@ export default function AddBookScreen() {
         <View className="flex-row justify-between items-center">
           <Text className="text-gray-500">Review</Text>
           <InlinePicker
+            dropdownPosition="bottom"
             selectedValue={selectedReview}
             onValueChange={setSelectedReview}
             items={[
@@ -387,12 +389,6 @@ export default function AddBookScreen() {
                     selectedSpine === "placeholder" && styles.itemSelected,
                   ]}
                 >
-                  {/* <SkiaBookSpine
-                    colors={coverColors}
-                    title={bookDetails.title}
-                    author={bookDetails.author || ""}
-                    canvasRef={canvasRef}
-                  /> */}
                   <PlaceholderBookSpine
                     colors={coverColors}
                     title={bookDetails.title}

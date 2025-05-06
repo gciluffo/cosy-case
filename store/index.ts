@@ -16,6 +16,7 @@ export interface Store {
   user: User;
   cases: BookCase[];
   addBooksToCase: (caseName: string, books: Book[]) => void;
+  updateBook: (bookId: string, book: Partial<Book>) => void;
   removeBookFromCase: (bookId: string, caseName: string) => void;
   addCase: (bookCase: BookCase) => void;
   removeCase: (caseName: string) => void;
@@ -102,6 +103,15 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
       setUser: (user: User) => set({ user }),
       updateUser: (user: Partial<User>) =>
         set((state) => ({ user: { ...state.user, ...user } })),
+      updateBook: (bookId: string, book: Partial<Book>) =>
+        set((state) => ({
+          cases: state.cases.map((bookCase) => ({
+            ...bookCase,
+            books: bookCase.books.map((b) =>
+              b.key === bookId ? { ...b, ...book } : b
+            ),
+          })),
+        })),
     }),
     {
       name: "user", // Storage key

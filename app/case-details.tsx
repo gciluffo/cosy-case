@@ -30,7 +30,6 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import colors from "tailwindcss/colors";
-import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - 20;
 const CASE_HEIGHT = verticalScale(100);
@@ -170,7 +169,7 @@ export default function CaseDetails() {
         <View className="h-5" />
         <Heading>Books</Heading>
         {bookCase && bookCase?.books?.length > 0 ? (
-          <View className="flex-row flex-wrap gap-1">
+          <View className="flex-row flex-wrap" style={{ marginLeft: -3 }}>
             {bookCase?.books.map((book) => (
               <TouchableOpacity
                 key={book.key}

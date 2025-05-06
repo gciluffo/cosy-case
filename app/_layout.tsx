@@ -84,6 +84,15 @@ export default function RootLayout() {
             headerTitle: "",
             headerTintColor: "white", // or any contrasting color for your back button
             headerBackButtonDisplayMode: "generic",
+            headerRight: () => (
+              <TouchableOpacity
+                onPress={() => {
+                  // open amazon link for book
+                }}
+              >
+                <FontAwesome name="shopping-cart" size={24} color="white" />
+              </TouchableOpacity>
+            ),
           }}
         />
         <Stack.Screen
