@@ -55,6 +55,7 @@ export default function AddCase() {
       offsetYPercent: selectedStyle!.offsetYPercent,
       isSelected: isDefault,
       books: [],
+      isDefault: false,
     };
     addCase(newCase);
 
@@ -106,7 +107,7 @@ export default function AddCase() {
           </TouchableOpacity>
         </View>
       </Card>
-      <View className="h-10" />
+      <View className="h-5" />
       <Text className="text-gray-500 mb-1 ml-1" size="lg">
         Default Display
       </Text>
@@ -114,7 +115,7 @@ export default function AddCase() {
         <View className="flex-row justify-between items-center">
           <Text className="text-gray-500">Default Display</Text>
           <Switch
-            size="sm"
+            size="md"
             isDisabled={false}
             trackColor={{
               false: colors.neutral[300],
@@ -149,13 +150,7 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
     flex: 1,
   },
-  caseContainer: {
-    // padding: 10,
-    // paddingBottom: 60,
-    // flexDirection: "row",
-    // flexWrap: "wrap",
-    backgroundColor: "red",
-  },
+  caseContainer: {},
   caseIsSelected: {
     borderWidth: 3,
     borderColor: "#007AFF",

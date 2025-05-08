@@ -46,6 +46,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
           offsetYPercent: 0.07,
           isSelected: true,
           books: [],
+          isDefault: true,
         },
       ],
       addCase: (bookCase: BookCase) =>

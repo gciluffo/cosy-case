@@ -39,4 +39,8 @@ export interface BookCase {
   offsetYPercent: number;
   isSelected: boolean;
   books: Book[];
+  isDefault: boolean;
+  widgets?: {
+    uri: string;
+  }[];
 }

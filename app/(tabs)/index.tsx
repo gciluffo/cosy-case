@@ -95,12 +95,14 @@ const BookshelfScreen = () => {
       }
 
       const { originalImageHeight, originalImageWidth } = spine;
-      const height = book?.physical_dimensions
-        ? getBookHeightPx(
-            book?.physical_dimensions,
-            INDIVIDUAL_SHELF_HEIGHT - offsetY + 17
-          )
-        : INDIVIDUAL_SHELF_HEIGHT - offsetY + 17;
+      // TODO: Look into how we want to do height here
+      // const height = book?.physical_dimensions
+      //   ? getBookHeightPx(
+      //       book?.physical_dimensions,
+      //       INDIVIDUAL_SHELF_HEIGHT - offsetY + 17
+      //     )
+      //   : INDIVIDUAL_SHELF_HEIGHT - offsetY + 17;
+      const height = INDIVIDUAL_SHELF_HEIGHT - offsetY + 17;
       const width = getBookSpineWidth(
         book?.number_of_pages || 200,
         originalImageWidth || 80,

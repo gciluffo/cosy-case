@@ -30,6 +30,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import colors from "tailwindcss/colors";
+import { Card } from "@/components/ui/card";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - 20;
 const CASE_HEIGHT = verticalScale(100);
@@ -44,11 +45,6 @@ export default function CaseDetails() {
   const handleClose = () => setShowActionsheet(false);
   const [caseNameInput, setCaseName] = useState<string>(caseName as string);
   const [isDefault, setIsDefault] = useState(bookCase?.isSelected);
-
-  // console.log("bookCase", {
-  //   name: bookCase?.name,
-  //   isSelected: bookCase?.isSelected,
-  // });
 
   const onDefaultCaseSelected = (event: SwitchChangeEvent) => {
     const isDefault = event.nativeEvent.value;
@@ -102,7 +98,7 @@ export default function CaseDetails() {
               </Heading>
             </View>
             <View className="h-10" />
-            {bookCase?.name !== "default" && (
+            {!bookCase?.isDefault && (
               <Button
                 className="bg-white rounded-lg"
                 onPress={() => {
@@ -135,9 +131,8 @@ export default function CaseDetails() {
       )}
     >
       <View style={styles.content}>
-        {bookCase?.name !== "default" && (
+        {/* {!bookCase?.isDefault && (
           <View className="flex-row justify-between items-center">
-            {/* <Text className="text-gray-500">Default Display</Text> */}
             <Heading>Default Display</Heading>
             <Switch
               size="md"
@@ -151,11 +146,10 @@ export default function CaseDetails() {
               onChange={onDefaultCaseSelected}
             />
           </View>
-        )}
+        )} */}
 
         <View className="h-5" />
-        <View className="flex-row justify-between items-center">
-          {/* <Text className="text-gray-500">Name</Text> */}
+        {/* <View className="flex-row justify-between items-center">
           <Heading>Name</Heading>
           <TouchableOpacity className="flex-row items-center">
             <TextInput
@@ -166,7 +160,7 @@ export default function CaseDetails() {
             />
           </TouchableOpacity>
         </View>
-        <View className="h-5" />
+        <View className="h-5" /> */}
         <Heading>Books</Heading>
         {bookCase && bookCase?.books?.length > 0 ? (
           <View className="flex-row flex-wrap" style={{ marginLeft: -3 }}>
@@ -194,6 +188,56 @@ export default function CaseDetails() {
           </View>
         ) : null}
       </View>
+
+      <View className="h-6 bg-gray-100" />
+      <View className="px-4 bg-gray-100">
+        <Text className="text-gray-500 mb-1 ml-1" size="lg">
+          Name
+        </Text>
+        <Card>
+          <View className="flex-row justify-between items-center">
+            <Text className="text-gray-500">Name</Text>
+            <TouchableOpacity className="flex-row items-center">
+              <TextInput
+                value={caseNameInput}
+                onChangeText={(text) => setCaseName(text)}
+                placeholder={caseNameInput}
+                enterKeyHint="done"
+                onSubmitEditing={() => {
+                  updateCase(bookCase?.name!, { name: caseNameInput });
+                }}
+                style={{}}
+              />
+            </TouchableOpacity>
+          </View>
+        </Card>
+
+        {!bookCase?.isDefault && (
+          <>
+            <View className="h-5" />
+            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+              Default Display
+            </Text>
+            <Card>
+              <View className="flex-row justify-between items-center">
+                <Text className="text-gray-500">Default Display</Text>
+                <Switch
+                  size="md"
+                  trackColor={{
+                    false: colors.neutral[300],
+                    true: colors.neutral[600],
+                  }}
+                  thumbColor={colors.neutral[50]}
+                  ios_backgroundColor={colors.neutral[300]}
+                  value={isDefault}
+                  onChange={onDefaultCaseSelected}
+                />
+              </View>
+            </Card>
+          </>
+        )}
+      </View>
+      <View className="h-20" />
 
       <Actionsheet isOpen={showActionsheet} onClose={handleClose}>
         <ActionsheetBackdrop />

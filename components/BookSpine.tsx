@@ -10,9 +10,9 @@ const BookSpine = (props: BookSpineProps) => {
   const { width, height } = book;
   const spine = book.spines.find((s) => s.selected);
 
-  // if (book.title.toLowerCase() === "the love hypothesis") {
-  //   console.log("BookSpine", book.title, spine, width, height);
-  // }
+  if (book.title.toLowerCase() === "the shack") {
+    console.log("BookSpine", book.title, spine, width, height);
+  }
 
   if (!spine?.cacheKey) {
     return null;

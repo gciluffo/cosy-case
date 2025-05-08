@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import Animated, {
   interpolate,
   useAnimatedRef,
@@ -41,12 +41,14 @@ const ParallaxScrollView = (props: Props) => {
   });
 
   return (
-    <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16} {...rest}>
-      <Animated.View style={[imageAnimatedStyle]}>
-        {parallaxHeaderContent()}
-      </Animated.View>
-      {children}
-    </Animated.ScrollView>
+    <KeyboardAwareScrollView>
+      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16} {...rest}>
+        <Animated.View style={[imageAnimatedStyle]}>
+          {parallaxHeaderContent()}
+        </Animated.View>
+        {children}
+      </Animated.ScrollView>
+    </KeyboardAwareScrollView>
   );
 };
 
