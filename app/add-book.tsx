@@ -16,6 +16,7 @@ import {
   ScrollView,
   FlatList,
 } from "react-native";
+import { Textarea, TextareaInput } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
@@ -58,6 +59,7 @@ export default function AddBookScreen() {
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState(BookStatus.FINISHED);
   const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
+  const [reviewText, setReviewText] = useState<string>("");
   const [selectedShelves, setSelectedShelves] = useState<string[]>(["default"]);
   const spineRef = useRef(null);
   const params = useLocalSearchParams();
@@ -223,6 +225,7 @@ export default function AddBookScreen() {
         cover_urls: [bookObject.cover_url, bookDetails.cover_url],
         status: selectedStatus,
         review: selectedReview,
+        reviewText: reviewText,
         colors: {
           primary: coverColors?.primary || "#000000",
           secondary: coverColors?.secondary || "#FFFFFF",
@@ -349,6 +352,19 @@ export default function AddBookScreen() {
             label="Status"
           />
         </View>
+      </Card>
+      <View className="h-6" />
+      <Text className="text-gray-500 mb-1 ml-1" size="lg">
+        Additional Notes
+      </Text>
+      <Card>
+        <Textarea size="md" className="w-100">
+          <TextareaInput
+            placeholder="Write your review here..."
+            value={reviewText}
+            onChangeText={setReviewText}
+          />
+        </Textarea>
       </Card>
       <View className="h-6" />
       <Text className="text-gray-500 mb-1 ml-1" size="lg">

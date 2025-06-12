@@ -133,7 +133,6 @@ export default function CaseDetails() {
     const imageExists = await CacheManager.checkIfCached({
       key: widget.cacheKey,
     });
-    console.log("imageExists", imageExists);
     if (isSelected && !imageExists) {
       // download the image and add to cache
       await CacheManager.downloadAsync({

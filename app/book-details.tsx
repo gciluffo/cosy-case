@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Text } from "@/components/ui/text";
+import { Textarea, TextareaInput } from "@/components/ui/textarea";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
 import useStore from "@/store";
 import { router, useLocalSearchParams } from "expo-router";
@@ -31,6 +32,7 @@ export default function BookDetails() {
   const [localBook, setLocalBook] = useState<Book | null>(null);
   const [remoteBook, setRemoteBook] = useState<OpenLibraryBook | null>(null);
   const [loading, setLoading] = useState(false);
+  const [reviewText, setReviewText] = useState<string>("");
   const [coverColors, setColorCovers] = useState<{
     primary: string;
     secondary: string;
@@ -49,6 +51,9 @@ export default function BookDetails() {
             const selectedSpine = book.spines.find((item) => item.selected);
             if (selectedSpine) {
               setSelectedSpine(selectedSpine.cacheKey);
+            }
+            if (book.reviewText) {
+              setReviewText(book.reviewText);
             }
           }
         }
@@ -373,6 +378,28 @@ export default function BookDetails() {
                   label="Status"
                 />
               </View>
+            </Card>
+            <View className="h-6" />
+            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+              Additional Notes
+            </Text>
+            <Card>
+              <Textarea size="md" className="w-100">
+                <TextareaInput
+                  placeholder="Write your review here..."
+                  blurOnSubmit={true}
+                  value={reviewText}
+                  onChangeText={(text) => setReviewText(text)}
+                  enterKeyHint="done"
+                  onSubmitEditing={() => {
+                    if (localBook) {
+                      localBook.reviewText = reviewText;
+                      setLocalBook({ ...localBook });
+                      setReviewText(reviewText);
+                    }
+                  }}
+                />
+              </Textarea>
             </Card>
             <View className="h-6" />
             <Text className="text-gray-500 mb-1 ml-1" size="lg">
