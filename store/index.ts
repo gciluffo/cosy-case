@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Book, BookCase } from "@/models/book";
-import { scale, verticalScale } from "@/utils/scale";
+import { middleware } from "zustand-expo-devtools";
 
 // Books have to be added to cases
 //
@@ -47,6 +47,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
           isSelected: true,
           books: [],
           isDefault: true,
+          widgets: [],
         },
       ],
       addCase: (bookCase: BookCase) =>
@@ -56,23 +57,25 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
           cases: state.cases.filter((bookCase) => bookCase.name !== caseName),
         })),
       updateCase: (caseName: string, bookCase: Partial<BookCase>) =>
-        set((state) => ({
-          cases: state.cases.map((c) =>
-            c.name === caseName ? { ...c, ...bookCase } : c
-          ),
-        })),
+        set((state) => {
+          return {
+            cases: state.cases.map((c) =>
+              c.name === caseName ? { ...c, ...bookCase } : c
+            ),
+          };
+        }),
       getCaseByName: (caseName: string) =>
         get().cases.find((bookCase) => bookCase.name === caseName),
       addBooksToCase: (caseName: string, books: Book[]) =>
         set((state) => ({
-          cases: state.cases.map((bookCase) =>
-            bookCase.name === caseName
+          cases: state.cases.map((bookCase) => {
+            return bookCase.name === caseName
               ? {
                   ...bookCase,
                   books: [...bookCase.books, ...books],
                 }
-              : bookCase
-          ),
+              : bookCase;
+          }),
         })),
       removeBookFromCase: (bookId: string, caseName: string) =>
         set((state) => ({
@@ -120,5 +123,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
     }
   )
 );
+
+middleware(useStore, "store");
 
 export default useStore;

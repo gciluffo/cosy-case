@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   TextInput,
   SwitchChangeEvent,
+  ScrollView,
 } from "react-native";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
@@ -28,9 +29,12 @@ import { Text } from "@/components/ui/text";
 import CompactBookShelf from "@/components/CompactBookShelf";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import colors from "tailwindcss/colors";
 import { Card } from "@/components/ui/card";
+import { getWidgetImages } from "@/api";
+import { getObjectKeyFromSignedUrl } from "@/utils/image";
+import CachedImage, { CacheManager } from "@/components/ChachedImage";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - 20;
 const CASE_HEIGHT = verticalScale(100);
@@ -45,6 +49,40 @@ export default function CaseDetails() {
   const handleClose = () => setShowActionsheet(false);
   const [caseNameInput, setCaseName] = useState<string>(caseName as string);
   const [isDefault, setIsDefault] = useState(bookCase?.isSelected);
+  const [caseWidgets, setCaseWidgets] = useState<
+    { url: string; isSelected: boolean; cacheKey: string }[]
+  >([]);
+
+  useEffect(() => {
+    const init = async () => {
+      if (!bookCase) {
+        return;
+      }
+      // get widgets from server
+      // get widgets from the bookCase
+      // handle rendering both a url and local image
+      const widgetUrls = await getWidgetImages();
+      const bookCaseWidgets = bookCase?.widgets || [];
+      const list = widgetUrls.map((url) => {
+        const { bucketName } = getObjectKeyFromSignedUrl(url);
+        const cacheKey = `${bucketName}-widget`;
+        const isSelected = bookCaseWidgets.some(
+          (widget) => widget.cacheKey === cacheKey
+        );
+        return {
+          url,
+          isSelected,
+          cacheKey,
+        };
+      });
+
+      setCaseWidgets(list);
+    };
+
+    init();
+  }, [caseName]);
+
+  // console.log("caseWidgets", caseWidgets);
 
   const onDefaultCaseSelected = (event: SwitchChangeEvent) => {
     const isDefault = event.nativeEvent.value;
@@ -62,6 +100,64 @@ export default function CaseDetails() {
     }
 
     setIsDefault(isDefault);
+  };
+
+  const onDeleteCase = () => {
+    if (bookCase?.isSelected) {
+      // if this case is selected, set default case to selected
+      for (const c of cases) {
+        updateCase(c.name, { isSelected: false });
+      }
+      updateCase("default", { isSelected: true });
+    }
+
+    removeCase(bookCase?.name!);
+    router.back();
+  };
+
+  const onSelectedWidget = async (widget: {
+    url: string;
+    isSelected: boolean;
+    cacheKey: string;
+  }) => {
+    // update local state
+    // if widget was previously deselected then download as cache
+    // add the cache key to the bookCase widgets
+    const isSelected = !widget.isSelected;
+    setCaseWidgets((prev) =>
+      prev.map((w) =>
+        w.cacheKey === widget.cacheKey ? { ...w, isSelected: isSelected } : w
+      )
+    );
+
+    const imageExists = await CacheManager.checkIfCached({
+      key: widget.cacheKey,
+    });
+    console.log("imageExists", imageExists);
+    if (isSelected && !imageExists) {
+      // download the image and add to cache
+      await CacheManager.downloadAsync({
+        uri: widget.url,
+        key: widget.cacheKey,
+        options: {},
+      });
+    }
+
+    if (isSelected) {
+      // add the widget to the bookCase widgets
+      updateCase(bookCase?.name!, {
+        widgets: [...(bookCase?.widgets || []), { cacheKey: widget.cacheKey }],
+      });
+    }
+
+    if (!isSelected) {
+      // remove the widget from the bookCase widgets
+      updateCase(bookCase?.name!, {
+        widgets: bookCase?.widgets.filter(
+          (w) => w.cacheKey !== widget.cacheKey
+        ),
+      });
+    }
   };
 
   return (
@@ -101,10 +197,7 @@ export default function CaseDetails() {
             {!bookCase?.isDefault && (
               <Button
                 className="bg-white rounded-lg"
-                onPress={() => {
-                  removeCase(bookCase?.name!);
-                  router.back();
-                }}
+                onPress={onDeleteCase}
                 size="xl"
               >
                 <ButtonIcon as={TrashIcon} color="black" />
@@ -131,36 +224,7 @@ export default function CaseDetails() {
       )}
     >
       <View style={styles.content}>
-        {/* {!bookCase?.isDefault && (
-          <View className="flex-row justify-between items-center">
-            <Heading>Default Display</Heading>
-            <Switch
-              size="md"
-              trackColor={{
-                false: colors.neutral[300],
-                true: colors.neutral[600],
-              }}
-              thumbColor={colors.neutral[50]}
-              ios_backgroundColor={colors.neutral[300]}
-              value={isDefault}
-              onChange={onDefaultCaseSelected}
-            />
-          </View>
-        )} */}
-
         <View className="h-5" />
-        {/* <View className="flex-row justify-between items-center">
-          <Heading>Name</Heading>
-          <TouchableOpacity className="flex-row items-center">
-            <TextInput
-              value={caseNameInput}
-              onChangeText={(text) => setCaseName(text)}
-              placeholder={caseNameInput}
-              style={{}}
-            />
-          </TouchableOpacity>
-        </View>
-        <View className="h-5" /> */}
         <Heading>Books</Heading>
         {bookCase && bookCase?.books?.length > 0 ? (
           <View className="flex-row flex-wrap" style={{ marginLeft: -3 }}>
@@ -236,7 +300,41 @@ export default function CaseDetails() {
             </Card>
           </>
         )}
+
+        <View className="h-5" />
+        <Text className="text-gray-500 mb-1 ml-1" size="lg">
+          Widgets
+        </Text>
+        <Card>
+          <View className="flex-row">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View className="flex-row gap-3">
+                {caseWidgets?.map((widget, index) => (
+                  <TouchableOpacity
+                    key={widget.url}
+                    onPress={() => {
+                      onSelectedWidget(widget);
+                    }}
+                  >
+                    <Image
+                      className="flex-1"
+                      key={index}
+                      source={widget.url}
+                      style={[
+                        styles.widgetImage,
+                        widget.isSelected && styles.caseIsSelected,
+                      ]}
+                      contentFit="contain"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View className="h-5" />
+            </ScrollView>
+          </View>
+        </Card>
       </View>
+
       <View className="h-20" />
 
       <Actionsheet isOpen={showActionsheet} onClose={handleClose}>
@@ -326,5 +424,26 @@ const styles = StyleSheet.create({
   list: {
     padding: 10,
     marginBottom: 10,
+  },
+  widgetImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 3,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#000",
+  },
+  caseIsSelected: {
+    borderWidth: 3,
+    borderColor: "#007AFF",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderRadius: 3,
   },
 });

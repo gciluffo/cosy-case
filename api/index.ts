@@ -116,7 +116,7 @@ export async function getBookSpineBucketPathFromSignedUrl(
   const fileName = pathParts[pathParts.length - 1];
   const path = `${formattedKey}/${fileName}`;
 
-  console.log("the path is:", `${BASE_URL}/signed-url/${path}`);
+  // console.log("the path is:", `${BASE_URL}/signed-url/${path}`);
 
   const response = await fetch(`${BASE_URL}/signed-url/${path}`, {
     method: "GET",
@@ -144,6 +144,22 @@ export async function getSpineImages(key: string): Promise<string[]> {
       },
     }
   );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch book images");
+  }
+
+  const data = await response.json();
+  return data || [];
+}
+
+export async function getWidgetImages(): Promise<string[]> {
+  const response = await fetch(`${BASE_URL}/widget-images`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
   if (!response.ok) {
     throw new Error("Failed to fetch book images");

@@ -42,7 +42,7 @@ export interface AddBookParam {
 }
 
 export default function AddBookScreen() {
-  const { addBooksToCase, cases, updateCase } = useStore();
+  const { addBooksToCase, cases } = useStore();
   const [bookDetails, setBookDetails] = useState<OpenLibraryBook>(
     {} as OpenLibraryBook
   );

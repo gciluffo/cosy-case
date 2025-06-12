@@ -1,3 +1,5 @@
+import { Book, Widget } from "@/models/book";
+
 /**
  * Returns the rendered width (in pixels) for a book spine,
  * based on page count and the original image dimensions.

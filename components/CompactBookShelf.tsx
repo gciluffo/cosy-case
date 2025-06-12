@@ -1,11 +1,12 @@
-import { Book, BookCase } from "@/models/book";
+import { Book, BookCase, isBook, Widget } from "@/models/book";
 import { getBookHeightPx, getBookSpineWidth } from "@/utils/books";
 import { scale, verticalScale } from "@/utils/scale";
 import { ImageBackground } from "expo-image";
 import React, { useEffect } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import { Shelf } from "./Shelf";
-import BookSpine from "./BookSpine";
+import CachedBookSpine from "./BookSpine";
+import CachedWidget from "./Widget";
 
 interface BookShelfProps {
   bookCase: BookCase;
@@ -15,15 +16,15 @@ interface BookShelfProps {
 }
 
 export default function CompactBookShelf(props: BookShelfProps) {
-  const [shelves, setShelves] = React.useState<Book[][]>([]);
+  const [shelves, setShelves] = React.useState<(Book | Widget)[][]>([]);
   const { bookCase, caseHeight, caseWidth, shelfHeight } = props;
-  const { books } = bookCase;
+  const { books, widgets } = bookCase;
 
   const offsetX = scale(30);
   const offsetY = verticalScale(20);
 
   useEffect(() => {
-    const tempShelves: (Book & {
+    const tempShelves: ((Book | Widget) & {
       width: number;
       height: number;
     })[][] = [];
@@ -37,39 +38,69 @@ export default function CompactBookShelf(props: BookShelfProps) {
 
     let currentShelfWidth = offsetX * 2;
     let currentShelfIndex = 0;
-    for (const book of books) {
-      const spine = book.spines.find((s) => s.selected);
 
-      if (!spine) {
-        continue;
+    const booksWithWidgets: (Book | Widget)[] = [...books];
+    if (widgets && widgets.length > 0) {
+      const widgetsCopy = [...widgets];
+      if (booksWithWidgets.length < 10) {
+        // Place all widgets at the end if less than 10 books
+        booksWithWidgets.push(...widgetsCopy);
+      } else {
+        // Insert widgets every 10 books
+        let insertIndex = 10;
+        while (
+          widgetsCopy.length > 0 &&
+          insertIndex <= booksWithWidgets.length
+        ) {
+          booksWithWidgets.splice(insertIndex, 0, widgetsCopy.shift()!);
+          insertIndex += 11; // Move to the next 10 books (10 books + 1 widget)
+        }
+        // If any widgets remain, append them at the end
+        if (widgetsCopy.length > 0) {
+          booksWithWidgets.push(...widgetsCopy);
+        }
+      }
+    }
+
+    for (const bookOrWidget of booksWithWidgets) {
+      let width, height;
+      if (isBook(bookOrWidget)) {
+        const spine = bookOrWidget.spines.find((s) => s.selected);
+
+        if (!spine) {
+          continue;
+        }
+        const { originalImageHeight, originalImageWidth } = spine;
+        height = bookOrWidget?.physical_dimensions
+          ? getBookHeightPx(
+              bookOrWidget?.physical_dimensions,
+              shelfHeight - offsetY + 17
+            )
+          : shelfHeight - offsetY + 17;
+        width = getBookSpineWidth(
+          bookOrWidget?.number_of_pages || 200,
+          originalImageWidth || 80,
+          originalImageHeight || 200,
+          height
+        );
+      } else {
+        width = scale(20);
+        height = shelfHeight - offsetY + 17;
       }
 
-      const { originalImageHeight, originalImageWidth } = spine;
-      const height = book?.physical_dimensions
-        ? getBookHeightPx(book?.physical_dimensions, shelfHeight - offsetY + 17)
-        : shelfHeight - offsetY + 17;
-      const width = getBookSpineWidth(
-        book?.number_of_pages || 200,
-        originalImageWidth || 80,
-        originalImageHeight || 200,
-        height
-      );
-      // const bookWidth = originalImageWidth > 300 ? 300 : originalImageWidth;
-      const bookWidth = width!;
-
       const bookWithDimensions = {
-        ...book,
-        width: bookWidth,
+        ...bookOrWidget!,
+        width,
         height,
       };
 
-      if (currentShelfWidth + bookWidth < caseWidth) {
+      if (currentShelfWidth + width < caseWidth) {
         tempShelves[currentShelfIndex].push(bookWithDimensions);
-        currentShelfWidth += bookWidth;
+        currentShelfWidth += width;
       } else {
         // If starting a new shelf, reset the width
         currentShelfIndex++;
-        currentShelfWidth = bookWidth;
+        currentShelfWidth = width;
         tempShelves[currentShelfIndex].push(bookWithDimensions);
       }
     }
@@ -90,9 +121,13 @@ export default function CompactBookShelf(props: BookShelfProps) {
             numShelves={shelves.length}
           >
             <View style={{ flexDirection: "row" }}>
-              {shelfBooks.map((book: any) => (
-                <BookSpine book={book} key={book.key} />
-              ))}
+              {shelfBooks.map((book: any) => {
+                if ("spines" in book) {
+                  return <CachedBookSpine book={book} key={book.key} />;
+                } else {
+                  return <CachedWidget widget={book} />;
+                }
+              })}
             </View>
           </Shelf>
         );

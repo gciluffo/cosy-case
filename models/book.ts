@@ -30,6 +30,11 @@ export type Book = OpenLibraryBook & {
   };
 };
 
+export interface Widget {
+  id?: string;
+  cacheKey: string;
+}
+
 export interface BookCase {
   name: string;
   topImageKey: string;
@@ -40,7 +45,9 @@ export interface BookCase {
   isSelected: boolean;
   books: Book[];
   isDefault: boolean;
-  widgets?: {
-    uri: string;
-  }[];
+  widgets: Widget[];
 }
+
+export const isBook = (item: Book | Widget): item is Book => {
+  return (item as Book).spines !== undefined;
+};

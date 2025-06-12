@@ -150,6 +150,12 @@ export const CacheManager = {
       console.error("Error removing from cache:", error);
     }
   },
+  checkIfCached: async ({ key }: { key: string }) => {
+    const sanitizedKey = sanitizeCacheKey(key);
+    const fileURI = `${IMAGE_CACHE_FOLDER}${sanitizedKey}.png`;
+    const metadata = await FileSystem.getInfoAsync(fileURI);
+    return metadata.exists;
+  },
 };
 
 export default CachedImage;
