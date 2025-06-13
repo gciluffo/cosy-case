@@ -4,7 +4,7 @@ import {
 } from "@/models/google-books";
 import { OpenLibraryBook } from "@/models/open-library";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.2.53:8000";
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.53:8000";
 // const BASE_URL = "http://localhost:8000";
 
 export async function searchBooks(searchTerm: string) {
