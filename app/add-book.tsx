@@ -60,7 +60,9 @@ export default function AddBookScreen() {
   const [selectedStatus, setSelectedStatus] = useState(BookStatus.FINISHED);
   const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
   const [reviewText, setReviewText] = useState<string>("");
-  const [selectedShelves, setSelectedShelves] = useState<string[]>(["default"]);
+  const [selectedShelves, setSelectedShelves] = useState<string[]>([
+    cases.find((c) => c.isDefault)?.name || "default",
+  ]);
   const spineRef = useRef(null);
   const params = useLocalSearchParams();
   const { book, refetchSpineImages } = params;
@@ -446,7 +448,7 @@ export default function AddBookScreen() {
                   selectedShelves.includes(item.name) && styles.itemSelected,
                 ]}
                 onPress={() => {
-                  if (item.name === "default") {
+                  if (item.isDefault) {
                     return;
                   }
 

@@ -20,6 +20,7 @@ export async function searchBooks(searchTerm: string) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
       },
     }
   );
@@ -42,6 +43,7 @@ export async function searchBooksV2(
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
       },
     }
   );
@@ -77,6 +79,7 @@ export async function getBookDetails(
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
     },
   });
 
@@ -95,6 +98,7 @@ export async function getBookDetailsV2(
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
     },
   });
 
@@ -122,6 +126,7 @@ export async function getBookSpineBucketPathFromSignedUrl(
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
     },
   });
 
@@ -141,6 +146,7 @@ export async function getSpineImages(key: string): Promise<string[]> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
       },
     }
   );
@@ -158,6 +164,7 @@ export async function getWidgetImages(): Promise<string[]> {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
     },
   });
 
@@ -190,6 +197,7 @@ export async function searchBookSpineByTitle(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
     },
     body: JSON.stringify(body),
     redirect: "follow",
@@ -244,6 +252,7 @@ export const confirmCroppedImage = async (
     redirect: "follow",
     headers: {
       "Content-Type": "application/json",
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
     },
   });
 
@@ -265,6 +274,7 @@ export const getTrendingBooks = async (
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "max-age=86400", // Cache for 1 day (86400 seconds)
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
     },
   });
 

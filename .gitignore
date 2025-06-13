@@ -82,3 +82,5 @@ yarn-error.*
 # local builds
 *.tar.gz
 *.ipa
+
+.env
