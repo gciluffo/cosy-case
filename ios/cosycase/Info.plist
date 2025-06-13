@@ -52,11 +52,15 @@
       <true/>
     </dict>
     <key>NSCameraUsageDescription</key>
-    <string>$(PRODUCT_NAME) needs access to your Camera in order to scan images of books.</string>
+    <string>Allow $(PRODUCT_NAME) to access your camera</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your microphone</string>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
     </array>
+    <key>RCTRootViewBackgroundColor</key>
+    <integer>4294967295</integer>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>

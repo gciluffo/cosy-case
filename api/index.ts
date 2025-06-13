@@ -4,8 +4,7 @@ import {
 } from "@/models/google-books";
 import { OpenLibraryBook } from "@/models/open-library";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://192.168.2.53:8000";
-// const BASE_URL = "http://localhost:8000";
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.53:8000";
 
 export async function searchBooks(searchTerm: string) {
   console.log(
@@ -25,9 +24,9 @@ export async function searchBooks(searchTerm: string) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch books");
-  }
+  // if (!response.ok) {
+  //   throw new Error("Failed to fetch books");
+  // }
 
   const data = await response.json();
   // console.log("Search results:", data);
@@ -84,6 +83,8 @@ export async function getBookDetails(
   });
 
   if (!response.ok) {
+    // log the error response for debugging
+    console.log("the fucking errorr", response);
     throw new Error("Failed to fetch book details");
   }
 
