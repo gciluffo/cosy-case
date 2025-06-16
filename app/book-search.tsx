@@ -31,18 +31,17 @@ export default function BookSearch() {
       try {
         setLoading(true);
         const response = await searchBooks(searchText);
-        for (const book of response) {
-          if (!book.cover_url) {
-            console.log("making call");
-            const response = await searchBooksV2(searchText);
-            const bookUrl =
-              response?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+        // for (const book of response) {
+        //   if (!book.cover_url) {
+        //     const response = await searchBooksV2(searchText);
+        //     const bookUrl =
+        //       response?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
 
-            if (bookUrl) {
-              book.cover_url = convertToHttps(bookUrl);
-            }
-          }
-        }
+        //     if (bookUrl) {
+        //       book.cover_url = convertToHttps(bookUrl);
+        //     }
+        //   }
+        // }
         setSearchResults(response);
       } catch (error) {
         console.error("Error fetching books:", error);

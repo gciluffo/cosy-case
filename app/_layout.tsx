@@ -42,6 +42,7 @@ export default function RootLayout() {
           name="book-search"
           options={{
             title: "Search",
+            headerBackButtonDisplayMode: "generic",
             headerRight: () => (
               <TouchableOpacity
                 onPress={() => {
@@ -117,7 +118,8 @@ export default function RootLayout() {
           name="book-spine-camera-view"
           options={{
             title: "",
-            // headerTransparent: true,
+            headerTransparent: true,
+            headerBackButtonDisplayMode: "generic",
           }}
         />
         <Stack.Screen
@@ -125,6 +127,7 @@ export default function RootLayout() {
           options={{
             title: "Select Books to Add",
             presentation: "modal",
+            headerBackButtonDisplayMode: "generic",
           }}
         />
         <Stack.Screen

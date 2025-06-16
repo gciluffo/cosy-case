@@ -20,6 +20,7 @@ export default function CroppedImageConfirm(props: Props) {
           width: "auto",
         }}
         source={{ uri: image }}
+        contentFit="contain"
       />
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={onCancel}>
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "flex-end",
-    marginBottom: 30,
+    marginBottom: 70,
   },
   button: {
     width: 70,

@@ -42,7 +42,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
           topImageKey: "birchTop",
           middleImageKey: "birchMiddle",
           bottomImageKey: "birchBottom",
-          offsetXPercent: 0.05,
+          offsetXPercent: 0.07,
           offsetYPercent: 0.07,
           isSelected: true,
           books: [],

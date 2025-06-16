@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SearchIcon } from "@/components/ui/icon";
+import { SearchIcon, RemoveIcon, CloseCircleIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 
 interface Props {
@@ -40,6 +40,16 @@ export default function SearchInput(props: Props) {
             setSearchText(e.nativeEvent.text);
           }}
         />
+        {value.length > 0 && (
+          <InputSlot
+            className="pr-3"
+            onPress={() => {
+              setSearchText("");
+            }}
+          >
+            <InputIcon as={CloseCircleIcon} />
+          </InputSlot>
+        )}
       </Input>
       {isFocused && (
         <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>

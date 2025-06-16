@@ -3,16 +3,15 @@ import { Dimensions, FlatList, View } from "react-native";
 import useStore from "@/store";
 import { Book, BookCase, isBook, Widget } from "@/models/book";
 import { scale, verticalScale } from "@/utils/scale";
-import { getBookHeightPx, getBookSpineWidth } from "@/utils/books";
+import { getBookSpineWidth } from "@/utils/books";
 import { Shelf } from "@/components/Shelf";
 import CachedBookSpine from "@/components/BookSpine";
 import CachedWidget from "@/components/Widget";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { isCircleScalarDef } from "@shopify/react-native-skia";
 
 const MAX_WIDTH = Dimensions.get("window").width * 0.95;
 const MAX_HEIGHT = Dimensions.get("window").height * 0.8;
-const INDIVIDUAL_SHELF_HEIGHT = 120;
+const INDIVIDUAL_SHELF_HEIGHT = verticalScale(110);
 
 interface BookShelfProps {
   shelves: (Book | Widget)[][];
@@ -126,7 +125,8 @@ const BookshelfScreen = () => {
         }
 
         const { originalImageHeight, originalImageWidth } = spine;
-        height = INDIVIDUAL_SHELF_HEIGHT - offsetY + 17;
+        const randomHeightOffset = Math.random() * 10; // Random offset for height variation
+        height = INDIVIDUAL_SHELF_HEIGHT - offsetY + 17 + randomHeightOffset;
         width = getBookSpineWidth(
           bookOrWidget?.number_of_pages || 200,
           originalImageWidth || 80,

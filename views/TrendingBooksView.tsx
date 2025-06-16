@@ -74,7 +74,8 @@ const Book = (props: TrendingBook) => {
           textAlign: "left",
         }}
       >
-        {title}
+        {title.slice(0, 30)}
+        {title.length > 30 ? "..." : ""}
       </Text>
     </View>
   );

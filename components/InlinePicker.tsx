@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     // borderRadius: 6,
     width: 120,
-    marginLeft: scale(-10),
+    marginLeft: scale(-20),
   },
   dropdown: {},
 });
