@@ -328,8 +328,26 @@ export const getNewYorkTimesBestSellers = async () => {
       cover_url: b.book_image,
     }));
 
+  const graphicNovels = data.results.lists
+    .find((l: any) => l.list_name_encoded === "graphic-books-and-manga")
+    ?.books.map((b: any) => ({
+      title: captializeFirstLetter(b.title.toLowerCase()),
+      bookId: b.primary_isbn13,
+      cover_url: b.book_image,
+    }));
+
+  const adviceAndHowToBooks = data.results.lists
+    .find((l: any) => l.list_name_encoded === "advice-how-to-and-miscellaneous")
+    ?.books.map((b: any) => ({
+      title: captializeFirstLetter(b.title.toLowerCase()),
+      bookId: b.primary_isbn13,
+      cover_url: b.book_image,
+    }));
+
   return {
     fictionBooks: fictionBooks || [],
     nonFictionBooks: nonFictionBooks || [],
+    graphicNovels: graphicNovels || [],
+    adviceAndHowToBooks: adviceAndHowToBooks || [],
   };
 };

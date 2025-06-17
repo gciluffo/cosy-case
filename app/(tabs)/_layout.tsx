@@ -7,7 +7,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { TabBarBackground } from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { verticalScale } from "@/utils/scale";
+import { isTablet, verticalScale } from "@/utils/scale";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -24,14 +24,13 @@ export default function TabLayout() {
         tabBarItemStyle: { alignItems: "center", flexDirection: "row" },
         tabBarStyle: {
           position: "absolute",
-          right: 20,
-          width: 200,
-          marginLeft: screenWidth / 2 - 100,
+          width: isTablet ? 300 : 200,
+          marginLeft: screenWidth / 2 - (isTablet ? 150 : 100),
           marginBottom: Platform.OS === "android" ? 20 : 30,
           elevation: 5,
           backgroundColor: Colors[colorScheme ?? "light"].background,
           borderRadius: 30,
-          height: verticalScale(45),
+          height: verticalScale(isTablet ? 40 : 45),
           paddingBottom: 10,
           paddingTop: 10,
           shadowColor: "#000",

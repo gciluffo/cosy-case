@@ -6,6 +6,7 @@ import { router } from "expo-router";
 import { useMemo } from "react";
 import { Book } from "@/models/book";
 import { Text } from "@/components/ui/text";
+import { Heading } from "@/components/ui/heading";
 
 export default function TabTwoScreen() {
   const { cases } = useStore();
@@ -36,9 +37,11 @@ export default function TabTwoScreen() {
       >
         <Image
           source={require("@/assets/images/bored-rat.png")}
-          style={{ width: scale(350), height: scale(400) }}
+          style={{ width: scale(250), height: scale(250) }}
         />
-        <Text size="2xl">No books yet. Tap above to add some!</Text>
+        <Heading size={isTablet ? "2xl" : "xl"}>
+          No books yet. Tap above to add some!
+        </Heading>
       </View>
     );
   }

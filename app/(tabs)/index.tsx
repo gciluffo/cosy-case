@@ -2,16 +2,16 @@ import React, { useEffect } from "react";
 import { Dimensions, FlatList, View } from "react-native";
 import useStore from "@/store";
 import { Book, BookCase, isBook, Widget } from "@/models/book";
-import { scale, verticalScale } from "@/utils/scale";
+import { isTablet, scale, verticalScale } from "@/utils/scale";
 import { getBookSpineWidth } from "@/utils/books";
 import { Shelf } from "@/components/Shelf";
 import CachedBookSpine from "@/components/BookSpine";
 import CachedWidget from "@/components/Widget";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const MAX_WIDTH = Dimensions.get("window").width * 0.95;
-const MAX_HEIGHT = Dimensions.get("window").height * 0.8;
-const INDIVIDUAL_SHELF_HEIGHT = verticalScale(110);
+const MAX_WIDTH = Dimensions.get("window").width * (isTablet ? 0.85 : 0.95);
+const MAX_HEIGHT = Dimensions.get("window").height * (isTablet ? 0.82 : 0.8);
+const INDIVIDUAL_SHELF_HEIGHT = verticalScale(isTablet ? 90 : 110);
 
 interface BookShelfProps {
   shelves: (Book | Widget)[][];
@@ -81,12 +81,15 @@ const BookshelfScreen = () => {
 
     // Initialize shelves
     let totalShelfHeight = 0;
-    while (totalShelfHeight < MAX_HEIGHT) {
+    while (
+      totalShelfHeight <
+      MAX_HEIGHT - verticalScale(INDIVIDUAL_SHELF_HEIGHT)
+    ) {
       tempShelves.push([]);
       totalShelfHeight += verticalScale(INDIVIDUAL_SHELF_HEIGHT);
     }
 
-    let currentShelfWidth = offsetX * 2;
+    let currentShelfWidth = offsetX;
     let currentShelfIndex = 0;
 
     // Insert widgets into the books array, even if there are less than 10 books
@@ -126,7 +129,7 @@ const BookshelfScreen = () => {
 
         const { originalImageHeight, originalImageWidth } = spine;
         const randomHeightOffset = Math.random() * 10; // Random offset for height variation
-        height = INDIVIDUAL_SHELF_HEIGHT - offsetY + 17 + randomHeightOffset;
+        height = INDIVIDUAL_SHELF_HEIGHT - offsetY + 14 + randomHeightOffset;
         width = getBookSpineWidth(
           bookOrWidget?.number_of_pages || 200,
           originalImageWidth || 80,
@@ -134,7 +137,7 @@ const BookshelfScreen = () => {
           height
         );
       } else {
-        width = scale(70);
+        width = scale(60);
         height = scale(INDIVIDUAL_SHELF_HEIGHT) - offsetY;
       }
 

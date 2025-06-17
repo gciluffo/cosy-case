@@ -83,6 +83,10 @@ export default function NYTTrendingBooksView() {
   const [isLoading, setIsLoading] = useState(true);
   const [fictionBooks, setFictionBooks] = useState<TrendingBook[]>([]);
   const [nonFictionBooks, setNonFictionBooks] = useState<TrendingBook[]>([]);
+  const [graphicNovels, setGraphicNovels] = useState<TrendingBook[]>([]);
+  const [adviceAndHowToBooks, setAdviceAndHowToBooks] = useState<
+    TrendingBook[]
+  >([]);
 
   const CACHE_KEY = "nytTrendingBooksCache";
   const CACHE_EXPIRATION = 24 * 60 * 60 * 1000; // 1 day in milliseconds
@@ -98,16 +102,24 @@ export default function NYTTrendingBooksView() {
         if (currentTime - timestamp < CACHE_EXPIRATION) {
           setFictionBooks(data.fictionBooks);
           setNonFictionBooks(data.nonFictionBooks);
+          setGraphicNovels(data.graphicNovels);
+          setAdviceAndHowToBooks(data.adviceAndHowToBooks);
           setIsLoading(false);
           return;
         }
       }
 
-      const { fictionBooks, nonFictionBooks } =
-        await getNewYorkTimesBestSellers();
+      const {
+        fictionBooks,
+        nonFictionBooks,
+        graphicNovels,
+        adviceAndHowToBooks,
+      } = await getNewYorkTimesBestSellers();
 
       setFictionBooks(fictionBooks);
       setNonFictionBooks(nonFictionBooks);
+      setGraphicNovels(graphicNovels);
+      setAdviceAndHowToBooks(adviceAndHowToBooks);
 
       // Cache the data
       await AsyncStorage.setItem(
@@ -117,6 +129,8 @@ export default function NYTTrendingBooksView() {
           data: {
             fictionBooks: fictionBooks,
             nonFictionBooks: nonFictionBooks,
+            graphicNovels: graphicNovels,
+            adviceAndHowToBooks: adviceAndHowToBooks,
           },
         })
       );
@@ -181,6 +195,33 @@ export default function NYTTrendingBooksView() {
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
           style={{ marginBottom: 20, marginTop: 10 }}
+        />
+      ) : (
+        <LoadingHorizontalFlatList />
+      )}
+      <Heading>Trending Graphic Novels</Heading>
+      {!isLoading ? (
+        <FlatList
+          data={graphicNovels}
+          renderItem={renderBook}
+          keyExtractor={(item) => item.bookId}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+          style={{ marginBottom: 20, marginTop: 10 }}
+        />
+      ) : (
+        <LoadingHorizontalFlatList />
+      )}
+      <Heading>Tending Advice & How-To Books</Heading>
+      {!isLoading ? (
+        <FlatList
+          data={adviceAndHowToBooks}
+          renderItem={renderBook}
+          keyExtractor={(item) => item.bookId}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
         />
       ) : (
         <LoadingHorizontalFlatList />
