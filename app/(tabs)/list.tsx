@@ -1,10 +1,11 @@
 import useStore from "@/store";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
-import { isTablet, moderateScale } from "@/utils/scale";
+import { isTablet, moderateScale, scale } from "@/utils/scale";
 import { router } from "expo-router";
 import { useMemo } from "react";
 import { Book } from "@/models/book";
+import { Text } from "@/components/ui/text";
 
 export default function TabTwoScreen() {
   const { cases } = useStore();
@@ -22,6 +23,25 @@ export default function TabTwoScreen() {
     );
     return uniqueBooks;
   }, [cases]);
+
+  if (!allBooks || allBooks.length === 0) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "white",
+        }}
+      >
+        <Image
+          source={require("@/assets/images/bored-rat.png")}
+          style={{ width: scale(350), height: scale(400) }}
+        />
+        <Text size="2xl">No books yet. Tap above to add some!</Text>
+      </View>
+    );
+  }
 
   return (
     <FlatList

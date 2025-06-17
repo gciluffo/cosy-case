@@ -439,22 +439,6 @@ export default function BookDetails() {
                         />
                       </TouchableOpacity>
                     ))}
-                    {/* {bookDetails.author && coverColors && (
-                      <TouchableOpacity
-                        onPress={() => setSelectedSpine("placeholder")}
-                        style={[
-                          selectedSpine === "placeholder" &&
-                            styles.itemSelected,
-                        ]}
-                      >
-                        <PlaceholderBookSpine
-                          colors={coverColors}
-                          title={bookDetails.title}
-                          author={bookDetails.author || ""}
-                          viewRef={spineRef}
-                        />
-                      </TouchableOpacity>
-                    )} */}
                     <TouchableOpacity
                       style={styles.addContainer}
                       onPress={() => {

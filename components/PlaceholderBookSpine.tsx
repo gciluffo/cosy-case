@@ -32,6 +32,24 @@ export default function PlaceholderBookSpine(props: Props) {
     >
       <View
         style={{
+          height: 1,
+          width: "100%",
+          backgroundColor: colors.secondary,
+          position: "absolute",
+          top: 20,
+        }}
+      ></View>
+      <View
+        style={{
+          height: 1,
+          width: "100%",
+          backgroundColor: colors.secondary,
+          position: "absolute",
+          top: 15,
+        }}
+      ></View>
+      <View
+        style={{
           transform: [{ rotate: "90deg" }],
           width: height,
           alignItems: "center",
@@ -58,6 +76,24 @@ export default function PlaceholderBookSpine(props: Props) {
           {author}
         </Text>
       </View>
+      <View
+        style={{
+          height: 1,
+          width: "100%",
+          backgroundColor: colors.secondary,
+          position: "absolute",
+          bottom: 20,
+        }}
+      ></View>
+      <View
+        style={{
+          height: 1,
+          width: "100%",
+          backgroundColor: colors.secondary,
+          position: "absolute",
+          bottom: 15,
+        }}
+      ></View>
     </ViewShot>
   );
 }
