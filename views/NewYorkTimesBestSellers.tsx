@@ -1,4 +1,4 @@
-import { getTrendingBooks } from "@/api";
+import { getNewYorkTimesBestSellers, getTrendingBooks } from "@/api";
 import { Heading } from "@/components/ui/heading";
 import { useEffect, useState } from "react";
 import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
@@ -13,8 +13,6 @@ interface TrendingBook {
   bookId: string;
   cover_url: string;
 }
-
-interface Props {}
 
 const LoadingHorizontalFlatList = () => {
   return (
@@ -81,93 +79,84 @@ const Book = (props: TrendingBook) => {
   );
 };
 
-export default function TrendingBooksView() {
+export default function NYTTrendingBooksView() {
   const [isLoading, setIsLoading] = useState(true);
-  const [todayBooks, setTodayBooks] = useState<TrendingBook[]>([]);
-  const [yearlyBooks, setYearlyBooks] = useState<TrendingBook[]>([]);
-  const [allTimeBooks, setAllTimeBooks] = useState<TrendingBook[]>([]);
+  const [fictionBooks, setFictionBooks] = useState<TrendingBook[]>([]);
+  const [nonFictionBooks, setNonFictionBooks] = useState<TrendingBook[]>([]);
 
-  const CACHE_KEY = "trendingBooksCache";
+  const CACHE_KEY = "nytTrendingBooksCache";
   const CACHE_EXPIRATION = 24 * 60 * 60 * 1000; // 1 day in milliseconds
 
   const fetchBooks = async () => {
+    // make call to nytimes api to get books
     try {
       const cachedData = await AsyncStorage.getItem(CACHE_KEY);
-      const now = Date.now();
+      const currentTime = new Date().getTime();
 
       if (cachedData) {
-        const parsedCache = JSON.parse(cachedData);
-        if (now - parsedCache.timestamp < CACHE_EXPIRATION) {
-          setTodayBooks(parsedCache.todayBooks);
-          setYearlyBooks(parsedCache.yearlyBooks);
-          setAllTimeBooks(parsedCache.allTimeBooks);
+        const { timestamp, data } = JSON.parse(cachedData);
+        if (currentTime - timestamp < CACHE_EXPIRATION) {
+          setFictionBooks(data.fictionBooks);
+          setNonFictionBooks(data.nonFictionBooks);
           setIsLoading(false);
           return;
         }
       }
 
-      setIsLoading(true);
+      const { fictionBooks, nonFictionBooks } =
+        await getNewYorkTimesBestSellers();
 
-      const [todayBooks, yearlyBooks, allTimeBooks] = await Promise.all([
-        getTrendingBooks("daily"),
-        getTrendingBooks("yearly"),
-        getTrendingBooks("forever"),
-      ]);
+      setFictionBooks(fictionBooks);
+      setNonFictionBooks(nonFictionBooks);
 
-      const filteredTodayBooks = todayBooks.filter((i) => i.cover_url);
-      const filteredYearlyBooks = yearlyBooks.filter((i) => i.cover_url);
-      const filteredAllTimeBooks = allTimeBooks.filter((i) => i.cover_url);
-
-      setTodayBooks(filteredTodayBooks);
-      setYearlyBooks(filteredYearlyBooks);
-      setAllTimeBooks(filteredAllTimeBooks);
-
-      AsyncStorage.setItem(
+      // Cache the data
+      await AsyncStorage.setItem(
         CACHE_KEY,
         JSON.stringify({
-          timestamp: now,
-          todayBooks: filteredTodayBooks,
-          yearlyBooks: filteredYearlyBooks,
-          allTimeBooks: filteredAllTimeBooks,
+          timestamp: currentTime,
+          data: {
+            fictionBooks: fictionBooks,
+            nonFictionBooks: nonFictionBooks,
+          },
         })
       );
-    } catch (error) {
-      console.error("Error fetching trending books:", error);
-    } finally {
+
       setIsLoading(false);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
     fetchBooks();
   }, []);
 
-  const renderBook = ({ item }: { item: TrendingBook }) => (
-    <TouchableOpacity
-      onPress={() => {
-        router.push({
-          pathname: "/book-details",
-          params: {
-            cover_url: item.cover_url,
-            bookKey: item.bookId,
-          },
-        });
-      }}
-    >
-      <Book
-        title={item.title}
-        bookId={item.bookId}
-        cover_url={item.cover_url}
-      />
-    </TouchableOpacity>
-  );
+  const renderBook = ({ item }: { item: TrendingBook }) => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          router.push({
+            pathname: "/book-details",
+            params: {
+              cover_url: item.cover_url,
+              bookKey: item.bookId,
+            },
+          });
+        }}
+      >
+        <Book
+          title={item.title}
+          bookId={item.bookId}
+          cover_url={item.cover_url}
+        />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View>
-      {/* <Heading>Trending Books Today</Heading>
+      <Heading>NYT Best Sellers Fiction This Week</Heading>
       {!isLoading ? (
         <FlatList
-          data={todayBooks}
+          data={fictionBooks}
           renderItem={renderBook}
           keyExtractor={(item) => item.bookId}
           horizontal
@@ -181,11 +170,11 @@ export default function TrendingBooksView() {
         />
       ) : (
         <LoadingHorizontalFlatList />
-      )} */}
-      <Heading>Open Library Trending Books This Year</Heading>
+      )}
+      <Heading>NYT Best Sellers Non-Fiction This Week</Heading>
       {!isLoading ? (
         <FlatList
-          data={yearlyBooks}
+          data={nonFictionBooks}
           renderItem={renderBook}
           keyExtractor={(item) => item.bookId}
           horizontal
@@ -196,20 +185,6 @@ export default function TrendingBooksView() {
       ) : (
         <LoadingHorizontalFlatList />
       )}
-      {/* <Heading>Trending Books of All Time</Heading>
-      {!isLoading ? (
-        <FlatList
-          data={allTimeBooks}
-          renderItem={renderBook}
-          keyExtractor={(item) => item.bookId}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
-          style={{ marginBottom: 20, marginTop: 10 }}
-        />
-      ) : (
-        <LoadingHorizontalFlatList />
-      )} */}
     </View>
   );
 }

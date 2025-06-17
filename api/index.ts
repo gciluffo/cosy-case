@@ -3,6 +3,7 @@ import {
   GoogleBooksSearchResponse,
 } from "@/models/google-books";
 import { OpenLibraryBook } from "@/models/open-library";
+import { captializeFirstLetter } from "@/utils/string";
 
 // const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.53:8000";
 const BASE_URL = "http://192.168.2.53:8000";
@@ -288,4 +289,47 @@ export const getTrendingBooks = async (
 
   const data = await response.json();
   return data;
+};
+
+export const getNewYorkTimesBestSellers = async () => {
+  const response = await fetch(
+    `https://api.nytimes.com/svc/books/v3/lists/overview.json?api-key=zkI8cZg5j06gAyXgAEYvKGb616FUzHAV`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch New York Times best sellers");
+  }
+
+  const data = await response.json();
+
+  const fictionBooks = data.results.lists
+    .find(
+      (l: any) => l.list_name_encoded === "combined-print-and-e-book-fiction"
+    )
+    ?.books.map((b: any) => ({
+      title: captializeFirstLetter(b.title.toLowerCase()),
+      bookId: b.primary_isbn13,
+      cover_url: b.book_image,
+    }));
+
+  const nonFictionBooks = data.results.lists
+    .find(
+      (l: any) => l.list_name_encoded === "combined-print-and-e-book-nonfiction"
+    )
+    ?.books.map((b: any) => ({
+      title: captializeFirstLetter(b.title.toLowerCase()),
+      bookId: b.primary_isbn13,
+      cover_url: b.book_image,
+    }));
+
+  return {
+    fictionBooks: fictionBooks || [],
+    nonFictionBooks: nonFictionBooks || [],
+  };
 };

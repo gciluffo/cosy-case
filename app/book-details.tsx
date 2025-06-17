@@ -20,12 +20,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
 import { Book, BookReview, BookStatus } from "@/models/book";
-import { getBookDetails } from "@/api";
+import { getBookDetails, searchBooks } from "@/api";
 import { OpenLibraryBook } from "@/models/open-library";
 import CollapsibleDescription from "@/components/CollapsibleDescription";
 import { Card } from "@/components/ui/card";
 import InlinePicker from "@/components/InlinePicker";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
+import { isStringIsbn13 } from "@/utils/books";
 
 export default function BookDetails() {
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
@@ -40,6 +41,11 @@ export default function BookDetails() {
   const { removeBook, getBookByKey, updateBook, cases } = useStore();
   const params = useLocalSearchParams();
   const { localBookKey, bookKey, cover_url } = params;
+
+  const isInLibrary = useMemo(() => {
+    const book = getBookByKey((localBookKey as string) || (bookKey as string));
+    return !!book;
+  }, [bookKey, localBookKey, cases]);
 
   useEffect(() => {
     const init = async () => {
@@ -61,7 +67,18 @@ export default function BookDetails() {
         // if bookKey is not null, get the book from api
         if (bookKey) {
           setLoading(true);
-          const book = await getBookDetails(bookKey as string);
+
+          let workKey;
+          if (isStringIsbn13(bookKey as string)) {
+            const searchResult = await searchBooks(bookKey as string);
+            if (searchResult.length > 0) {
+              workKey = searchResult[0].key;
+            } else {
+              console.warn("No book found for ISBN:", bookKey);
+            }
+          }
+
+          const book = await getBookDetails(workKey || (bookKey as string));
           setRemoteBook(book);
         }
       } catch (error) {
@@ -104,6 +121,21 @@ export default function BookDetails() {
     bookSpinePrimaryColorInit();
   }, [localBook, remoteBook]);
 
+  useEffect(() => {
+    if (isInLibrary && !localBook) {
+      const book = getBookByKey(
+        (localBookKey as string) || (bookKey as string)
+      );
+      if (book) {
+        setLocalBook(book);
+        const selectedSpine = book.spines.find((item) => item.selected);
+        if (selectedSpine) {
+          setSelectedSpine(selectedSpine.cacheKey);
+        }
+      }
+    }
+  }, [isInLibrary]);
+
   const removeFromLibrary = () => {
     // remove all assets on file
     const cacheKeys = localBook?.spines.map((item) => item.cacheKey);
@@ -114,6 +146,20 @@ export default function BookDetails() {
     }
     removeBook(localBookKey as string);
   };
+
+  // once we have the isbn update the route params so that the header can build an amazon link
+  useEffect(() => {
+    if (localBook?.isbn_13) {
+      router.setParams({
+        isbn13: localBook?.isbn_13,
+      });
+    }
+    if (remoteBook?.isbn_13) {
+      router.setParams({
+        isbn13: remoteBook?.isbn_13,
+      });
+    }
+  }, [localBook?.isbn_13, remoteBook?.isbn_13]);
 
   const addToLibrary = () => {
     const book = localBook || remoteBook;
@@ -136,26 +182,6 @@ export default function BookDetails() {
       },
     });
   };
-
-  const isInLibrary = useMemo(() => {
-    const book = getBookByKey((localBookKey as string) || (bookKey as string));
-    return !!book;
-  }, [bookKey, localBookKey, cases]);
-
-  useEffect(() => {
-    if (isInLibrary && !localBook) {
-      const book = getBookByKey(
-        (localBookKey as string) || (bookKey as string)
-      );
-      if (book) {
-        setLocalBook(book);
-        const selectedSpine = book.spines.find((item) => item.selected);
-        if (selectedSpine) {
-          setSelectedSpine(selectedSpine.cacheKey);
-        }
-      }
-    }
-  }, [isInLibrary]);
 
   const getDescription = (book: Book | OpenLibraryBook) => {
     if (

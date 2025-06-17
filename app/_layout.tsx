@@ -1,7 +1,13 @@
 import "@/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useFonts } from "expo-font";
-import { router, Stack } from "expo-router";
+import {
+  router,
+  Stack,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+} from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
@@ -9,13 +15,16 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { TouchableOpacity } from "react-native";
+import { Linking, TouchableOpacity } from "react-native";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const params = useLocalSearchParams();
+  const router = useRouter();
+  const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -85,10 +94,27 @@ export default function RootLayout() {
             headerTitle: "",
             headerTintColor: "white", // or any contrasting color for your back button
             headerBackButtonDisplayMode: "generic",
-            headerRight: () => (
+            headerRight: (props) => (
               <TouchableOpacity
                 onPress={() => {
-                  // open amazon link for book
+                  const routes = navigation.getState()?.routes;
+                  const bookDetailsRoute = routes?.find(
+                    (route) => route.name === "book-details"
+                  );
+                  const isbn =
+                    (bookDetailsRoute?.params &&
+                    typeof bookDetailsRoute.params === "object" &&
+                    "isbn13" in bookDetailsRoute.params
+                      ? (bookDetailsRoute.params as { isbn13?: string }).isbn13
+                      : undefined) ||
+                    (typeof params === "object" && "isbn" in params
+                      ? (params as { isbn?: string }).isbn
+                      : undefined);
+                  if (isbn) {
+                    // TODO: Update this to an affiliate link or a custom URL scheme
+                    const amazonLink = `https://www.amazon.com/s?k=${isbn}`;
+                    Linking.openURL(amazonLink);
+                  }
                 }}
               >
                 <FontAwesome name="shopping-cart" size={24} color="white" />

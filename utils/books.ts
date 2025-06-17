@@ -75,3 +75,8 @@ export function getBookHeightPx(
   const clampedScale = Math.max(0.5, Math.min(1, scale)); // avoid super short books
   return Math.round(maxHeightPx * clampedScale);
 }
+
+export function isStringIsbn13(isbn: string): boolean {
+  // Check if the ISBN is a valid 13-digit number
+  return /^\d{13}$/.test(isbn);
+}

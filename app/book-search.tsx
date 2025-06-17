@@ -11,6 +11,7 @@ import SearchInput from "@/components/SearchInput";
 import TrendingBooksView from "@/views/TrendingBooksView";
 import { Book } from "@/models/book";
 import { convertToHttps } from "@/utils/image";
+import NYTTrendingBooksView from "@/views/NewYorkTimesBestSellers";
 
 export default function BookSearch() {
   const [searchText, setSearchText] = useState("");
@@ -174,6 +175,7 @@ export default function BookSearch() {
           }}
         >
           <TrendingBooksView />
+          <NYTTrendingBooksView />
         </ScrollView>
       )}
     </View>
