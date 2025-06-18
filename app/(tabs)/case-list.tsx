@@ -1,7 +1,5 @@
-import { Heading } from "@/components/ui/heading";
-import { BookCase } from "@/models/book";
 import useStore from "@/store";
-import { scale, verticalScale } from "@/utils/scale";
+import { isTablet, verticalScale } from "@/utils/scale";
 import {
   View,
   StyleSheet,
@@ -13,9 +11,9 @@ import { Text } from "@/components/ui/text";
 import CompactBookShelf from "@/components/CompactBookShelf";
 import { router } from "expo-router";
 
-const CASE_WIDTH = Dimensions.get("window").width / 2 - 20;
+const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 40);
 const CASE_HEIGHT = verticalScale(100);
-const SHELF_HEIGHT = verticalScale(33);
+const SHELF_HEIGHT = verticalScale(40);
 
 export default function CaseSettings() {
   const { cases } = useStore();
@@ -24,14 +22,13 @@ export default function CaseSettings() {
     <FlatList
       data={cases}
       numColumns={2}
-      columnWrapperStyle={{
-        justifyContent: "space-around",
+      contentContainerStyle={{
+        paddingBottom: 100,
       }}
-      contentContainerStyle={styles.container}
-      ItemSeparatorComponent={() => <View style={{ marginVertical: 10 }} />}
+      style={styles.list}
       renderItem={({ item, index }) => (
         <TouchableOpacity
-          className="flex"
+          className="rounded-lg p-4"
           key={item.name}
           onPress={() => {
             router.push({
@@ -56,11 +53,6 @@ export default function CaseSettings() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    paddingBottom: 60,
-    flex: 1,
-  },
   caseIsSelected: {
     borderWidth: 3,
     borderColor: "#007AFF",
@@ -82,5 +74,9 @@ const styles = StyleSheet.create({
     backgroundColor: "lightgrey",
     justifyContent: "center",
     alignItems: "center",
+  },
+  list: {
+    padding: 10,
+    marginBottom: 10,
   },
 });

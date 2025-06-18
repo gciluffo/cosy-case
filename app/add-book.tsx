@@ -255,9 +255,7 @@ export default function AddBookScreen() {
       loading={addingBook}
       disabled={selectedSpine === null || !bookDetails}
     >
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
-        Book Details
-      </Text>
+      <Text className="text-gray-500 mb-1 ml-1">Book Details</Text>
       <TouchableOpacity
         onPress={() => {
           router.push({
@@ -316,9 +314,7 @@ export default function AddBookScreen() {
       </TouchableOpacity>
 
       <View className="h-6" />
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
-        Reading Status
-      </Text>
+      <Text className="text-gray-500 mb-1 ml-1">Reading Status</Text>
       <Card>
         <View className="flex-row justify-between items-center">
           <Text className="text-gray-500">Status</Text>
@@ -336,9 +332,7 @@ export default function AddBookScreen() {
         </View>
       </Card>
       <View className="h-6" />
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
-        Book Review
-      </Text>
+      <Text className="text-gray-500 mb-1 ml-1">Book Review</Text>
       <Card>
         <View className="flex-row justify-between items-center">
           <Text className="text-gray-500">Review</Text>
@@ -356,9 +350,7 @@ export default function AddBookScreen() {
         </View>
       </Card>
       <View className="h-6" />
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
-        Additional Notes
-      </Text>
+      <Text className="text-gray-500 mb-1 ml-1">Additional Notes</Text>
       <Card>
         <Textarea size="md" className="w-100">
           <TextareaInput
@@ -369,9 +361,7 @@ export default function AddBookScreen() {
         </Textarea>
       </Card>
       <View className="h-6" />
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
-        Spine Image
-      </Text>
+      <Text className="text-gray-500 mb-1 ml-1">Spine Image</Text>
       {spineError && (
         <Text className="text-orange-500 mb-1 ml-1" size="sm">
           {spineError}
@@ -434,9 +424,7 @@ export default function AddBookScreen() {
         </View>
       </Card>
       <View className="h-6" />
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
-        Case
-      </Text>
+      <Text className="text-gray-500 mb-1 ml-1">Case</Text>
       <Card>
         <FlatList
           horizontal={true}

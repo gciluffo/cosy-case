@@ -8,10 +8,11 @@ import { Shelf } from "@/components/Shelf";
 import CachedBookSpine from "@/components/BookSpine";
 import CachedWidget from "@/components/Widget";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 
-const MAX_WIDTH = Dimensions.get("window").width * (isTablet ? 0.85 : 0.95);
-const MAX_HEIGHT = Dimensions.get("window").height * (isTablet ? 0.82 : 0.8);
-const INDIVIDUAL_SHELF_HEIGHT = verticalScale(isTablet ? 90 : 110);
+const MAX_WIDTH = Dimensions.get("window").width * (isTablet ? 0.8 : 0.95);
+const MAX_HEIGHT = Dimensions.get("window").height * (isTablet ? 1.5 : 0.8);
+const INDIVIDUAL_SHELF_HEIGHT = verticalScale(isTablet ? 80 : 110);
 
 interface BookShelfProps {
   shelves: (Book | Widget)[][];
@@ -23,7 +24,17 @@ const Bookshelf = (props: BookShelfProps) => {
   const { shelves, bookCase } = props;
 
   return (
-    <View className="flex-1 items-center justify-center">
+    <View
+      className="flex-1 items-center justify-center"
+      onTouchEnd={() => {
+        router.push({
+          pathname: "/case-details",
+          params: {
+            caseName: bookCase.name,
+          },
+        });
+      }}
+    >
       {shelves.map((shelfBooks, index) => {
         return (
           <Shelf
@@ -31,7 +42,7 @@ const Bookshelf = (props: BookShelfProps) => {
             index={index}
             bookCase={bookCase}
             width={MAX_WIDTH + 10}
-            height={verticalScale(INDIVIDUAL_SHELF_HEIGHT)}
+            height={INDIVIDUAL_SHELF_HEIGHT}
             numShelves={shelves.length}
           >
             <FlatList
@@ -128,8 +139,12 @@ const BookshelfScreen = () => {
         }
 
         const { originalImageHeight, originalImageWidth } = spine;
-        const randomHeightOffset = Math.random() * 10; // Random offset for height variation
-        height = INDIVIDUAL_SHELF_HEIGHT - offsetY + 14 + randomHeightOffset;
+        const randomHeightOffset = Math.random() * 5; // Random offset for height variation
+        height = INDIVIDUAL_SHELF_HEIGHT - offsetY - randomHeightOffset;
+        // sort of a hack
+        if (!isTablet) {
+          height = height - verticalScale(5);
+        }
         width = getBookSpineWidth(
           bookOrWidget?.number_of_pages || 200,
           originalImageWidth || 80,
@@ -138,7 +153,7 @@ const BookshelfScreen = () => {
         );
       } else {
         width = scale(60);
-        height = scale(INDIVIDUAL_SHELF_HEIGHT) - offsetY;
+        height = INDIVIDUAL_SHELF_HEIGHT - offsetY - 20;
       }
 
       const thingWithDimensions = {

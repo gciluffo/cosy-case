@@ -14,7 +14,7 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { Image } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
 import { getPrimaryAndSecondaryColors } from "@/utils/image";
-import { scale, verticalScale } from "@/utils/scale";
+import { moderateScale, verticalScale } from "@/utils/scale";
 import { Heading } from "@/components/ui/heading";
 import { LinearGradient } from "expo-linear-gradient";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
@@ -348,7 +348,7 @@ export default function BookDetails() {
       {isInLibrary && localBook && (
         <>
           <View className="px-4 bg-gray-100">
-            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+            <Text className="text-gray-500 mb-1 ml-1" size="md">
               Reading Status
             </Text>
             <Card>
@@ -377,7 +377,7 @@ export default function BookDetails() {
               </View>
             </Card>
             <View className="h-6" />
-            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+            <Text className="text-gray-500 mb-1 ml-1" size="md">
               Book Review
             </Text>
             <Card>
@@ -406,7 +406,7 @@ export default function BookDetails() {
               </View>
             </Card>
             <View className="h-6" />
-            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+            <Text className="text-gray-500 mb-1 ml-1" size="md">
               Additional Notes
             </Text>
             <Card>
@@ -428,7 +428,7 @@ export default function BookDetails() {
               </Textarea>
             </Card>
             <View className="h-6" />
-            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+            <Text className="text-gray-500 mb-1 ml-1" size="md">
               Spine Image
             </Text>
             <Card>
@@ -497,8 +497,8 @@ export default function BookDetails() {
 
 const styles = StyleSheet.create({
   image: {
-    width: scale(150),
-    height: scale(200),
+    width: moderateScale(150),
+    height: moderateScale(200),
     borderRadius: 10,
   },
   buttonContainer: {

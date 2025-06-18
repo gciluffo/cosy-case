@@ -2,7 +2,6 @@ import "@/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useFonts } from "expo-font";
 import {
-  router,
   Stack,
   useLocalSearchParams,
   useNavigation,
@@ -17,6 +16,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Linking, TouchableOpacity } from "react-native";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
+import { isTablet } from "@/utils/scale";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -67,7 +67,25 @@ export default function RootLayout() {
           name="add-book"
           options={{
             title: "Add to Library",
-            presentation: "modal",
+            presentation: isTablet ? "fullScreenModal" : "modal",
+            headerLeft: () => {
+              return (
+                isTablet && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.back();
+                    }}
+                  >
+                    <FontAwesome
+                      name="chevron-left"
+                      size={25}
+                      color="#3b82f6"
+                    />
+                    {/* <Text className="text-blue-500">Back</Text> */}
+                  </TouchableOpacity>
+                )
+              );
+            },
             headerBackButtonDisplayMode: "generic",
           }}
         />
@@ -75,8 +93,25 @@ export default function RootLayout() {
           name="add-case"
           options={{
             title: "Add Bookcase",
-            presentation: "modal",
-            headerBackButtonDisplayMode: "generic",
+            presentation: isTablet ? "fullScreenModal" : "modal",
+            headerLeft: () => {
+              return (
+                isTablet && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.back();
+                    }}
+                  >
+                    <FontAwesome
+                      name="chevron-left"
+                      size={25}
+                      color="#3b82f6"
+                    />
+                    {/* <Text className="text-blue-500">Back</Text> */}
+                  </TouchableOpacity>
+                )
+              );
+            },
           }}
         />
         <Stack.Screen

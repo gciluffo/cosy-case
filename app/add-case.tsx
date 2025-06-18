@@ -2,7 +2,7 @@ import { Shelf } from "@/components/Shelf";
 import colors from "tailwindcss/colors";
 import { BookCase } from "@/models/book";
 import { BOOK_CASES } from "@/utils/bookcase";
-import { scale, verticalScale } from "@/utils/scale";
+import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -121,7 +121,7 @@ export default function AddCase() {
       buttonText="Add Bookcase"
       loading={isLoading}
     >
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
+      <Text className="text-gray-500 mb-1 ml-1" size="md">
         Case
       </Text>
       <FlatList
@@ -141,7 +141,7 @@ export default function AddCase() {
         )}
       />
       <View className="h-10" />
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
+      <Text className="text-gray-500 mb-1 ml-1" size="md">
         Name
       </Text>
       <Card>
@@ -152,12 +152,15 @@ export default function AddCase() {
               value={caseName}
               onChangeText={(text) => setCaseName(text)}
               placeholder={caseName}
+              style={{
+                fontSize: moderateScale(14),
+              }}
             />
           </TouchableOpacity>
         </View>
       </Card>
       <View className="h-5" />
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
+      <Text className="text-gray-500 mb-1 ml-1" size="md">
         Default Display
       </Text>
       <Card>
@@ -178,7 +181,7 @@ export default function AddCase() {
         </View>
       </Card>
       <View className="h-5" />
-      <Text className="text-gray-500 mb-1 ml-1" size="lg">
+      <Text className="text-gray-500 mb-1 ml-1" size="md">
         Widgets
       </Text>
       <Card>
@@ -249,11 +252,9 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   widgetImage: {
-    width: 100,
-    height: 100,
+    width: moderateScale(100),
+    height: moderateScale(100),
     borderRadius: 3,
     marginRight: 10,
-    borderWidth: 1,
-    borderColor: "#000",
   },
 });

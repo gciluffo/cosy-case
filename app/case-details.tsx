@@ -11,7 +11,7 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ButtonIcon } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
-import { scale, verticalScale } from "@/utils/scale";
+import { isTablet, moderateScale, scale, verticalScale } from "@/utils/scale";
 import {
   View,
   StyleSheet,
@@ -36,9 +36,9 @@ import { getWidgetImages } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
 
-const CASE_WIDTH = Dimensions.get("window").width / 2 - 20;
-const CASE_HEIGHT = verticalScale(100);
-const SHELF_HEIGHT = verticalScale(33);
+const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 40);
+const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
+const SHELF_HEIGHT = verticalScale(isTablet ? 30 : 40);
 
 export default function CaseDetails() {
   const params = useLocalSearchParams();
@@ -254,7 +254,7 @@ export default function CaseDetails() {
 
       <View className="h-6 bg-gray-100" />
       <View className="px-4 bg-gray-100">
-        <Text className="text-gray-500 mb-1 ml-1" size="lg">
+        <Text className="text-gray-500 mb-1 ml-1" size="md">
           Name
         </Text>
         <Card>
@@ -269,7 +269,9 @@ export default function CaseDetails() {
                 onSubmitEditing={() => {
                   updateCase(bookCase?.name!, { name: caseNameInput });
                 }}
-                style={{}}
+                style={{
+                  fontSize: moderateScale(14),
+                }}
               />
             </TouchableOpacity>
           </View>
@@ -278,7 +280,7 @@ export default function CaseDetails() {
         {!bookCase?.isDefault && (
           <>
             <View className="h-5" />
-            <Text className="text-gray-500 mb-1 ml-1" size="lg">
+            <Text className="text-gray-500 mb-1 ml-1" size="md">
               Default Display
             </Text>
             <Card>
@@ -301,7 +303,7 @@ export default function CaseDetails() {
         )}
 
         <View className="h-5" />
-        <Text className="text-gray-500 mb-1 ml-1" size="lg">
+        <Text className="text-gray-500 mb-1 ml-1" size="md">
           Widgets
         </Text>
         <Card>
@@ -385,13 +387,13 @@ export default function CaseDetails() {
 
 const styles = StyleSheet.create({
   image: {
-    width: scale(150),
-    height: scale(200),
+    width: moderateScale(150),
+    height: moderateScale(200),
     borderRadius: 10,
   },
   bookImage: {
-    width: scale(62),
-    height: scale(80),
+    width: moderateScale(62),
+    height: moderateScale(80),
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -425,8 +427,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   widgetImage: {
-    width: 100,
-    height: 100,
+    padding: 5,
+    width: moderateScale(100),
+    height: moderateScale(100),
     borderRadius: 3,
     marginRight: 10,
     borderWidth: 1,

@@ -68,7 +68,7 @@ export default function AddBookScan() {
         return;
       }
 
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
       const results = await searchBooks(isbn);
       const firstResult = results[0];

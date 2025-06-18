@@ -50,7 +50,6 @@ export default function TabTwoScreen() {
     <FlatList
       contentContainerStyle={{
         paddingBottom: 100,
-        marginHorizontal: isTablet ? moderateScale(100) : 0,
       }}
       style={styles.list}
       data={allBooks}

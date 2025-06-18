@@ -36,7 +36,7 @@ export default function CompactBookShelf(props: BookShelfProps) {
       totalShelfHeight += shelfHeight;
     }
 
-    let currentShelfWidth = offsetX * 2;
+    let currentShelfWidth = offsetX - 20;
     let currentShelfIndex = 0;
 
     const booksWithWidgets: (Book | Widget)[] = [...books];
@@ -74,9 +74,9 @@ export default function CompactBookShelf(props: BookShelfProps) {
         height = bookOrWidget?.physical_dimensions
           ? getBookHeightPx(
               bookOrWidget?.physical_dimensions,
-              shelfHeight - offsetY + 17
+              shelfHeight - offsetY + 15
             )
-          : shelfHeight - offsetY + 17;
+          : shelfHeight - offsetY + 15;
         width = getBookSpineWidth(
           bookOrWidget?.number_of_pages || 200,
           originalImageWidth || 80,
@@ -85,7 +85,7 @@ export default function CompactBookShelf(props: BookShelfProps) {
         );
       } else {
         width = scale(20);
-        height = shelfHeight - offsetY + 17;
+        height = shelfHeight - offsetY + 15;
       }
 
       const bookWithDimensions = {

@@ -52,16 +52,24 @@ export default function PlaceholderBookSpine(props: Props) {
         style={{
           transform: [{ rotate: "90deg" }],
           width: height,
+          height: width,
+          // alignItems: "center",
+          // flexDirection: "column",
+          // borderRadius: 5,
+          // padding: 5,
+          justifyContent: "center",
           alignItems: "center",
+          // position: "absolute",
+          // borderWidth: 1,
+          // backgroundColor: "red",
         }}
       >
         <Text
           style={{
             color: isColorDark(colors.primary) ? "#fff" : "#000",
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: "bold",
             textAlign: "center",
-            lineHeight: 13,
           }}
         >
           {title}
@@ -69,7 +77,7 @@ export default function PlaceholderBookSpine(props: Props) {
         <Text
           style={{
             color: isColorDark(colors.primary) ? "#fff" : "#000",
-            fontSize: 12,
+            fontSize: 9,
             textAlign: "center",
           }}
         >

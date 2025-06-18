@@ -50,9 +50,11 @@ export default function BookSearchResult(props: Props) {
         />
       )}
       <View className="flex-[2]">
-        <Text className="text-base font-semibold">{props.title}</Text>
+        <Text className="font-semibold">{props.title}</Text>
         {props.author && (
-          <Text className="text-sm text-gray-500">{props.author}</Text>
+          <Text size="sm" className="text-gray-500 pt-1">
+            {props.author}
+          </Text>
         )}
         {props.rating && (
           <Text className="text-sm text-gray-500">Rating: {props.rating}</Text>
