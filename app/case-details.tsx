@@ -11,14 +11,13 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ButtonIcon } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
-import { isTablet, moderateScale, scale, verticalScale } from "@/utils/scale";
+import { isTablet, moderateScale, verticalScale } from "@/utils/scale";
 import {
   View,
   StyleSheet,
   Dimensions,
   TouchableOpacity,
   TextInput,
-  SwitchChangeEvent,
   ScrollView,
 } from "react-native";
 import { Image } from "expo-image";
@@ -28,9 +27,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Text } from "@/components/ui/text";
 import CompactBookShelf from "@/components/CompactBookShelf";
 import { Button, ButtonText } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
-import colors from "tailwindcss/colors";
 import { Card } from "@/components/ui/card";
 import { getWidgetImages } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
@@ -144,12 +141,23 @@ export default function CaseDetails() {
             }}
           >
             {bookCase && (
-              <CompactBookShelf
-                bookCase={bookCase}
-                caseWidth={CASE_WIDTH}
-                caseHeight={CASE_HEIGHT}
-                shelfHeight={SHELF_HEIGHT}
-              />
+              <TouchableOpacity
+                onPress={() => {
+                  router.push({
+                    pathname: "/single-case-display",
+                    params: {
+                      caseName: bookCase.name,
+                    },
+                  });
+                }}
+              >
+                <CompactBookShelf
+                  bookCase={bookCase}
+                  caseWidth={CASE_WIDTH}
+                  caseHeight={CASE_HEIGHT}
+                  shelfHeight={SHELF_HEIGHT}
+                />
+              </TouchableOpacity>
             )}
 
             <View className="justify-center items-center mt-2">

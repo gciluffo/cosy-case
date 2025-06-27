@@ -200,6 +200,7 @@ export default function RootLayout() {
             headerBackButtonDisplayMode: "generic",
           }}
         />
+        <Stack.Screen name="single-case-display" options={{}} />
       </Stack>
       <StatusBar style="auto" />
     </GluestackUIProvider>

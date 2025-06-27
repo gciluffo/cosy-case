@@ -72,11 +72,8 @@ interface DisplayCase {
 }
 
 const BookshelfScreen = () => {
-  const [shelves, setShelves] = React.useState<(Book | Widget)[][]>([]);
   const [displayCases, setDisplayCases] = React.useState<DisplayCase[]>([]);
   const { cases } = useStore();
-
-  // const selectedCase = cases.find((c) => c.isDefault);
 
   useEffect(() => {
     if (!cases) {
