@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { SnapbackZoom } from "react-native-zoom-toolkit";
 import { Dimensions, FlatList, TouchableOpacity, View } from "react-native";
 import useStore from "@/store";
 import { Book, BookCase, isBook, Widget } from "@/models/book";
@@ -9,6 +10,7 @@ import CachedBookSpine from "@/components/BookSpine";
 import CachedWidget from "@/components/Widget";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const MAX_WIDTH = Dimensions.get("window").width * (isTablet ? 0.8 : 0.95);
 const MAX_HEIGHT = Dimensions.get("window").height * (isTablet ? 1.5 : 0.8);
@@ -24,41 +26,43 @@ const Bookshelf = (props: BookShelfProps) => {
   const { shelves, bookCase } = props;
 
   return (
-    <TouchableOpacity
-      className="flex-1 items-center justify-center"
-      activeOpacity={1}
-      onLongPress={() => {
-        router.push({
-          pathname: "/case-details",
-          params: {
-            caseName: bookCase.name,
-          },
-        });
-      }}
-    >
-      {shelves.map((shelfBooks, index) => {
-        return (
-          <Shelf
-            key={index}
-            index={index}
-            bookCase={bookCase}
-            width={MAX_WIDTH + 10}
-            height={INDIVIDUAL_SHELF_HEIGHT}
-            numShelves={shelves.length}
-          >
-            <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-              {shelfBooks.map((item: any) => {
-                if ("spines" in item) {
-                  return <CachedBookSpine book={item} key={item.key} />;
-                } else {
-                  return <CachedWidget widget={item} key={item.cacheKey} />;
-                }
-              })}
-            </View>
-          </Shelf>
-        );
-      })}
-    </TouchableOpacity>
+    <GestureHandlerRootView>
+      <SnapbackZoom
+        onLongPress={() => {
+          router.push({
+            pathname: "/case-details",
+            params: {
+              caseName: bookCase.name,
+            },
+          });
+        }}
+      >
+        <View className="flex-1 items-center justify-center">
+          {shelves.map((shelfBooks, index) => {
+            return (
+              <Shelf
+                key={index}
+                index={index}
+                bookCase={bookCase}
+                width={MAX_WIDTH + 10}
+                height={INDIVIDUAL_SHELF_HEIGHT}
+                numShelves={shelves.length}
+              >
+                <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+                  {shelfBooks.map((item: any) => {
+                    if ("spines" in item) {
+                      return <CachedBookSpine book={item} key={item.key} />;
+                    } else {
+                      return <CachedWidget widget={item} key={item.cacheKey} />;
+                    }
+                  })}
+                </View>
+              </Shelf>
+            );
+          })}
+        </View>
+      </SnapbackZoom>
+    </GestureHandlerRootView>
   );
 };
 
