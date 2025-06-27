@@ -18,14 +18,15 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarItemStyle: { alignItems: "center", flexDirection: "row" },
         tabBarStyle: {
           position: "absolute",
-          width: isTablet ? 300 : 200,
-          marginLeft: screenWidth / 2 - (isTablet ? 150 : 100),
+          width: isTablet ? 200 : 150,
+          marginLeft: isTablet
+            ? (screenWidth - 200) / 2
+            : (screenWidth - 150) / 2,
           marginBottom: Platform.OS === "android" ? 20 : 30,
           elevation: 5,
           backgroundColor: Colors[colorScheme ?? "light"].background,
@@ -46,19 +47,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Display",
+          title: "Displays",
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="bookshelf" size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="case-list"
-        options={{
-          title: "Cases",
-          headerShown: true,
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="book-edit" size={28} color={color} />
           ),
           headerRight: () => (
             <TouchableOpacity onPress={() => router.push("/add-case")}>
@@ -88,7 +79,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="book.pages" color={color} />
           ),
-          headerShown: true,
           headerRight: () => (
             <TouchableOpacity onPress={() => router.push("/book-search")}>
               <IconSymbol

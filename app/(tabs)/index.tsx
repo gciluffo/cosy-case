@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Dimensions, FlatList, View } from "react-native";
+import { Dimensions, FlatList, TouchableOpacity, View } from "react-native";
 import useStore from "@/store";
 import { Book, BookCase, isBook, Widget } from "@/models/book";
 import { isTablet, scale, verticalScale } from "@/utils/scale";
@@ -24,9 +24,10 @@ const Bookshelf = (props: BookShelfProps) => {
   const { shelves, bookCase } = props;
 
   return (
-    <View
+    <TouchableOpacity
       className="flex-1 items-center justify-center"
-      onTouchEnd={() => {
+      activeOpacity={1}
+      onLongPress={() => {
         router.push({
           pathname: "/case-details",
           params: {
@@ -45,143 +46,157 @@ const Bookshelf = (props: BookShelfProps) => {
             height={INDIVIDUAL_SHELF_HEIGHT}
             numShelves={shelves.length}
           >
-            <FlatList
-              horizontal
-              data={shelfBooks}
-              keyExtractor={(item) =>
-                (item as Book).key || (item as Widget).cacheKey
-              }
-              renderItem={({ item }: { item: any }) => {
+            <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+              {shelfBooks.map((item: any) => {
                 if ("spines" in item) {
                   return <CachedBookSpine book={item} key={item.key} />;
                 } else {
-                  return <CachedWidget widget={item} />;
+                  return <CachedWidget widget={item} key={item.cacheKey} />;
                 }
-              }}
-              contentContainerStyle={{ alignItems: "flex-end" }} // Makes sure spines align bottom
-              showsHorizontalScrollIndicator={false}
-              scrollEnabled={false}
-            />
+              })}
+            </View>
           </Shelf>
         );
       })}
-    </View>
+    </TouchableOpacity>
   );
 };
 
+interface DisplayCase {
+  shelves: (Book | Widget)[][];
+  bookCase: BookCase;
+}
+
 const BookshelfScreen = () => {
   const [shelves, setShelves] = React.useState<(Book | Widget)[][]>([]);
+  const [displayCases, setDisplayCases] = React.useState<DisplayCase[]>([]);
   const { cases } = useStore();
-  const selectedCase = cases.find((c) => c.isSelected);
+
+  // const selectedCase = cases.find((c) => c.isDefault);
 
   useEffect(() => {
-    if (!selectedCase) {
+    if (!cases) {
       return;
     }
 
-    const selectedBookCaseClone = { ...selectedCase };
-    const books = selectedBookCaseClone.books;
-    const widgets = [...selectedBookCaseClone.widgets]; // Make a shallow copy
+    const out = [];
 
-    const offsetX = scale(30);
-    const offsetY = verticalScale(20);
-    const tempShelves: ((Book | Widget) & {
-      width: number;
-      height: number;
-    })[][] = [];
+    for (const selectedCase of cases) {
+      const selectedBookCaseClone = { ...selectedCase };
+      const books = selectedBookCaseClone.books;
+      const widgets = [...selectedBookCaseClone.widgets]; // Make a shallow copy
 
-    // Initialize shelves
-    let totalShelfHeight = 0;
-    while (
-      totalShelfHeight <
-      MAX_HEIGHT - verticalScale(INDIVIDUAL_SHELF_HEIGHT)
-    ) {
-      tempShelves.push([]);
-      totalShelfHeight += verticalScale(INDIVIDUAL_SHELF_HEIGHT);
-    }
+      const offsetX = scale(30);
+      const offsetY = verticalScale(20);
+      const tempShelves: ((Book | Widget) & {
+        width: number;
+        height: number;
+      })[][] = [];
 
-    let currentShelfWidth = offsetX;
-    let currentShelfIndex = 0;
+      // Initialize shelves
+      let totalShelfHeight = 0;
+      while (
+        totalShelfHeight <
+        MAX_HEIGHT - verticalScale(INDIVIDUAL_SHELF_HEIGHT)
+      ) {
+        tempShelves.push([]);
+        totalShelfHeight += verticalScale(INDIVIDUAL_SHELF_HEIGHT);
+      }
 
-    // Insert widgets into the books array, even if there are less than 10 books
-    const booksWithWidgets: (Book | Widget)[] = [...books];
-    if (widgets && widgets.length > 0) {
-      const widgetsCopy = [...widgets];
-      if (booksWithWidgets.length < 10) {
-        // Place all widgets at the end if less than 10 books
-        booksWithWidgets.push(...widgetsCopy);
-      } else {
-        // Insert widgets every 10 books
-        let insertIndex = 10;
-        while (
-          widgetsCopy.length > 0 &&
-          insertIndex <= booksWithWidgets.length
-        ) {
-          booksWithWidgets.splice(insertIndex, 0, widgetsCopy.shift()!);
-          insertIndex += 11; // Move to the next 10 books (10 books + 1 widget)
-        }
-        // If any widgets remain, append them at the end
-        if (widgetsCopy.length > 0) {
+      let currentShelfWidth = offsetX;
+      let currentShelfIndex = 0;
+
+      // Insert widgets into the books array, even if there are less than 10 books
+      const booksWithWidgets: (Book | Widget)[] = [...books];
+      if (widgets && widgets.length > 0) {
+        const widgetsCopy = [...widgets];
+        if (booksWithWidgets.length < 10) {
+          // Place all widgets at the end if less than 10 books
           booksWithWidgets.push(...widgetsCopy);
+        } else {
+          // Insert widgets every 10 books
+          let insertIndex = 10;
+          while (
+            widgetsCopy.length > 0 &&
+            insertIndex <= booksWithWidgets.length
+          ) {
+            booksWithWidgets.splice(insertIndex, 0, widgetsCopy.shift()!);
+            insertIndex += 11; // Move to the next 10 books (10 books + 1 widget)
+          }
+          // If any widgets remain, append them at the end
+          if (widgetsCopy.length > 0) {
+            booksWithWidgets.push(...widgetsCopy);
+          }
         }
       }
+
+      booksWithWidgets.forEach((bookOrWidget, index) => {
+        // console.log("Processing item", index, bookOrWidget);
+        let width, height;
+        if (isBook(bookOrWidget)) {
+          const spine = bookOrWidget.spines.find((s) => s.selected);
+
+          if (!spine) {
+            // skip
+            return;
+          }
+
+          const { originalImageHeight, originalImageWidth } = spine;
+          const randomHeightOffset = Math.random() * 5; // Random offset for height variation
+          height = INDIVIDUAL_SHELF_HEIGHT - offsetY - randomHeightOffset;
+          // sort of a hack
+          if (!isTablet) {
+            height = height - verticalScale(5);
+          }
+          width = getBookSpineWidth(
+            bookOrWidget?.number_of_pages || 200,
+            originalImageWidth || 80,
+            originalImageHeight || 200,
+            height
+          );
+        } else {
+          width = scale(60);
+          height = INDIVIDUAL_SHELF_HEIGHT - offsetY - 20;
+        }
+
+        const thingWithDimensions = {
+          ...bookOrWidget!,
+          width,
+          height,
+        };
+
+        if (currentShelfWidth + width < MAX_WIDTH) {
+          tempShelves[currentShelfIndex].push(thingWithDimensions);
+          currentShelfWidth += width;
+        } else {
+          // If starting a new shelf, reset the width
+          currentShelfIndex++;
+          currentShelfWidth = width;
+          tempShelves[currentShelfIndex].push(thingWithDimensions);
+        }
+      });
+
+      out.push({
+        shelves: tempShelves,
+        bookCase: selectedBookCaseClone,
+      });
     }
 
-    booksWithWidgets.forEach((bookOrWidget, index) => {
-      // console.log("Processing item", index, bookOrWidget);
-      let width, height;
-      if (isBook(bookOrWidget)) {
-        const spine = bookOrWidget.spines.find((s) => s.selected);
-
-        if (!spine) {
-          // skip
-          return;
-        }
-
-        const { originalImageHeight, originalImageWidth } = spine;
-        const randomHeightOffset = Math.random() * 5; // Random offset for height variation
-        height = INDIVIDUAL_SHELF_HEIGHT - offsetY - randomHeightOffset;
-        // sort of a hack
-        if (!isTablet) {
-          height = height - verticalScale(5);
-        }
-        width = getBookSpineWidth(
-          bookOrWidget?.number_of_pages || 200,
-          originalImageWidth || 80,
-          originalImageHeight || 200,
-          height
-        );
-      } else {
-        width = scale(60);
-        height = INDIVIDUAL_SHELF_HEIGHT - offsetY - 20;
-      }
-
-      const thingWithDimensions = {
-        ...bookOrWidget!,
-        width,
-        height,
-      };
-
-      if (currentShelfWidth + width < MAX_WIDTH) {
-        tempShelves[currentShelfIndex].push(thingWithDimensions);
-        currentShelfWidth += width;
-      } else {
-        // If starting a new shelf, reset the width
-        currentShelfIndex++;
-        currentShelfWidth = width;
-        tempShelves[currentShelfIndex].push(thingWithDimensions);
-      }
-    });
-
-    // console.log("tempShelves", tempShelves);
-
-    setShelves(tempShelves);
-  }, [selectedCase]);
+    setDisplayCases(out);
+  }, [cases]);
 
   return (
-    <>
-      {selectedCase && <Bookshelf shelves={shelves} bookCase={selectedCase} />}
-    </>
+    <FlatList
+      data={displayCases}
+      keyExtractor={(item) => item.bookCase.name}
+      horizontal
+      pagingEnabled
+      showsHorizontalScrollIndicator={false}
+      renderItem={({ item }) => (
+        <Bookshelf shelves={item.shelves} bookCase={item.bookCase} />
+      )}
+      style={{ flex: 1 }}
+    />
   );
 };
 

@@ -43,7 +43,6 @@ export interface BookCase {
   bottomImageKey: string;
   offsetXPercent: number;
   offsetYPercent: number;
-  isSelected: boolean;
   books: Book[];
   isDefault: boolean;
   widgets: Widget[];

@@ -48,7 +48,6 @@ export default function CaseDetails() {
   const [showActionsheet, setShowActionsheet] = useState(false);
   const handleClose = () => setShowActionsheet(false);
   const [caseNameInput, setCaseName] = useState<string>(caseName as string);
-  const [isDefault, setIsDefault] = useState(bookCase?.isSelected);
   const [caseWidgets, setCaseWidgets] = useState<
     { url: string; isSelected: boolean; cacheKey: string }[]
   >([]);
@@ -82,35 +81,7 @@ export default function CaseDetails() {
     init();
   }, [caseName]);
 
-  // console.log("caseWidgets", caseWidgets);
-
-  const onDefaultCaseSelected = (event: SwitchChangeEvent) => {
-    const isDefault = event.nativeEvent.value;
-    // update selected case to this value/
-    // if true, de-selected all other cases in state
-    // if false, set default case to selected
-    for (const c of cases) {
-      updateCase(c.name, { isSelected: false });
-    }
-
-    if (isDefault) {
-      updateCase(bookCase?.name!, { isSelected: true });
-    } else {
-      updateCase("default", { isSelected: true });
-    }
-
-    setIsDefault(isDefault);
-  };
-
   const onDeleteCase = () => {
-    if (bookCase?.isSelected) {
-      // if this case is selected, set default case to selected
-      for (const c of cases) {
-        updateCase(c.name, { isSelected: false });
-      }
-      updateCase("default", { isSelected: true });
-    }
-
     removeCase(bookCase?.name!);
     router.back();
   };
@@ -276,31 +247,6 @@ export default function CaseDetails() {
             </TouchableOpacity>
           </View>
         </Card>
-
-        {!bookCase?.isDefault && (
-          <>
-            <View className="h-5" />
-            <Text className="text-gray-500 mb-1 ml-1" size="md">
-              Default Display
-            </Text>
-            <Card>
-              <View className="flex-row justify-between items-center">
-                <Text className="text-gray-500">Default Display</Text>
-                <Switch
-                  size="md"
-                  trackColor={{
-                    false: colors.neutral[300],
-                    true: colors.neutral[600],
-                  }}
-                  thumbColor={colors.neutral[50]}
-                  ios_backgroundColor={colors.neutral[300]}
-                  value={isDefault}
-                  onChange={onDefaultCaseSelected}
-                />
-              </View>
-            </Card>
-          </>
-        )}
 
         <View className="h-5" />
         <Text className="text-gray-500 mb-1 ml-1" size="md">

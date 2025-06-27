@@ -17,7 +17,6 @@ import useStore from "@/store";
 import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import { router } from "expo-router";
 import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Image } from "expo-image";
 import { getWidgetImages } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
@@ -25,12 +24,18 @@ import { CacheManager } from "@/components/ChachedImage";
 
 export default function AddCase() {
   const { addCase, cases, updateCase } = useStore();
-  const [bookCases, setBookCases] = useState<BookCase[]>(BOOK_CASES);
+  const [bookCases, setBookCases] = useState<
+    (BookCase & { isSelected: boolean })[]
+  >(
+    BOOK_CASES.map((c) => ({
+      ...c,
+      isSelected: false,
+    }))
+  );
   const [caseName, setCaseName] = useState<string>(`case ${cases.length + 1}`);
   const [caseWidgets, setCaseWidgets] = useState<
     { url: string; isSelected: boolean }[]
   >([]);
-  const [isDefault, setIsDefault] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -41,6 +46,10 @@ export default function AddCase() {
         isSelected: false,
       }));
       setCaseWidgets(list);
+      setBookCases((prev) => {
+        prev[0].isSelected = true;
+        return [...prev];
+      });
     };
     init();
   }, []);
@@ -90,7 +99,6 @@ export default function AddCase() {
       bottomImageKey: selectedStyle!.bottomImageKey,
       offsetXPercent: selectedStyle!.offsetXPercent,
       offsetYPercent: selectedStyle!.offsetYPercent,
-      isSelected: isDefault,
       books: [],
       isDefault: false,
       widgets: selectedWidgets.map((w) => {
@@ -101,13 +109,6 @@ export default function AddCase() {
         };
       }),
     };
-
-    // if case is default then set the others to false
-    if (newCase.isDefault) {
-      for (const c of cases) {
-        updateCase(c.name, { isSelected: false });
-      }
-    }
 
     addCase(newCase);
 
@@ -157,27 +158,6 @@ export default function AddCase() {
               }}
             />
           </TouchableOpacity>
-        </View>
-      </Card>
-      <View className="h-5" />
-      <Text className="text-gray-500 mb-1 ml-1" size="md">
-        Default Display
-      </Text>
-      <Card>
-        <View className="flex-row justify-between items-center">
-          <Text className="text-gray-500">Default Display</Text>
-          <Switch
-            size="md"
-            isDisabled={false}
-            trackColor={{
-              false: colors.neutral[300],
-              true: colors.neutral[600],
-            }}
-            thumbColor={colors.neutral[50]}
-            ios_backgroundColor={colors.neutral[300]}
-            value={isDefault}
-            onChange={(event) => setIsDefault(event.nativeEvent.value)}
-          />
         </View>
       </Card>
       <View className="h-5" />

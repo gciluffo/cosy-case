@@ -13,14 +13,17 @@ import { router, useLocalSearchParams } from "expo-router";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { Image } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
-import { getPrimaryAndSecondaryColors } from "@/utils/image";
+import {
+  getObjectKeyFromSignedUrl,
+  getPrimaryAndSecondaryColors,
+} from "@/utils/image";
 import { moderateScale, verticalScale } from "@/utils/scale";
 import { Heading } from "@/components/ui/heading";
 import { LinearGradient } from "expo-linear-gradient";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
 import { Book, BookReview, BookStatus } from "@/models/book";
-import { getBookDetails, searchBooks } from "@/api";
+import { getBookDetails, getSpineImages, searchBooks } from "@/api";
 import { OpenLibraryBook } from "@/models/open-library";
 import CollapsibleDescription from "@/components/CollapsibleDescription";
 import { Card } from "@/components/ui/card";
@@ -38,6 +41,9 @@ export default function BookDetails() {
     primary: string;
     secondary: string;
   } | null>(null);
+  const [spines, setSpines] = useState<
+    { url: string; isSelected: boolean; cacheKey: string }[]
+  >([]);
   const { removeBook, getBookByKey, updateBook, cases } = useStore();
   const params = useLocalSearchParams();
   const { localBookKey, bookKey, cover_url } = params;
@@ -54,10 +60,28 @@ export default function BookDetails() {
           const book = getBookByKey(localBookKey as string);
           if (book) {
             setLocalBook(book);
-            const selectedSpine = book.spines.find((item) => item.selected);
-            if (selectedSpine) {
-              setSelectedSpine(selectedSpine.cacheKey);
-            }
+            // const selectedSpine = book.spines.find((item) => item.selected);
+            // if (selectedSpine) {
+            //   setSelectedSpine(selectedSpine.cacheKey);
+            // }
+            const remoteSpines = await getSpineImages(book.key);
+            const localBookSpines = book?.spines || [];
+            const list = remoteSpines.map((url) => {
+              const { bucketName } = getObjectKeyFromSignedUrl(url);
+              // const cacheKey = `${bucketName}-widget`;
+              const isSelected = localBookSpines.some((s) =>
+                s.cacheKey.includes(book.key)
+              );
+              return {
+                url,
+                isSelected,
+                cacheKey:
+                  localBookSpines.find((s) => s.cacheKey.includes(book.key))
+                    ?.cacheKey || ``,
+              };
+            });
+
+            setSpines(list);
             if (book.reviewText) {
               setReviewText(book.reviewText);
             }
@@ -435,27 +459,26 @@ export default function BookDetails() {
               <View className="flex-row">
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View className="flex-row gap-3">
-                    {localBook.spines?.map((image, index) => (
+                    {spines?.map((image, index) => (
                       <TouchableOpacity
                         onPress={() => {
-                          setSelectedSpine(image.cacheKey);
-                          const updatedSpines = localBook.spines.map(
-                            (item) => ({
-                              ...item,
-                              selected: item.cacheKey === image.cacheKey,
-                            })
-                          );
-                          updateBook(localBook.key, {
-                            ...localBook,
-                            spines: updatedSpines,
-                          });
+                          // setSelectedSpine(image.cacheKey);
+                          // const updatedSpines = localBook.spines.map(
+                          //   (item) => ({
+                          //     ...item,
+                          //     selected: item.cacheKey === image.cacheKey,
+                          //   })
+                          // );
+                          // updateBook(localBook.key, {
+                          //   ...localBook,
+                          //   spines: updatedSpines,
+                          // });
                         }}
                       >
-                        <CachedImage
+                        <Image
                           source={{
-                            uri: "",
+                            uri: image.url,
                           }}
-                          cacheKey={image.cacheKey}
                           style={[
                             styles.spineImage,
                             selectedSpine === image.cacheKey &&
