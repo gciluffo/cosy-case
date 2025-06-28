@@ -200,7 +200,15 @@ export default function RootLayout() {
             headerBackButtonDisplayMode: "generic",
           }}
         />
-        <Stack.Screen name="single-case-display" options={{}} />
+        <Stack.Screen
+          name="single-case-display"
+          options={{
+            headerTransparent: true,
+            headerTitle: "",
+            headerTintColor: "white", // or any contrasting color for your back button
+            headerBackButtonDisplayMode: "generic",
+          }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </GluestackUIProvider>
