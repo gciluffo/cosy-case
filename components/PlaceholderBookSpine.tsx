@@ -51,17 +51,10 @@ export default function PlaceholderBookSpine(props: Props) {
       <View
         style={{
           transform: [{ rotate: "90deg" }],
-          width: height,
-          height: width,
-          // alignItems: "center",
-          // flexDirection: "column",
-          // borderRadius: 5,
-          // padding: 5,
+          width: height - 25,
+          height: width - 30,
           justifyContent: "center",
           alignItems: "center",
-          // position: "absolute",
-          // borderWidth: 1,
-          // backgroundColor: "red",
         }}
       >
         <Text
@@ -72,7 +65,7 @@ export default function PlaceholderBookSpine(props: Props) {
             textAlign: "center",
           }}
         >
-          {title}
+          {title.length > 25 ? `${title.slice(0, 25)}...` : title}
         </Text>
         <Text
           style={{
@@ -81,7 +74,7 @@ export default function PlaceholderBookSpine(props: Props) {
             textAlign: "center",
           }}
         >
-          {author}
+          {author.length > 25 ? `${author.slice(0, 25)}...` : author}
         </Text>
       </View>
       <View
