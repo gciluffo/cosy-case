@@ -209,6 +209,14 @@ export default function RootLayout() {
             headerBackButtonDisplayMode: "generic",
           }}
         />
+        <Stack.Screen
+          name="add-books-from-case"
+          options={{
+            title: "Move Books",
+            presentation: "modal",
+            headerBackButtonDisplayMode: "generic",
+          }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </GluestackUIProvider>

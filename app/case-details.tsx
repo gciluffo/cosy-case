@@ -335,7 +335,6 @@ export default function CaseDetails() {
     >
       <View style={styles.content}>
         <View className="h-5" />
-        <Heading>Books</Heading>
         {bookCase && bookCase?.books?.length > 0 ? (
           <View className="flex-row flex-wrap" style={{ marginLeft: -3 }}>
             {bookCase?.books.map((book) => (
@@ -378,6 +377,9 @@ export default function CaseDetails() {
                 placeholder={caseNameInput}
                 enterKeyHint="done"
                 onSubmitEditing={() => {
+                  updateCase(bookCase?.name!, { name: caseNameInput });
+                }}
+                onBlur={() => {
                   updateCase(bookCase?.name!, { name: caseNameInput });
                 }}
                 style={{
@@ -535,6 +537,21 @@ export default function CaseDetails() {
           >
             <ActionsheetItemText size="lg">
               Add from Library
+            </ActionsheetItemText>
+          </ActionsheetItem>
+          <ActionsheetItem
+          // onPress={() => {
+          //   handleClose();
+          //   router.push({
+          //     pathname: "/add-books-from-case",
+          //     params: {
+          //       caseName: bookCase?.name,
+          //     },
+          //   });
+          // }}
+          >
+            <ActionsheetItemText size="lg">
+              Move from another case
             </ActionsheetItemText>
           </ActionsheetItem>
         </ActionsheetContent>
