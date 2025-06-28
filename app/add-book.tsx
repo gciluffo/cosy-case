@@ -233,6 +233,7 @@ export default function AddBookScreen() {
           secondary: coverColors?.secondary || "#FFFFFF",
         },
         spines,
+        dateAdded: new Date().toISOString(),
       };
 
       console.log("Book to add:", bookToAdd);

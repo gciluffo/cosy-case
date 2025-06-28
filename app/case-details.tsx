@@ -1,4 +1,11 @@
 import {
+  Radio,
+  RadioGroup,
+  RadioIndicator,
+  RadioLabel,
+  RadioIcon,
+} from "@/components/ui/radio";
+import {
   Actionsheet,
   ActionsheetContent,
   ActionsheetItem,
@@ -10,7 +17,7 @@ import {
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ButtonIcon } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
-import { AddIcon, TrashIcon } from "@/components/ui/icon";
+import { AddIcon, TrashIcon, CircleIcon } from "@/components/ui/icon";
 import { isTablet, moderateScale, verticalScale } from "@/utils/scale";
 import {
   View,
@@ -32,6 +39,7 @@ import { Card } from "@/components/ui/card";
 import { getWallpaperImages, getWidgetImages } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
+import { BookSortOrder } from "@/models/book";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 40);
 const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
@@ -51,6 +59,9 @@ export default function CaseDetails() {
   const [caseWallpapers, setCaseWallpapers] = useState<
     { url: string; isSelected: boolean }[]
   >([]);
+  const [sortOrder, setSortOrder] = useState<BookSortOrder>(
+    BookSortOrder.DATE_ADDED
+  );
 
   useEffect(() => {
     const init = async () => {
@@ -95,6 +106,9 @@ export default function CaseDetails() {
         };
       });
       setCaseWallpapers(wallpaperList);
+
+      // set the sort order
+      setSortOrder(bookCase?.sortOrder || BookSortOrder.DATE_ADDED);
     };
 
     init();
@@ -244,6 +258,38 @@ export default function CaseDetails() {
         </Button>
       </>
     );
+  };
+
+  const onOrderChanged = (value: BookSortOrder) => {
+    setSortOrder(value);
+
+    switch (value) {
+      case BookSortOrder.DATE_ADDED:
+        bookCase?.books.sort(
+          (a, b) =>
+            new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
+        );
+        break;
+      case BookSortOrder.TITLE:
+        bookCase?.books.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case BookSortOrder.AUTHOR:
+        bookCase?.books.sort((a, b) =>
+          (a.author ?? "").localeCompare(b.author ?? "")
+        );
+        break;
+      // case BookSortOrder.GENRE:
+      //   bookCase?.books.sort((a, b) => (a.genre ?? "").localeCompare(b.genre ?? ""));
+      //   break;
+      case BookSortOrder.COLOR:
+        bookCase?.books.sort((a, b) =>
+          (a.colors.primary ?? "").localeCompare(b.colors.primary ?? "")
+        );
+        break;
+      default:
+        break;
+    }
+    updateCase(bookCase?.name!, { books: bookCase?.books, sortOrder: value });
   };
 
   return (
@@ -404,6 +450,46 @@ export default function CaseDetails() {
               </View>
               <View className="h-5" />
             </ScrollView>
+          </View>
+        </Card>
+        <View className="h-5" />
+        <Text className="text-gray-500 mb-1 ml-1" size="md">
+          Sort Order
+        </Text>
+        <Card>
+          <View>
+            <RadioGroup value={sortOrder} onChange={onOrderChanged}>
+              <Radio value={BookSortOrder.DATE_ADDED} size="lg">
+                <RadioIndicator>
+                  <RadioIcon as={CircleIcon} />
+                </RadioIndicator>
+                <RadioLabel size="lg">Date Added</RadioLabel>
+              </Radio>
+              <Radio value={BookSortOrder.TITLE} size="lg">
+                <RadioIndicator>
+                  <RadioIcon as={CircleIcon} />
+                </RadioIndicator>
+                <RadioLabel size="lg">Title</RadioLabel>
+              </Radio>
+              <Radio value={BookSortOrder.AUTHOR} size="lg">
+                <RadioIndicator>
+                  <RadioIcon as={CircleIcon} />
+                </RadioIndicator>
+                <RadioLabel size="lg">Author</RadioLabel>
+              </Radio>
+              {/* <Radio value={BookSortOrder.GENRE} size="lg">
+                <RadioIndicator>
+                  <RadioIcon as={CircleIcon} />
+                </RadioIndicator>
+                <RadioLabel>Genre</RadioLabel>
+              </Radio> */}
+              <Radio value={BookSortOrder.COLOR} size="lg">
+                <RadioIndicator>
+                  <RadioIcon as={CircleIcon} />
+                </RadioIndicator>
+                <RadioLabel size="lg">Color</RadioLabel>
+              </Radio>
+            </RadioGroup>
           </View>
         </Card>
       </View>

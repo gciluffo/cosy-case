@@ -29,6 +29,7 @@ export type Book = OpenLibraryBook & {
     primary: string;
     secondary: string;
   };
+  dateAdded: string;
 };
 
 export interface Widget {
@@ -53,8 +54,17 @@ export interface BookCase {
   isDefault: boolean;
   widgets: Widget[];
   wallPaper?: Wallpaper;
+  sortOrder?: BookSortOrder;
 }
 
 export const isBook = (item: Book | Widget): item is Book => {
   return (item as Book).spines !== undefined;
 };
+
+export enum BookSortOrder {
+  DATE_ADDED = "date_added",
+  TITLE = "title",
+  AUTHOR = "author",
+  GENRE = "genre",
+  COLOR = "color",
+}
