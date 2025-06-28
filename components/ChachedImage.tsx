@@ -2,7 +2,7 @@ import { SkImage } from "@shopify/react-native-skia";
 import * as FileSystem from "expo-file-system";
 import { DownloadOptions } from "expo-file-system/src/FileSystem.types";
 import React, { useEffect, useRef, useState } from "react";
-import { Image, ImageProps } from "expo-image";
+import { Image, ImageBackground, ImageProps } from "expo-image";
 
 export const IMAGE_CACHE_FOLDER = `${FileSystem.cacheDirectory}`;
 
@@ -46,11 +46,11 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
   const loadImageAsync = async () => {
     try {
       const metadata = await FileSystem.getInfoAsync(fileURI);
-      const expired = Boolean(
-        metadata?.exists &&
-          expiresIn &&
-          new Date().getTime() / 1000 - metadata.modificationTime > expiresIn
-      );
+      // const expired = Boolean(
+      //   metadata?.exists &&
+      //     expiresIn &&
+      //     new Date().getTime() / 1000 - metadata.modificationTime > expiresIn
+      // );
 
       await setImgUri(null);
       if (componentIsMounted.current) {
@@ -60,6 +60,7 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
 
         if (metadata?.exists) {
           const contentUri = await FileSystem.getContentUriAsync(fileURI);
+          // console.log("Cached image found:", contentUri);
           setImgUri(contentUri);
           return;
         }

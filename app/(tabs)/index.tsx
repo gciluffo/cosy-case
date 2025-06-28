@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { SnapbackZoom } from "react-native-zoom-toolkit";
-import { Dimensions, FlatList, TouchableOpacity, View } from "react-native";
+import { Dimensions, FlatList, Platform, StyleSheet, View } from "react-native";
 import useStore from "@/store";
 import { Book, BookCase, isBook, Widget } from "@/models/book";
 import { isTablet, scale, verticalScale } from "@/utils/scale";
@@ -11,6 +11,11 @@ import CachedWidget from "@/components/Widget";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { ImageBackground } from "expo-image";
+import CachedImage from "@/components/ChachedImage";
+import { Image } from "expo-image";
+import { Fab, FabLabel, FabIcon } from "@/components/ui/fab";
+import { AddIcon } from "@/components/ui/icon";
 
 const MAX_WIDTH = Dimensions.get("window").width * (isTablet ? 0.8 : 0.95);
 const MAX_HEIGHT = Dimensions.get("window").height * (isTablet ? 1.5 : 0.8);
@@ -21,48 +26,76 @@ interface BookShelfProps {
   bookCase: BookCase;
 }
 
-// Bookshelf component using Skia
 const Bookshelf = (props: BookShelfProps) => {
   const { shelves, bookCase } = props;
+  const wallPaper = bookCase.wallPaper;
+
+  const renderContent = () => {
+    return (
+      <GestureHandlerRootView>
+        <SnapbackZoom
+          onLongPress={() => {
+            router.push({
+              pathname: "/case-details",
+              params: {
+                caseName: bookCase.name,
+              },
+            });
+          }}
+        >
+          <View className="flex-1 items-center justify-center">
+            {shelves.map((shelfBooks, index) => {
+              return (
+                <Shelf
+                  key={index}
+                  index={index}
+                  bookCase={bookCase}
+                  width={MAX_WIDTH + 10}
+                  height={INDIVIDUAL_SHELF_HEIGHT}
+                  numShelves={shelves.length}
+                >
+                  <View
+                    style={{ flexDirection: "row", alignItems: "flex-end" }}
+                  >
+                    {shelfBooks.map((item: any) => {
+                      if ("spines" in item) {
+                        return <CachedBookSpine book={item} key={item.key} />;
+                      } else {
+                        return (
+                          <CachedWidget widget={item} key={item.cacheKey} />
+                        );
+                      }
+                    })}
+                  </View>
+                </Shelf>
+              );
+            })}
+          </View>
+        </SnapbackZoom>
+      </GestureHandlerRootView>
+    );
+  };
 
   return (
-    <GestureHandlerRootView>
-      <SnapbackZoom
-        onLongPress={() => {
-          router.push({
-            pathname: "/case-details",
-            params: {
-              caseName: bookCase.name,
-            },
-          });
-        }}
-      >
-        <View className="flex-1 items-center justify-center">
-          {shelves.map((shelfBooks, index) => {
-            return (
-              <Shelf
-                key={index}
-                index={index}
-                bookCase={bookCase}
-                width={MAX_WIDTH + 10}
-                height={INDIVIDUAL_SHELF_HEIGHT}
-                numShelves={shelves.length}
-              >
-                <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-                  {shelfBooks.map((item: any) => {
-                    if ("spines" in item) {
-                      return <CachedBookSpine book={item} key={item.key} />;
-                    } else {
-                      return <CachedWidget widget={item} key={item.cacheKey} />;
-                    }
-                  })}
-                </View>
-              </Shelf>
-            );
-          })}
-        </View>
-      </SnapbackZoom>
-    </GestureHandlerRootView>
+    <>
+      {wallPaper?.url ? (
+        <ImageBackground
+          source={{
+            uri: wallPaper?.url || "",
+          }}
+          style={{
+            backgroundColor: "transparent",
+            width: Dimensions.get("window").width,
+            flex: 1,
+          }}
+          resizeMode="cover"
+        >
+          {renderContent()}
+        </ImageBackground>
+      ) : (
+        renderContent()
+      )}
+    </>
   );
 };
 
@@ -187,18 +220,45 @@ const BookshelfScreen = () => {
   }, [cases]);
 
   return (
-    <FlatList
-      data={displayCases}
-      keyExtractor={(item) => item.bookCase.name}
-      horizontal
-      pagingEnabled
-      showsHorizontalScrollIndicator={false}
-      renderItem={({ item }) => (
-        <Bookshelf shelves={item.shelves} bookCase={item.bookCase} />
-      )}
-      style={{ flex: 1 }}
-    />
+    <>
+      <FlatList
+        data={displayCases}
+        keyExtractor={(item) => item.bookCase.name}
+        horizontal
+        pagingEnabled
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <Bookshelf shelves={item.shelves} bookCase={item.bookCase} />
+        )}
+      />
+      <Fab
+        size="lg"
+        placement="bottom left"
+        isHovered={false}
+        isDisabled={false}
+        isPressed={false}
+        style={styles.fab}
+        onPress={() => {
+          router.push("/add-case");
+        }}
+      >
+        <FabIcon as={AddIcon} color="black" size="xl" />
+      </Fab>
+    </>
   );
 };
 
 export default BookshelfScreen;
+
+const styles = StyleSheet.create({
+  fab: {
+    position: "absolute",
+    backgroundColor: "white",
+    marginBottom: 19,
+    height: verticalScale(isTablet ? 40 : 42),
+    borderRadius: 30,
+    paddingBottom: 10,
+    paddingTop: 10,
+  },
+});

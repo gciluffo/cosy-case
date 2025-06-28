@@ -18,7 +18,7 @@ import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import { router } from "expo-router";
 import { Card } from "@/components/ui/card";
 import { Image } from "expo-image";
-import { getWidgetImages } from "@/api";
+import { getWallpaperImages, getWidgetImages } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import { CacheManager } from "@/components/ChachedImage";
 
@@ -36,6 +36,9 @@ export default function AddCase() {
   const [caseWidgets, setCaseWidgets] = useState<
     { url: string; isSelected: boolean }[]
   >([]);
+  const [caseWallpapers, setCaseWallpapers] = useState<
+    { url: string; isSelected: boolean }[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -46,6 +49,16 @@ export default function AddCase() {
         isSelected: false,
       }));
       setCaseWidgets(list);
+
+      // get wallpapers
+
+      const wallpapers = await getWallpaperImages();
+      const wallpaperList = wallpapers.map((url) => ({
+        url,
+        isSelected: false,
+      }));
+      setCaseWallpapers(wallpaperList);
+
       setBookCases((prev) => {
         prev[0].isSelected = true;
         return [...prev];
@@ -82,8 +95,8 @@ export default function AddCase() {
     const selectedWidgets = caseWidgets.filter((w) => w.isSelected);
 
     for (const w of selectedWidgets) {
-      const { bucketName } = getObjectKeyFromSignedUrl(w.url);
-      const cacheKey = `${bucketName}-widget`;
+      const { bucketName, objectKey } = getObjectKeyFromSignedUrl(w.url);
+      const cacheKey = `${objectKey}-widget`;
 
       await CacheManager.downloadAsync({
         uri: w.url,
@@ -102,12 +115,17 @@ export default function AddCase() {
       books: [],
       isDefault: false,
       widgets: selectedWidgets.map((w) => {
-        const { bucketName } = getObjectKeyFromSignedUrl(w.url);
-        const cacheKey = `${bucketName}-widget`;
+        const { bucketName, objectKey } = getObjectKeyFromSignedUrl(w.url);
+        const cacheKey = `${objectKey}-widget`;
         return {
           cacheKey,
         };
       }),
+      wallPaper: caseWallpapers.find((w) => w.isSelected)
+        ? {
+            url: caseWallpapers.find((w) => w.isSelected)!.url,
+          }
+        : undefined,
     };
 
     addCase(newCase);
@@ -186,6 +204,43 @@ export default function AddCase() {
                     style={[
                       styles.widgetImage,
                       widget.isSelected && styles.caseIsSelected,
+                    ]}
+                    contentFit="contain"
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View className="h-5" />
+          </ScrollView>
+        </View>
+      </Card>
+      <View className="h-5" />
+      <Text className="text-gray-500 mb-1 ml-1" size="md">
+        Wallpaper
+      </Text>
+      <Card>
+        <View className="flex-row">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex-row gap-3">
+              {caseWallpapers?.map((wallpaper, index) => (
+                <TouchableOpacity
+                  key={wallpaper.url}
+                  onPress={() => {
+                    const updatedWallpapers = caseWallpapers.map((w, i) => ({
+                      ...w,
+                      isSelected:
+                        w.url === wallpaper.url ? !w.isSelected : false,
+                    }));
+                    setCaseWallpapers(updatedWallpapers);
+                  }}
+                >
+                  <Image
+                    className="flex-1"
+                    key={index}
+                    source={wallpaper.url}
+                    style={[
+                      styles.widgetImage,
+                      wallpaper.isSelected && styles.caseIsSelected,
                     ]}
                     contentFit="contain"
                   />

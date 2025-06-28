@@ -36,6 +36,12 @@ export interface Widget {
   cacheKey: string;
 }
 
+export interface Wallpaper {
+  id?: string;
+  cacheKey?: string;
+  url?: string;
+}
+
 export interface BookCase {
   name: string;
   topImageKey: string;
@@ -46,6 +52,7 @@ export interface BookCase {
   books: Book[];
   isDefault: boolean;
   widgets: Widget[];
+  wallPaper?: Wallpaper;
 }
 
 export const isBook = (item: Book | Widget): item is Book => {

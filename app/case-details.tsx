@@ -20,7 +20,7 @@ import {
   TextInput,
   ScrollView,
 } from "react-native";
-import { Image } from "expo-image";
+import { Image, ImageBackground } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import useStore from "@/store";
 import { LinearGradient } from "expo-linear-gradient";
@@ -29,7 +29,7 @@ import CompactBookShelf from "@/components/CompactBookShelf";
 import { Button, ButtonText } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { getWidgetImages } from "@/api";
+import { getWallpaperImages, getWidgetImages } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
 
@@ -48,6 +48,9 @@ export default function CaseDetails() {
   const [caseWidgets, setCaseWidgets] = useState<
     { url: string; isSelected: boolean; cacheKey: string }[]
   >([]);
+  const [caseWallpapers, setCaseWallpapers] = useState<
+    { url: string; isSelected: boolean }[]
+  >([]);
 
   useEffect(() => {
     const init = async () => {
@@ -57,11 +60,12 @@ export default function CaseDetails() {
       // get widgets from server
       // get widgets from the bookCase
       // handle rendering both a url and local image
+
       const widgetUrls = await getWidgetImages();
       const bookCaseWidgets = bookCase?.widgets || [];
       const list = widgetUrls.map((url) => {
-        const { bucketName } = getObjectKeyFromSignedUrl(url);
-        const cacheKey = `${bucketName}-widget`;
+        const { bucketName, objectKey } = getObjectKeyFromSignedUrl(url);
+        const cacheKey = `${objectKey}-widget`;
         const isSelected = bookCaseWidgets.some(
           (widget) => widget.cacheKey === cacheKey
         );
@@ -73,6 +77,24 @@ export default function CaseDetails() {
       });
 
       setCaseWidgets(list);
+
+      // get wallpapers from server
+      const wallpaperUrls = await getWallpaperImages();
+      const bookCaseWallpaper = bookCase?.wallPaper;
+
+      const wallpaperList = wallpaperUrls.map((url) => {
+        const { bucketName, objectKey } = getObjectKeyFromSignedUrl(url);
+        const isSelected = bookCaseWallpaper?.url
+          ? getObjectKeyFromSignedUrl(bookCaseWallpaper.url).objectKey ===
+            objectKey
+          : false;
+        return {
+          url,
+          isSelected,
+          // cacheKey,
+        };
+      });
+      setCaseWallpapers(wallpaperList);
     };
 
     init();
@@ -127,77 +149,141 @@ export default function CaseDetails() {
     }
   };
 
+  const onSelectedWallpaper = async (wallpaper: {
+    url: string;
+    isSelected: boolean;
+    cacheKey?: string;
+  }) => {
+    // update local state
+    // if wallpaper was previously deselected then download as cache
+    // add the cache key to the bookCase wallPaper
+    const isSelected = !wallpaper.isSelected;
+    // only allow one wallpaper to be selected at a time
+    setCaseWallpapers((prev) =>
+      prev.map((w) =>
+        w.url === wallpaper.url
+          ? { ...w, isSelected: isSelected }
+          : { ...w, isSelected: false }
+      )
+    );
+
+    if (isSelected) {
+      // add the wallpaper to the bookCase wallPaper
+      updateCase(bookCase?.name!, {
+        wallPaper: { url: wallpaper.url },
+      });
+    }
+
+    if (!isSelected) {
+      // remove the wallpaper from the bookCase wallPaper
+      updateCase(bookCase?.name!, {
+        wallPaper: undefined,
+      });
+    }
+  };
+
+  const renderCaseHeader = () => {
+    return (
+      <>
+        {bookCase && (
+          <TouchableOpacity
+            onPress={() => {
+              router.push({
+                pathname: "/single-case-display",
+                params: {
+                  caseName: bookCase.name,
+                },
+              });
+            }}
+          >
+            <CompactBookShelf
+              bookCase={bookCase}
+              caseWidth={CASE_WIDTH}
+              caseHeight={CASE_HEIGHT}
+              shelfHeight={SHELF_HEIGHT}
+            />
+          </TouchableOpacity>
+        )}
+
+        <View className="justify-center items-center mt-2">
+          <Heading
+            size="xl"
+            className="color-typography-white"
+            style={{
+              textAlign: "center",
+            }}
+          >
+            {bookCase?.name}
+          </Heading>
+        </View>
+        <View className="h-10" />
+        {!bookCase?.isDefault && (
+          <Button
+            className="bg-white rounded-lg"
+            onPress={onDeleteCase}
+            size="xl"
+          >
+            <ButtonIcon as={TrashIcon} color="black" />
+            <ButtonText>
+              <Text>Remove case</Text>
+            </ButtonText>
+          </Button>
+        )}
+        <View className="h-5" />
+        <Button
+          className="bg-white rounded-lg"
+          onPress={() => {
+            setShowActionsheet(true);
+          }}
+          size="xl"
+        >
+          <ButtonIcon as={AddIcon} color="black" />
+          <ButtonText>
+            <Text>Add Books</Text>
+          </ButtonText>
+        </Button>
+      </>
+    );
+  };
+
   return (
     <ParallaxScrollView
       parallaxHeaderHeight={300}
       parallaxHeaderContent={() => (
         <>
-          <LinearGradient
-            colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,1)"]}
-            style={{
-              height: verticalScale(450),
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {bookCase && (
-              <TouchableOpacity
-                onPress={() => {
-                  router.push({
-                    pathname: "/single-case-display",
-                    params: {
-                      caseName: bookCase.name,
-                    },
-                  });
-                }}
-              >
-                <CompactBookShelf
-                  bookCase={bookCase}
-                  caseWidth={CASE_WIDTH}
-                  caseHeight={CASE_HEIGHT}
-                  shelfHeight={SHELF_HEIGHT}
-                />
-              </TouchableOpacity>
-            )}
-
-            <View className="justify-center items-center mt-2">
-              <Heading
-                size="xl"
-                className="color-typography-white"
-                style={{
-                  textAlign: "center",
-                }}
-              >
-                {bookCase?.name}
-              </Heading>
-            </View>
-            <View className="h-10" />
-            {!bookCase?.isDefault && (
-              <Button
-                className="bg-white rounded-lg"
-                onPress={onDeleteCase}
-                size="xl"
-              >
-                <ButtonIcon as={TrashIcon} color="black" />
-                <ButtonText>
-                  <Text>Remove case</Text>
-                </ButtonText>
-              </Button>
-            )}
-            <View className="h-5" />
-            <Button
-              className="bg-white rounded-lg"
-              onPress={() => {
-                setShowActionsheet(true);
+          {bookCase?.wallPaper?.url ? (
+            <ImageBackground
+              source={{ uri: bookCase.wallPaper.url }}
+              style={{
+                width: Dimensions.get("window").width,
+                height: verticalScale(450),
+                justifyContent: "center",
+                alignItems: "center",
               }}
-              size="xl"
+              resizeMode="cover"
             >
-              <ButtonIcon as={AddIcon} color="black" />
-              <ButtonText>
-                <Text>Add Books</Text>
-              </ButtonText>
-            </Button>
-          </LinearGradient>
+              <LinearGradient
+                colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.7)"]}
+                style={{
+                  ...StyleSheet.absoluteFillObject,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              />
+              {renderCaseHeader()}
+            </ImageBackground>
+          ) : (
+            <LinearGradient
+              colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,1)"]}
+              style={{
+                height: verticalScale(450),
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {renderCaseHeader()}
+            </LinearGradient>
+          )}
         </>
       )}
     >
@@ -288,6 +374,38 @@ export default function CaseDetails() {
             </ScrollView>
           </View>
         </Card>
+        <View className="h-5" />
+        <Text className="text-gray-500 mb-1 ml-1" size="md">
+          Wallpaper
+        </Text>
+        <Card>
+          <View className="flex-row">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View className="flex-row gap-3">
+                {caseWallpapers?.map((wallpaper, index) => (
+                  <TouchableOpacity
+                    key={wallpaper.url}
+                    onPress={() => {
+                      onSelectedWallpaper(wallpaper);
+                    }}
+                  >
+                    <Image
+                      className="flex-1"
+                      key={index}
+                      source={wallpaper.url}
+                      style={[
+                        styles.widgetImage,
+                        wallpaper.isSelected && styles.caseIsSelected,
+                      ]}
+                      contentFit="contain"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View className="h-5" />
+            </ScrollView>
+          </View>
+        </Card>
       </View>
 
       <View className="h-20" />
@@ -346,7 +464,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   bookImage: {
-    width: moderateScale(62),
+    width: moderateScale(70),
     height: moderateScale(80),
     shadowColor: "#000",
     shadowOffset: {
@@ -386,7 +504,6 @@ const styles = StyleSheet.create({
     height: moderateScale(100),
     borderRadius: 3,
     marginRight: 10,
-    borderWidth: 1,
     borderColor: "#000",
   },
   caseIsSelected: {

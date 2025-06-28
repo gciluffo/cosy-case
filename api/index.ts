@@ -5,8 +5,8 @@ import {
 import { OpenLibraryBook } from "@/models/open-library";
 import { captializeFirstLetter } from "@/utils/string";
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.53:8000";
-// const BASE_URL = "http://192.168.2.53:8000";
+// const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.53:8000";
+const BASE_URL = "http://192.168.2.53:8000";
 
 export async function searchBooks(searchTerm: string) {
   console.log(
@@ -171,6 +171,23 @@ export async function getWidgetImages(): Promise<string[]> {
 
   if (!response.ok) {
     throw new Error("Failed to fetch book images");
+  }
+
+  const data = await response.json();
+  return data || [];
+}
+
+export async function getWallpaperImages(): Promise<string[]> {
+  const response = await fetch(`${BASE_URL}/wallpaper-images`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch wallpaper images");
   }
 
   const data = await response.json();
