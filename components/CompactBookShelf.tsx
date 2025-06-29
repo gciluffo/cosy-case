@@ -20,6 +20,10 @@ export default function CompactBookShelf(props: BookShelfProps) {
   const { bookCase, caseHeight, caseWidth, shelfHeight } = props;
   const { books, widgets } = bookCase;
 
+  if (bookCase.name === "case 2") {
+    console.log("books", books[0].spines);
+  }
+
   const offsetX = scale(30);
   const offsetY = verticalScale(20);
 
