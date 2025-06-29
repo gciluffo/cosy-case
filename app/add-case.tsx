@@ -33,9 +33,6 @@ export default function AddCase() {
     }))
   );
   const [caseName, setCaseName] = useState<string>(`case ${cases.length + 1}`);
-  const [caseWidgets, setCaseWidgets] = useState<
-    { url: string; isSelected: boolean }[]
-  >([]);
   const [caseWallpapers, setCaseWallpapers] = useState<
     { url: string; isSelected: boolean }[]
   >([]);
@@ -43,15 +40,6 @@ export default function AddCase() {
 
   useEffect(() => {
     const init = async () => {
-      const widgetUrls = await getWidgetImages();
-      const list = widgetUrls.map((url) => ({
-        url,
-        isSelected: false,
-      }));
-      setCaseWidgets(list);
-
-      // get wallpapers
-
       const wallpapers = await getWallpaperImages();
       const wallpaperList = wallpapers.map((url) => ({
         url,
@@ -92,18 +80,6 @@ export default function AddCase() {
     setIsLoading(true);
 
     const selectedStyle = bookCases.find((c) => c.isSelected);
-    const selectedWidgets = caseWidgets.filter((w) => w.isSelected);
-
-    for (const w of selectedWidgets) {
-      const { bucketName, objectKey } = getObjectKeyFromSignedUrl(w.url);
-      const cacheKey = `${objectKey}-widget`;
-
-      await CacheManager.downloadAsync({
-        uri: w.url,
-        key: cacheKey,
-        options: {},
-      });
-    }
 
     const newCase: BookCase = {
       name: caseName,
@@ -114,13 +90,7 @@ export default function AddCase() {
       offsetYPercent: selectedStyle!.offsetYPercent,
       books: [],
       isDefault: false,
-      widgets: selectedWidgets.map((w) => {
-        const { bucketName, objectKey } = getObjectKeyFromSignedUrl(w.url);
-        const cacheKey = `${objectKey}-widget`;
-        return {
-          cacheKey,
-        };
-      }),
+      widgets: [],
       wallPaper: caseWallpapers.find((w) => w.isSelected)
         ? {
             url: caseWallpapers.find((w) => w.isSelected)!.url,
@@ -176,42 +146,6 @@ export default function AddCase() {
               }}
             />
           </TouchableOpacity>
-        </View>
-      </Card>
-      <View className="h-5" />
-      <Text className="text-gray-500 mb-1 ml-1" size="md">
-        Widgets
-      </Text>
-      <Card>
-        <View className="flex-row">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row gap-3">
-              {caseWidgets?.map((widget, index) => (
-                <TouchableOpacity
-                  key={widget.url}
-                  onPress={() => {
-                    const updatedWidgets = caseWidgets.map((w, i) => ({
-                      ...w,
-                      isSelected: !w.isSelected,
-                    }));
-                    setCaseWidgets(updatedWidgets);
-                  }}
-                >
-                  <Image
-                    className="flex-1"
-                    key={index}
-                    source={widget.url}
-                    style={[
-                      styles.widgetImage,
-                      widget.isSelected && styles.caseIsSelected,
-                    ]}
-                    contentFit="contain"
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
-            <View className="h-5" />
-          </ScrollView>
         </View>
       </Card>
       <View className="h-5" />

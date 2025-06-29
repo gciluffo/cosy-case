@@ -58,7 +58,7 @@ export default function AddBookScreen() {
   const [addingBook, setAddingBook] = useState(false);
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState(BookStatus.FINISHED);
-  const [selectedReview, setSelectedReview] = useState(BookReview.GOOD);
+  const [selectedReview, setSelectedReview] = useState(BookReview.LIKED);
   const [reviewText, setReviewText] = useState<string>("");
   const [selectedShelves, setSelectedShelves] = useState<string[]>([
     cases.find((c) => c.isDefault)?.name || "default",
@@ -332,24 +332,29 @@ export default function AddBookScreen() {
           />
         </View>
       </Card>
-      <View className="h-6" />
-      <Text className="text-gray-500 mb-1 ml-1">Book Review</Text>
-      <Card>
-        <View className="flex-row justify-between items-center">
-          <Text className="text-gray-500">Review</Text>
-          <InlinePicker
-            dropdownPosition="bottom"
-            selectedValue={selectedReview}
-            onValueChange={setSelectedReview}
-            items={[
-              { label: "Good", value: "good", icon: "star" },
-              { label: "Okay", value: "okay", icon: "star-half" },
-              { label: "Bad", value: "bad", icon: "star-o" },
-            ]}
-            label="Status"
-          />
-        </View>
-      </Card>
+      {selectedStatus === BookStatus.FINISHED && (
+        <>
+          <View className="h-6" />
+          <Text className="text-gray-500 mb-1 ml-1">Book Review</Text>
+          <Card>
+            <View className="flex-row justify-between items-center">
+              <Text className="text-gray-500">Review</Text>
+              <InlinePicker
+                dropdownPosition="bottom"
+                selectedValue={selectedReview}
+                onValueChange={setSelectedReview}
+                items={[
+                  { label: "Loved", value: "loved", icon: "heart" },
+                  { label: "Liked", value: "liked", icon: "smile-o" },
+                  { label: "Disliked", value: "disliked", icon: "frown-o" },
+                ]}
+                label="Status"
+              />
+            </View>
+          </Card>
+        </>
+      )}
+
       <View className="h-6" />
       <Text className="text-gray-500 mb-1 ml-1">Additional Notes</Text>
       <Card>

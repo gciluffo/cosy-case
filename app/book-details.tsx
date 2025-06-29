@@ -60,14 +60,10 @@ export default function BookDetails() {
           const book = getBookByKey(localBookKey as string);
           if (book) {
             setLocalBook(book);
-            // const selectedSpine = book.spines.find((item) => item.selected);
-            // if (selectedSpine) {
-            //   setSelectedSpine(selectedSpine.cacheKey);
-            // }
             const remoteSpines = await getSpineImages(book.key);
             const localBookSpines = book?.spines || [];
             const list = remoteSpines.map((url) => {
-              const { bucketName } = getObjectKeyFromSignedUrl(url);
+              const { bucketName, objectKey } = getObjectKeyFromSignedUrl(url);
               // const cacheKey = `${bucketName}-widget`;
               const isSelected = localBookSpines.some((s) =>
                 s.cacheKey.includes(book.key)
@@ -400,35 +396,44 @@ export default function BookDetails() {
                 />
               </View>
             </Card>
-            <View className="h-6" />
-            <Text className="text-gray-500 mb-1 ml-1" size="md">
-              Book Review
-            </Text>
-            <Card>
-              <View className="flex-row justify-between items-center">
-                <Text className="text-gray-500">Review</Text>
-                <InlinePicker
-                  selectedValue={localBook.review}
-                  dropdownPosition="top"
-                  onValueChange={(value: BookReview) => {
-                    if (localBook) {
-                      localBook.review = value;
-                      setLocalBook({ ...localBook });
-                      updateBook(localBook.key, {
-                        ...localBook,
-                        review: value,
-                      });
-                    }
-                  }}
-                  items={[
-                    { label: "Good", value: "good", icon: "star" },
-                    { label: "Okay", value: "okay", icon: "star-half" },
-                    { label: "Bad", value: "bad", icon: "star-o" },
-                  ]}
-                  label="Status"
-                />
-              </View>
-            </Card>
+            {localBook.status === "finished" && (
+              <>
+                <View className="h-6" />
+                <Text className="text-gray-500 mb-1 ml-1" size="md">
+                  Book Review
+                </Text>
+                <Card>
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-gray-500">Review</Text>
+                    <InlinePicker
+                      selectedValue={localBook.review}
+                      dropdownPosition="top"
+                      onValueChange={(value: BookReview) => {
+                        if (localBook) {
+                          localBook.review = value;
+                          setLocalBook({ ...localBook });
+                          updateBook(localBook.key, {
+                            ...localBook,
+                            review: value,
+                          });
+                        }
+                      }}
+                      items={[
+                        { label: "Loved", value: "loved", icon: "heart" },
+                        { label: "Liked", value: "liked", icon: "smile-o" },
+                        {
+                          label: "Disliked",
+                          value: "disliked",
+                          icon: "frown-o",
+                        },
+                      ]}
+                      label="Status"
+                    />
+                  </View>
+                </Card>
+              </>
+            )}
+
             <View className="h-6" />
             <Text className="text-gray-500 mb-1 ml-1" size="md">
               Additional Notes
@@ -441,6 +446,16 @@ export default function BookDetails() {
                   value={reviewText}
                   onChangeText={(text) => setReviewText(text)}
                   enterKeyHint="done"
+                  onBlur={() => {
+                    if (localBook) {
+                      localBook.reviewText = reviewText;
+                      setLocalBook({ ...localBook });
+                      updateBook(localBook.key, {
+                        ...localBook,
+                        reviewText: reviewText,
+                      });
+                    }
+                  }}
                   onSubmitEditing={() => {
                     if (localBook) {
                       localBook.reviewText = reviewText;

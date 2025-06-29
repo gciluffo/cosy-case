@@ -14,9 +14,9 @@ export enum BookStatus {
 }
 
 export enum BookReview {
-  BAD = "bad",
-  OKAY = "okay",
-  GOOD = "good",
+  DISLIKED = "disliked",
+  LIKED = "liked",
+  LOVED = "loved",
 }
 
 export type Book = OpenLibraryBook & {

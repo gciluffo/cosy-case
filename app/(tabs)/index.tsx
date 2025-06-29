@@ -16,6 +16,7 @@ import CachedImage from "@/components/ChachedImage";
 import { Image } from "expo-image";
 import { Fab, FabLabel, FabIcon } from "@/components/ui/fab";
 import { AddIcon } from "@/components/ui/icon";
+import * as Haptics from "expo-haptics";
 
 const MAX_WIDTH = Dimensions.get("window").width * (isTablet ? 0.8 : 0.95);
 const MAX_HEIGHT = Dimensions.get("window").height * (isTablet ? 1.5 : 0.8);
@@ -35,6 +36,7 @@ const Bookshelf = (props: BookShelfProps) => {
       <GestureHandlerRootView>
         <SnapbackZoom
           onLongPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push({
               pathname: "/case-details",
               params: {
@@ -240,6 +242,7 @@ const BookshelfScreen = () => {
         isPressed={false}
         style={styles.fab}
         onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           router.push("/add-case");
         }}
       >
@@ -256,7 +259,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     backgroundColor: "white",
     marginBottom: 19,
-    height: verticalScale(isTablet ? 40 : 42),
+    height: verticalScale(isTablet ? 40 : 40),
     borderRadius: 30,
     paddingBottom: 10,
     paddingTop: 10,
