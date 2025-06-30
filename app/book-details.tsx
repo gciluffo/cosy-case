@@ -36,7 +36,7 @@ import CollapsibleDescription from "@/components/CollapsibleDescription";
 import { Card } from "@/components/ui/card";
 import InlinePicker from "@/components/InlinePicker";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
-import { isStringIsbn13 } from "@/utils/books";
+import { getBookDescription, isStringIsbn13 } from "@/utils/books";
 import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
 
 export default function BookDetails() {
@@ -209,19 +209,6 @@ export default function BookDetails() {
         }),
       },
     });
-  };
-
-  const getDescription = (book: Book | OpenLibraryBook) => {
-    if (
-      typeof book.description === "object" &&
-      book.description?.type === "/type/text"
-    ) {
-      return book.description.value;
-    } else if (typeof book.description === "string") {
-      return book.description;
-    } else {
-      return "No description available";
-    }
   };
 
   const isPlaceholderSpineSelected = useMemo(() => {
@@ -461,10 +448,14 @@ export default function BookDetails() {
         <View className="h-5" />
         <View>
           {localBook && (
-            <CollapsibleDescription description={getDescription(localBook)} />
+            <CollapsibleDescription
+              description={getBookDescription(localBook)}
+            />
           )}
           {remoteBook && (
-            <CollapsibleDescription description={getDescription(remoteBook)} />
+            <CollapsibleDescription
+              description={getBookDescription(remoteBook)}
+            />
           )}
         </View>
         <View className="h-10" />

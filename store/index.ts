@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Book, BookCase } from "@/models/book";
+import { Book, BookCase, BookReview } from "@/models/book";
 import { middleware } from "zustand-expo-devtools";
 
 // Books have to be added to cases
@@ -10,6 +10,8 @@ import { middleware } from "zustand-expo-devtools";
 export interface User {
   deviceId: string;
   isOnboarded: boolean;
+  bookListDisplayMode?: "grid" | "list";
+  bookListFilter?: BookReview;
 }
 
 export interface Store {
@@ -34,6 +36,8 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
       user: {
         deviceId: "",
         isOnboarded: false,
+        bookListDisplayMode: "grid",
+        bookListFilter: undefined,
       },
       books: [],
       cases: [

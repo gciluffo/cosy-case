@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { SnapbackZoom } from "react-native-zoom-toolkit";
-import { Dimensions, FlatList, TouchableOpacity, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import useStore from "@/store";
 import { Book, BookCase, isBook, Widget } from "@/models/book";
 import { isTablet, scale, verticalScale } from "@/utils/scale";
@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ImageBackground } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 
 const MAX_WIDTH = Dimensions.get("window").width * (isTablet ? 0.8 : 0.95);
 const MAX_HEIGHT = Dimensions.get("window").height * (isTablet ? 1.5 : 0.8);
@@ -87,6 +88,14 @@ const Bookshelf = (props: BookShelfProps) => {
           }}
           resizeMode="cover"
         >
+          <LinearGradient
+            colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.5)"]}
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          />
           {renderContent()}
         </ImageBackground>
       ) : (

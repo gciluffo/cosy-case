@@ -119,6 +119,9 @@ export default function ScanSpine() {
     return (
       <View style={styles.permissionContainer}>
         <ActivityIndicator size="large" />
+        <Text size="lg" style={styles.message}>
+          Cropping spine...
+        </Text>
       </View>
     );
   }

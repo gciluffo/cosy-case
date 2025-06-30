@@ -1,4 +1,5 @@
 import { Book, Widget } from "@/models/book";
+import { OpenLibraryBook } from "@/models/open-library";
 
 /**
  * Returns the rendered width (in pixels) for a book spine,
@@ -80,3 +81,16 @@ export function isStringIsbn13(isbn: string): boolean {
   // Check if the ISBN is a valid 13-digit number
   return /^\d{13}$/.test(isbn);
 }
+
+export const getBookDescription = (book: Book | OpenLibraryBook) => {
+  if (
+    typeof book.description === "object" &&
+    book.description?.type === "/type/text"
+  ) {
+    return book.description.value;
+  } else if (typeof book.description === "string") {
+    return book.description;
+  } else {
+    return "No description available";
+  }
+};
