@@ -94,3 +94,175 @@ export const getBookDescription = (book: Book | OpenLibraryBook) => {
     return "No description available";
   }
 };
+
+const genericBookGenres: string[] = [
+  "Fiction",
+  "Non-Fiction",
+  "Fantasy",
+  "Science Fiction",
+  "Mystery",
+  "Romance",
+  "Thriller",
+  "Historical",
+  "Horror",
+  "Poetry",
+  "Drama",
+  "Young Adult",
+  "Children's",
+  "Biography",
+  "Self-help",
+  "Health & Wellness",
+  "Science",
+  "Mathematics",
+  "History",
+  "Art & Design",
+  "Business",
+  "Politics",
+  "Religion",
+  "Psychology",
+  "Education",
+  "Travel & Places",
+  "Animals & Nature",
+  "Cookbooks",
+  "Comics & Graphic Novels",
+  "Textbooks",
+  "Programming & Tech",
+];
+
+export const bookSubjects: string[] = [
+  // Arts
+  "Architecture",
+  "Art Instruction",
+  "Art History",
+  "Dance",
+  "Design",
+  "Fashion",
+  "Film",
+  "Graphic Design",
+  "Music",
+  "Music Theory",
+  "Painting",
+  "Photography",
+
+  // Animals
+  "Bears",
+  "Cats",
+  "Kittens",
+  "Dogs",
+  "Puppies",
+
+  "Fantasy",
+  "Historical Fiction",
+  "Horror",
+  "Humor",
+  "Literature",
+  "Magic",
+  "Mystery and detective stories",
+  "Plays",
+  "Poetry",
+  "Romance",
+  "Science Fiction",
+  "Short Stories",
+  "Thriller",
+  "Young Adult",
+
+  // Science & Mathematics
+  "Biology",
+  "Chemistry",
+  "Mathematics",
+  "Physics",
+  "Programming",
+
+  // Business & Finance
+  "Management",
+  "Entrepreneurship",
+  "Business Economics",
+  "Business Success",
+  "Finance",
+  "Personal Finance",
+
+  // Children's
+  "Kids Books",
+  "Stories in Rhyme",
+  "Baby Books",
+  "Bedtime Books",
+  "Picture Books",
+
+  // History
+  "Ancient Civilization",
+  "Archaeology",
+  "Anthropology",
+  "World War II",
+  "Social Life and Customs",
+
+  // Health & Wellness
+  "Cooking",
+  "Cookbooks",
+  "Mental Health",
+  "Exercise",
+  "Nutrition",
+  "Self-help",
+
+  // Biography
+  "Autobiographies",
+  "History",
+  "Politics and Government",
+  "World War II", // (duplicate kept intentionally)
+  "Women",
+  "Kings and Rulers",
+  "Composers",
+  "Artists",
+
+  // Social Sciences
+  "Anthropology", // (duplicate kept intentionally)
+  "Religion",
+  "Political Science",
+  "Psychology",
+
+  // Places
+  "Brazil",
+  "India",
+  "Indonesia",
+  "United States",
+
+  // Textbooks
+  "History", // (duplicate kept intentionally)
+  "Mathematics", // (duplicate kept intentionally)
+  "Geography",
+  "Psychology", // (duplicate kept intentionally)
+  "Algebra",
+  "Education",
+  "Business & Economics",
+  "Science",
+  "Chemistry", // (duplicate kept intentionally)
+  "Physics", // (duplicate kept intentionally)
+  "Computer Science",
+];
+
+export const getRadarChartDataV2 = (
+  books: Book[]
+): { label: string; value: number }[] => {
+  const subjectCounts: Record<string, number> = {};
+  for (const book of books) {
+    const subjects = book.subjects || [];
+    for (const subject of subjects) {
+      const normalizedSubject = subject.toLowerCase().trim();
+      if (subjectCounts[normalizedSubject]) {
+        subjectCounts[normalizedSubject]++;
+      } else {
+        subjectCounts[normalizedSubject] = 1;
+      }
+    }
+  }
+
+  const totalBooks = books.length;
+  const radarData: { label: string; value: number }[] = [];
+  for (const subject of genericBookGenres) {
+    const normalizedSubject = subject.toLowerCase().trim();
+    if (subjectCounts[normalizedSubject]) {
+      const value = (subjectCounts[normalizedSubject] / totalBooks) * 100;
+      radarData.push({ label: subject, value });
+    }
+  }
+  return radarData.filter((item) => item.value > 0);
+};

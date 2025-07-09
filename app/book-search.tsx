@@ -1,7 +1,6 @@
 import { getBookDetails, searchBooks, searchBooksV2 } from "@/api";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { View, StyleSheet, FlatList, ScrollView } from "react-native";
-import { Text } from "@/components/ui/text";
 import BookSearchResult from "@/components/BookSearchResult";
 import { OpenLibraryBookSearch } from "@/models/open-library";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,7 +8,6 @@ import { router } from "expo-router";
 import useStore from "@/store";
 import SearchInput from "@/components/SearchInput";
 import TrendingBooksView from "@/views/TrendingBooksView";
-import { Book } from "@/models/book";
 import { convertToHttps } from "@/utils/image";
 import NYTTrendingBooksView from "@/views/NewYorkTimesBestSellers";
 

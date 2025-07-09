@@ -1,3 +1,4 @@
+import { RadarChart } from "react-native-gifted-charts";
 import {
   Radio,
   RadioGroup,
@@ -34,13 +35,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Text } from "@/components/ui/text";
 import CompactBookShelf from "@/components/CompactBookShelf";
 import { Button, ButtonText } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { getWallpaperImages, getWidgetImages } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
 import { BookSortOrder } from "@/models/book";
 import { sortBookcase } from "@/utils/bookcase";
+import { getRadarChartDataV2 } from "@/utils/books";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 40);
 const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
@@ -272,6 +274,15 @@ export default function CaseDetails() {
     updateCase(bookCase?.name!, { books: bookCase?.books, sortOrder: value });
   };
 
+  const radarChartData = useMemo(() => {
+    if (!bookCase) return [];
+
+    const books = bookCase.books || [];
+    return getRadarChartDataV2(books);
+  }, [bookCase?.books]);
+
+  // console.log("Radar Chart Data", radarChartData);
+
   return (
     <ParallaxScrollView
       parallaxHeaderHeight={300}
@@ -340,6 +351,25 @@ export default function CaseDetails() {
             ))}
           </View>
         ) : null}
+
+        <View className="h-5" />
+        {/* Add radar chart */}
+        {radarChartData.length > 0 && bookCase && bookCase.books.length > 2 && (
+          <View className="w-100">
+            <RadarChart
+              gridConfig={{
+                fill: "blue",
+                gradientColor: "lightblue",
+                opacity: 0.2,
+                gradientOpacity: 0.1,
+              }}
+              data={radarChartData.map((item) => item.value)}
+              labels={radarChartData.map((item) => item.label)}
+              labelConfig={{ fontSize: 12 }}
+              labelsPositionOffset={1}
+            />
+          </View>
+        )}
       </View>
 
       <View className="h-6 bg-gray-100" />
