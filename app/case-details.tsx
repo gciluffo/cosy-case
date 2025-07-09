@@ -40,6 +40,7 @@ import { getWallpaperImages, getWidgetImages } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
 import { BookSortOrder } from "@/models/book";
+import { sortBookcase } from "@/utils/bookcase";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 40);
 const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
@@ -263,32 +264,11 @@ export default function CaseDetails() {
   const onOrderChanged = (value: BookSortOrder) => {
     setSortOrder(value);
 
-    switch (value) {
-      case BookSortOrder.DATE_ADDED:
-        bookCase?.books.sort(
-          (a, b) =>
-            new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
-        );
-        break;
-      case BookSortOrder.TITLE:
-        bookCase?.books.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case BookSortOrder.AUTHOR:
-        bookCase?.books.sort((a, b) =>
-          (a.author ?? "").localeCompare(b.author ?? "")
-        );
-        break;
-      // case BookSortOrder.GENRE:
-      //   bookCase?.books.sort((a, b) => (a.genre ?? "").localeCompare(b.genre ?? ""));
-      //   break;
-      case BookSortOrder.COLOR:
-        bookCase?.books.sort((a, b) =>
-          (a.colors.primary ?? "").localeCompare(b.colors.primary ?? "")
-        );
-        break;
-      default:
-        break;
+    if (!bookCase) {
+      return;
     }
+
+    sortBookcase(bookCase, value);
     updateCase(bookCase?.name!, { books: bookCase?.books, sortOrder: value });
   };
 

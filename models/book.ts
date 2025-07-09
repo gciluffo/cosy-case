@@ -5,6 +5,10 @@ export type Spine = {
   selected: boolean;
   originalImageWidth: number;
   originalImageHeight: number;
+  colors?: {
+    primary: string;
+    secondary: string;
+  };
 };
 
 export enum BookStatus {

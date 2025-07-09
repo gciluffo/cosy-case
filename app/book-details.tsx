@@ -386,7 +386,7 @@ export default function BookDetails() {
               contentFit="contain"
               transition={500}
             />
-            <View className="justify-center items-center mt-2">
+            <View className="justify-center items-center mt-2 pl-1 pr-1">
               <Heading
                 size="xl"
                 className="color-typography-white"

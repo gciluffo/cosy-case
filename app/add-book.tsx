@@ -33,6 +33,7 @@ import CompactBookShelf from "@/components/CompactBookShelf";
 import { scale, verticalScale } from "@/utils/scale";
 import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
 import { captureRef } from "react-native-view-shot";
+import { sortBookcase } from "@/utils/bookcase";
 
 export interface AddBookParam {
   key: string;
@@ -43,7 +44,7 @@ export interface AddBookParam {
 }
 
 export default function AddBookScreen() {
-  const { addBooksToCase, cases } = useStore();
+  const { addBooksToCase, cases, getCaseByName, updateCase } = useStore();
   const [bookDetails, setBookDetails] = useState<OpenLibraryBook>(
     {} as OpenLibraryBook
   );
@@ -206,6 +207,9 @@ export default function AddBookScreen() {
           selectedSpine!,
           bookDetails.key
         );
+        const { primary, secondary } = await getPrimaryAndSecondaryColors(
+          signedUrl
+        );
         const cacheKey = `${bookDetails.key}-spine-${new Date().getTime()}`;
         await CacheManager.downloadAsync({
           uri: signedUrl,
@@ -218,6 +222,10 @@ export default function AddBookScreen() {
           selected: true,
           originalImageHeight: height,
           originalImageWidth: width,
+          colors: {
+            primary: primary,
+            secondary: secondary,
+          },
         });
       }
 
@@ -236,10 +244,19 @@ export default function AddBookScreen() {
         dateAdded: new Date().toISOString(),
       };
 
-      console.log("Book to add:", bookToAdd);
-      // addBookToCase("default", bookToAdd);
+      // console.log("Book to add:", bookToAdd);
+      // // addBookToCase("default", bookToAdd);
       for (const shelf of selectedShelves) {
         addBooksToCase(shelf, [bookToAdd]);
+        // if there is a sort on the book case, sort the books
+
+        const bookCase = getCaseByName(shelf);
+
+        if (bookCase?.sortOrder) {
+          // sort and update the book case
+          sortBookcase(bookCase, bookCase.sortOrder);
+          updateCase(bookCase?.name!, { books: bookCase?.books });
+        }
       }
 
       router.back();
