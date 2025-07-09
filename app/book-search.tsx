@@ -1,4 +1,4 @@
-import { searchBooks, searchBooksV2 } from "@/api";
+import { getBookDetails, searchBooks, searchBooksV2 } from "@/api";
 import { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, FlatList, ScrollView } from "react-native";
 import { Text } from "@/components/ui/text";
@@ -21,6 +21,26 @@ export default function BookSearch() {
   const [loading, setLoading] = useState(false);
   const { cases } = useStore();
 
+  const findAndUpdateMissingCovers = async (books: OpenLibraryBookSearch[]) => {
+    const booksClone = [...books];
+    for (const book of booksClone) {
+      if (!book.cover_url) {
+        const bookDetails = await getBookDetails(book.key);
+        const isbn = bookDetails?.isbn_13?.[0] || bookDetails?.isbn_10?.[0];
+        if (!isbn) {
+          // console.warn("No ISBN found for book:", book);
+          continue; // Skip this book if no ISBN is available
+        }
+        const response = await searchBooksV2(`isbn:${isbn}`);
+        const bookUrl = response?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+        if (bookUrl) {
+          book.cover_url = convertToHttps(bookUrl);
+        }
+      }
+    }
+    setSearchResults(booksClone);
+  };
+
   useEffect(() => {
     if (searchText?.length < 3) {
       setSearchResults([]);
@@ -32,18 +52,9 @@ export default function BookSearch() {
       try {
         setLoading(true);
         const response = await searchBooks(searchText);
-        // for (const book of response) {
-        //   if (!book.cover_url) {
-        //     const response = await searchBooksV2(searchText);
-        //     const bookUrl =
-        //       response?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
-
-        //     if (bookUrl) {
-        //       book.cover_url = convertToHttps(bookUrl);
-        //     }
-        //   }
-        // }
         setSearchResults(response);
+
+        findAndUpdateMissingCovers(response);
       } catch (error) {
         console.error("Error fetching books:", error);
       } finally {

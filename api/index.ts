@@ -74,7 +74,7 @@ export async function getBookDetails(
     url += `&editionKey=${formattedEditionKey}`;
   }
 
-  console.log("getting book details", "url:", url);
+  // console.log("getting book details", "url:", url);
 
   const response = await fetch(url, {
     method: "GET",
