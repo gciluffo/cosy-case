@@ -12,14 +12,17 @@ import { Text } from "@/components/ui/text";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { Heading } from "@/components/ui/heading";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
-import { searchBooks } from "@/api";
+import { getBookDetails, searchBooks, searchBooksV2 } from "@/api";
 import { OpenLibraryBookSearch } from "@/models/open-library";
 import BookSearchResult from "@/components/BookSearchResult";
 import useStore from "@/store";
+import { convertToHttps } from "@/utils/image";
 
 export default function AddBookScan() {
   const [scanned, setScanned] = useState(false);
-  const [scannedBooks, setScannedBooks] = useState<OpenLibraryBookSearch[]>([]);
+  const [scannedBooks, setScannedBooks] = useState<
+    (OpenLibraryBookSearch & { loadingCover: boolean })[]
+  >([]);
   const [permission, requestPermission] = useCameraPermissions();
   const [currentIsbn, setCurrentIsbn] = useState<string | null>(null);
   const cameraRef = useRef<CameraView>(null);
@@ -64,7 +67,7 @@ export default function AddBookScan() {
       setScanned(true);
 
       if (scanned || scannedBooks.some((b) => b.isbn === isbn)) {
-        console.log("Book already scanned");
+        // console.log("Book already scanned");
         return;
       }
 
@@ -123,6 +126,52 @@ export default function AddBookScan() {
     return cases.some((c) => c.books.some((b) => b.key === formattedKey));
   };
 
+  const onNoImageFound = async (book: OpenLibraryBookSearch) => {
+    // if no image found, update the scannedBook array to add the loadingCover flag to the book
+    // Make a seperate api call to get the cover image
+    // Update the scannedBooks array again with the new cover image and set the loadingCover flag to false
+    setScannedBooks((prev) => {
+      const updatedBooks = prev.map((b) => {
+        if (b.key === book.key) {
+          return { ...b, loadingCover: true };
+        }
+        return b;
+      });
+      return updatedBooks;
+    });
+
+    try {
+      const bookDetails = await getBookDetails(book.key);
+      const isbn = bookDetails?.isbn_13?.[0] || bookDetails?.isbn_10?.[0];
+      if (!isbn) return;
+      const response = await searchBooksV2(`isbn:${isbn}`);
+      const bookUrl = response?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+      if (bookUrl) {
+        book.cover_url = convertToHttps(bookUrl);
+        setScannedBooks((prev) => {
+          const updatedBooks = prev.map((b) => {
+            if (b.key === book.key) {
+              return { ...b, cover_url: book.cover_url, loadingCover: false };
+            }
+            return b;
+          });
+          return updatedBooks;
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching book cover:", error);
+      setScannedBooks((prev) => {
+        const updatedBooks = prev.map((b) => {
+          if (b.key === book.key) {
+            return { ...b, loadingCover: false };
+          }
+          return b;
+        });
+        return updatedBooks;
+      });
+    }
+  };
+
   return (
     <>
       {permission?.granted ? (
@@ -161,6 +210,8 @@ export default function AddBookScan() {
                     author={b.author_name?.[0]}
                     onAddToLibrary={() => onAddToLibrary(b)}
                     isBookAlreadyInLibrary={isBookAlreadyInLibrary(b)}
+                    onNoImage={() => onNoImageFound(b)}
+                    loading={b.loadingCover}
                   />
                 ))}
               </View>

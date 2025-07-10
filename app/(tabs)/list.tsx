@@ -1,5 +1,4 @@
 import {
-  ActionsheetIcon,
   Actionsheet,
   ActionsheetContent,
   ActionsheetItem,
@@ -18,9 +17,7 @@ import { Book, BookReview } from "@/models/book";
 import { Text } from "@/components/ui/text";
 import { Heading } from "@/components/ui/heading";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { getBookDescription } from "@/utils/books";
-import { FontAwesome } from "@expo/vector-icons";
 import BookReviewIcon from "@/components/BookReviewIcon";
 import { captializeFirstLetter } from "@/utils/string";
 
@@ -32,11 +29,7 @@ export default function TabTwoScreen() {
 
   const allBooks = useMemo(() => {
     const books = cases.reduce((acc, bookCase) => {
-      const books = bookCase.books.map((book) => ({
-        ...book,
-        key: book.key,
-      }));
-      return [...acc, ...books];
+      return [...acc, ...bookCase.books];
     }, [] as Book[]);
     const uniqueBooks = books.filter(
       (book, index, self) => self.findIndex((b) => b.key === book.key) === index
@@ -55,7 +48,7 @@ export default function TabTwoScreen() {
       (book) => book.review === user.bookListFilter
     );
     setFilteredBooks(filtered);
-  }, [user.bookListFilter]);
+  }, [user.bookListFilter, allBooks]);
 
   if (!allBooks || allBooks.length === 0) {
     return (

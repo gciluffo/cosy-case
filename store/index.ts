@@ -39,7 +39,6 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
         bookListDisplayMode: "grid",
         bookListFilter: undefined,
       },
-      books: [],
       cases: [
         {
           name: "default",

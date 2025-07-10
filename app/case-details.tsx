@@ -365,8 +365,9 @@ export default function CaseDetails() {
               }}
               data={radarChartData.map((item) => item.value)}
               labels={radarChartData.map((item) => item.label)}
-              labelConfig={{ fontSize: 12 }}
+              labelConfig={{ fontSize: 13 }}
               labelsPositionOffset={1}
+              chartSize={Dimensions.get("window").width - 20}
             />
           </View>
         )}

@@ -1,4 +1,4 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText, ButtonIcon } from "@/components/ui/button";
@@ -11,8 +11,10 @@ interface Props {
   author?: string;
   imageUrl?: string;
   onAddToLibrary: () => void;
+  onNoImage?: () => void;
   isBookAlreadyInLibrary: boolean;
   rating?: number;
+  loading?: boolean;
 }
 
 export default function BookSearchResult(props: Props) {
@@ -25,11 +27,14 @@ export default function BookSearchResult(props: Props) {
     onAddToLibrary,
     author,
     isBookAlreadyInLibrary,
+    loading = false,
   } = props;
 
   return (
     <View className="flex flex-row items-center gap-2 p-1">
-      {noImage || !imageUrl ? (
+      {loading && !imageUrl ? (
+        <ActivityIndicator size="small" color="black" style={styles.image} />
+      ) : noImage || !imageUrl ? (
         <View style={[styles.image, { backgroundColor: "lightgrey" }]}></View>
       ) : (
         <Image
@@ -40,11 +45,16 @@ export default function BookSearchResult(props: Props) {
             const { width, height } = event.source;
             if (width === 1 && height === 1) {
               setNoImage(true);
+              if (props.onNoImage) {
+                props.onNoImage();
+              }
             }
           }}
           onError={(e) => {
-            // console.log("Error loading image", e);
             setNoImage(true);
+            if (props.onNoImage) {
+              props.onNoImage();
+            }
           }}
           cachePolicy={"memory-disk"}
         />
@@ -52,7 +62,7 @@ export default function BookSearchResult(props: Props) {
       <View className="flex-[2]">
         <Text className="font-semibold">{props.title}</Text>
         {props.author && (
-          <Text size="sm" className="text-gray-500 pt-1">
+          <Text size="sm" className="text-gray-500">
             {props.author}
           </Text>
         )}

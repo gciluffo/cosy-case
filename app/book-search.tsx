@@ -17,26 +17,36 @@ export default function BookSearch() {
     []
   );
   const [loading, setLoading] = useState(false);
+  const [coversLoading, setCoversLoading] = useState(false);
   const { cases } = useStore();
 
   const findAndUpdateMissingCovers = async (books: OpenLibraryBookSearch[]) => {
-    const booksClone = [...books];
-    for (const book of booksClone) {
-      if (!book.cover_url) {
-        const bookDetails = await getBookDetails(book.key);
-        const isbn = bookDetails?.isbn_13?.[0] || bookDetails?.isbn_10?.[0];
-        if (!isbn) {
-          // console.warn("No ISBN found for book:", book);
-          continue; // Skip this book if no ISBN is available
+    try {
+      setCoversLoading(true);
+      const booksClone = [...books];
+
+      // Prepare promises for all books missing a cover
+      const updatePromises = booksClone.map(async (book) => {
+        if (!book.cover_url) {
+          const bookDetails = await getBookDetails(book.key);
+          const isbn = bookDetails?.isbn_13?.[0] || bookDetails?.isbn_10?.[0];
+          if (!isbn) return;
+          const response = await searchBooksV2(`isbn:${isbn}`);
+          const bookUrl =
+            response?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+          if (bookUrl) {
+            book.cover_url = convertToHttps(bookUrl);
+          }
         }
-        const response = await searchBooksV2(`isbn:${isbn}`);
-        const bookUrl = response?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
-        if (bookUrl) {
-          book.cover_url = convertToHttps(bookUrl);
-        }
-      }
+      });
+
+      await Promise.all(updatePromises);
+      setSearchResults(booksClone);
+    } catch (error) {
+      console.error("Error updating covers:", error);
+    } finally {
+      setCoversLoading(false);
     }
-    setSearchResults(booksClone);
   };
 
   useEffect(() => {
@@ -172,6 +182,7 @@ export default function BookSearch() {
               author={item.author_name?.[0]}
               onAddToLibrary={() => onAddToLibrary(item)}
               isBookAlreadyInLibrary={isBookAlreadyInLibrary(item)}
+              loading={coversLoading}
             />
           )}
         />
