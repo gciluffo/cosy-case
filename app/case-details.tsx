@@ -1,4 +1,5 @@
-import { RadarChart } from "react-native-gifted-charts";
+import { G, Rect, Text as SvgText } from "react-native-svg";
+import { PieChart, pieDataItem, RadarChart } from "react-native-gifted-charts";
 import {
   Radio,
   RadioGroup,
@@ -19,7 +20,7 @@ import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ButtonIcon } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { AddIcon, TrashIcon, CircleIcon } from "@/components/ui/icon";
-import { isTablet, moderateScale, verticalScale } from "@/utils/scale";
+import { isTablet, moderateScale, scale, verticalScale } from "@/utils/scale";
 import {
   View,
   StyleSheet,
@@ -42,7 +43,7 @@ import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
 import { BookSortOrder } from "@/models/book";
 import { sortBookcase } from "@/utils/bookcase";
-import { getRadarChartDataV2 } from "@/utils/books";
+import { getGenreChartData } from "@/utils/books";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 40);
 const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
@@ -275,10 +276,15 @@ export default function CaseDetails() {
   };
 
   const radarChartData = useMemo(() => {
-    if (!bookCase) return [];
+    if (!bookCase || !bookCase.books || bookCase.books.length < 4) {
+      return [];
+    }
 
-    const books = bookCase.books || [];
-    return getRadarChartDataV2(books);
+    return getGenreChartData(bookCase.books).map((item) => ({
+      value: item.value,
+      text: item.label,
+      textColor: "#000",
+    })) as pieDataItem[];
   }, [bookCase?.books]);
 
   // console.log("Radar Chart Data", radarChartData);
@@ -354,19 +360,25 @@ export default function CaseDetails() {
 
         <View className="h-5" />
         {radarChartData.length > 0 && bookCase && bookCase.books.length > 3 && (
-          <View className="w-100 flex">
-            <RadarChart
-              gridConfig={{
-                fill: "blue",
-                gradientColor: "lightblue",
-                opacity: 0.2,
-                gradientOpacity: 0.1,
+          <View className="w-100 flex items-center">
+            <PieChart
+              data={radarChartData}
+              innerRadius={80}
+              radius={scale(100)}
+              donut
+              showExternalLabels
+              paddingHorizontal={30}
+              externalLabelComponent={(item) => (
+                <SvgText fontSize={11}>{item?.text}</SvgText>
+              )}
+              labelLineConfig={{
+                avoidOverlappingOfLabels: true,
+                labelComponentWidth: 40,
+                labelComponentHeight: 10,
+                labelComponentMargin: 5,
+                length: 10,
+                tailLength: 9,
               }}
-              data={radarChartData.map((item) => item.value)}
-              labels={radarChartData.map((item) => item.label)}
-              labelConfig={{ fontSize: 13 }}
-              labelsPositionOffset={1}
-              chartSize={Dimensions.get("window").width - 20}
             />
           </View>
         )}

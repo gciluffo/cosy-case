@@ -43,7 +43,7 @@ export function Shelf(props: ShelfProps) {
       return (ShelfImageMap as any)[topImageKey];
     }
     if (index === length - 1) {
-      return (ShelfImageMap as any)[bottomImageKey];
+      return (ShelfImageMap as any)[middleImageKey];
     }
     return (ShelfImageMap as any)[middleImageKey];
   };

@@ -239,7 +239,7 @@ export const bookSubjects: string[] = [
   "Computer Science",
 ];
 
-export const getRadarChartDataV2 = (
+export const getGenreChartData = (
   books: Book[]
 ): { label: string; value: number }[] => {
   const subjectCounts: Record<string, number> = {};
