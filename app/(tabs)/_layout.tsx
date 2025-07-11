@@ -23,10 +23,8 @@ export default function TabLayout() {
         tabBarItemStyle: { alignItems: "center", flexDirection: "row" },
         tabBarStyle: {
           position: "absolute",
-          width: isTablet ? 200 : 150,
-          marginLeft: isTablet
-            ? (screenWidth - 200) / 2
-            : (screenWidth - 150) / 2,
+          width: 200,
+          marginLeft: (screenWidth - 200) / 2,
           marginBottom: Platform.OS === "android" ? 20 : 30,
           elevation: 5,
           backgroundColor: Colors[colorScheme ?? "light"].background,
@@ -98,6 +96,15 @@ export default function TabLayout() {
                 }}
               />
             </TouchableOpacity>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          title: "Stats",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="trophy" color={color} />
           ),
         }}
       />

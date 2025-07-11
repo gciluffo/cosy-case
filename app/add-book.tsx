@@ -242,6 +242,14 @@ export default function AddBookScreen() {
         },
         spines,
         dateAdded: new Date().toISOString(),
+        dateFinished:
+          selectedStatus === BookStatus.FINISHED
+            ? new Date().toISOString()
+            : undefined,
+        dateStarted:
+          selectedStatus === BookStatus.READING
+            ? new Date().toISOString()
+            : undefined,
       };
 
       // console.log("Book to add:", bookToAdd);

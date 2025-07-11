@@ -34,6 +34,8 @@ export type Book = OpenLibraryBook & {
     secondary: string;
   };
   dateAdded: string;
+  dateFinished?: string;
+  dateStarted?: string;
 };
 
 export interface Widget {

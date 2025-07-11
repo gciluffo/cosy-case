@@ -537,6 +537,14 @@ export default function BookDetails() {
                       updateBook(localBook.key, {
                         ...localBook,
                         status: value,
+                        dateFinished:
+                          value === "finished"
+                            ? new Date().toISOString()
+                            : undefined,
+                        dateStarted:
+                          value === "reading"
+                            ? new Date().toISOString()
+                            : undefined,
                       });
                     }
                   }}
