@@ -5,8 +5,8 @@ import {
 import { OpenLibraryBook } from "@/models/open-library";
 import { captializeFirstLetter } from "@/utils/string";
 
-// const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.53:8000";
-const BASE_URL = "http://192.168.2.53:8000";
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.53:8000";
+// const BASE_URL = "http://192.168.2.53:8000";
 
 export async function searchBooks(searchTerm: string) {
   console.log(
@@ -261,6 +261,7 @@ export const uploadImageForSpineDetection = async (
 };
 
 export const confirmCroppedImage = async (
+  confirm: boolean,
   objectKey: string,
   key: string
 ): Promise<void> => {
@@ -268,6 +269,7 @@ export const confirmCroppedImage = async (
   const response = await fetch(`${BASE_URL}/confirm-cropped-image`, {
     method: "POST",
     body: JSON.stringify({
+      confirm,
       object_key: objectKey,
       workId: formattedKey,
     }),

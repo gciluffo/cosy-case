@@ -353,9 +353,8 @@ export default function CaseDetails() {
         ) : null}
 
         <View className="h-5" />
-        {/* Add radar chart */}
-        {radarChartData.length > 0 && bookCase && bookCase.books.length > 2 && (
-          <View className="w-100">
+        {radarChartData.length > 0 && bookCase && bookCase.books.length > 3 && (
+          <View className="w-100 flex">
             <RadarChart
               gridConfig={{
                 fill: "blue",

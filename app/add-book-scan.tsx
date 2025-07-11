@@ -49,7 +49,7 @@ export default function AddBookScan() {
       if (!currentIsbn) {
         return;
       }
-      console.log("calling onBarcodeScanned from useEffect", currentIsbn);
+      // console.log("calling onBarcodeScanned from useEffect", currentIsbn);
       onBarcodeScanned(currentIsbn);
     }, 1000);
 
@@ -126,13 +126,14 @@ export default function AddBookScan() {
     return cases.some((c) => c.books.some((b) => b.key === formattedKey));
   };
 
-  const onNoImageFound = async (book: OpenLibraryBookSearch) => {
+  const onNoImageFound = async (bookKey: string) => {
     // if no image found, update the scannedBook array to add the loadingCover flag to the book
     // Make a seperate api call to get the cover image
     // Update the scannedBooks array again with the new cover image and set the loadingCover flag to false
+    console.log("No image found for book: looking", bookKey);
     setScannedBooks((prev) => {
       const updatedBooks = prev.map((b) => {
-        if (b.key === book.key) {
+        if (b.key === bookKey) {
           return { ...b, loadingCover: true };
         }
         return b;
@@ -141,17 +142,20 @@ export default function AddBookScan() {
     });
 
     try {
-      const bookDetails = await getBookDetails(book.key);
+      const bookDetails = await getBookDetails(bookKey);
       const isbn = bookDetails?.isbn_13?.[0] || bookDetails?.isbn_10?.[0];
       if (!isbn) return;
       const response = await searchBooksV2(`isbn:${isbn}`);
       const bookUrl = response?.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
       if (bookUrl) {
-        book.cover_url = convertToHttps(bookUrl);
         setScannedBooks((prev) => {
           const updatedBooks = prev.map((b) => {
-            if (b.key === book.key) {
-              return { ...b, cover_url: book.cover_url, loadingCover: false };
+            if (b.key === bookKey) {
+              return {
+                ...b,
+                cover_url: convertToHttps(bookUrl),
+                loadingCover: false,
+              };
             }
             return b;
           });
@@ -162,7 +166,7 @@ export default function AddBookScan() {
       console.error("Error fetching book cover:", error);
       setScannedBooks((prev) => {
         const updatedBooks = prev.map((b) => {
-          if (b.key === book.key) {
+          if (b.key === bookKey) {
             return { ...b, loadingCover: false };
           }
           return b;
@@ -210,8 +214,9 @@ export default function AddBookScan() {
                     author={b.author_name?.[0]}
                     onAddToLibrary={() => onAddToLibrary(b)}
                     isBookAlreadyInLibrary={isBookAlreadyInLibrary(b)}
-                    onNoImage={() => onNoImageFound(b)}
+                    onNoImage={() => onNoImageFound(b.key)}
                     loading={b.loadingCover}
+                    key={b.key}
                   />
                 ))}
               </View>

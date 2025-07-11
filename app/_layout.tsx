@@ -165,11 +165,7 @@ export default function RootLayout() {
             headerTintColor: "white", // or any contrasting color for your back button
             headerBackButtonDisplayMode: "generic",
             headerRight: () => (
-              <TouchableOpacity
-              // onPress={() => {
-              //   router.push("/book-search");
-              // }}
-              >
+              <TouchableOpacity>
                 <FontAwesome name="share" size={24} color="white" />
               </TouchableOpacity>
             ),
@@ -181,6 +177,22 @@ export default function RootLayout() {
             title: "",
             headerTransparent: true,
             headerBackButtonDisplayMode: "generic",
+            presentation: "fullScreenModal",
+            headerLeft: () => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    router.back();
+                    router.setParams({
+                      refetchSpineImages: "true",
+                    });
+                  }}
+                >
+                  {/* Show x icon similar to instagram */}
+                  <FontAwesome name="times" size={35} color="white" />
+                </TouchableOpacity>
+              );
+            },
           }}
         />
         <Stack.Screen

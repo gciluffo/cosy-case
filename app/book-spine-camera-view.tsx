@@ -83,23 +83,21 @@ export default function ScanSpine() {
       setImage(signedUrl);
     } catch (error) {
       console.log("Upload failed:", error);
-      // Alert.alert("Upload Failed", error.message);
     } finally {
       setUploading(false);
     }
   };
 
-  const onImageConfirm = async () => {
+  const onImageConfirm = async (confirm: boolean) => {
     const { objectKey } = getObjectKeyFromSignedUrl(image!);
-    // console.log("Object key:", objectKey);
-    const res = await confirmCroppedImage(objectKey, bookParsed.key);
+    const res = await confirmCroppedImage(confirm, objectKey, bookParsed.key);
 
-    // console.log("Upload result:", res);
-
-    router.back();
-    router.setParams({
-      refetchSpineImages: "true",
-    });
+    if (confirm) {
+      router.back();
+      router.setParams({
+        refetchSpineImages: "true",
+      });
+    }
   };
 
   // show view if the permissions were denied and cant ask again
@@ -130,8 +128,11 @@ export default function ScanSpine() {
     return (
       <CroppedImageConfirm
         image={image}
-        onCancel={() => setImage(null)}
-        onConfirm={onImageConfirm}
+        onCancel={() => {
+          setImage(null);
+          onImageConfirm(false);
+        }}
+        onConfirm={() => onImageConfirm(true)}
       />
     );
   }

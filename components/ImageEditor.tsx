@@ -1,6 +1,7 @@
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
+import { verticalScale } from "@/utils/scale";
 
 interface Props {
   image: string;
@@ -15,8 +16,8 @@ export default function CroppedImageConfirm(props: Props) {
     <View style={styles.container}>
       <Image
         style={{
-          marginTop: 20,
-          height: "80%",
+          marginTop: verticalScale(80),
+          height: "70%",
           width: "auto",
         }}
         source={{ uri: image }}
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "flex-end",
-    marginBottom: 70,
+    marginBottom: 40,
   },
   button: {
     width: 70,

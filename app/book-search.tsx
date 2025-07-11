@@ -183,6 +183,7 @@ export default function BookSearch() {
               onAddToLibrary={() => onAddToLibrary(item)}
               isBookAlreadyInLibrary={isBookAlreadyInLibrary(item)}
               loading={coversLoading}
+              key={item.key}
             />
           )}
         />

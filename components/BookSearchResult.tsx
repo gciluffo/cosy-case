@@ -3,11 +3,12 @@ import { Image } from "expo-image";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText, ButtonIcon } from "@/components/ui/button";
 import { AddIcon } from "./ui/icon";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { convertToHttps } from "@/utils/image";
 
 interface Props {
   title: string;
+  key: string;
   author?: string;
   imageUrl?: string;
   onAddToLibrary: () => void;
@@ -28,7 +29,17 @@ export default function BookSearchResult(props: Props) {
     author,
     isBookAlreadyInLibrary,
     loading = false,
+    onNoImage,
+    key,
   } = props;
+
+  useEffect(() => {
+    if (!imageUrl && onNoImage) {
+      onNoImage();
+    }
+  }, [imageUrl]);
+
+  console.log("imageUrl:", imageUrl);
 
   return (
     <View className="flex flex-row items-center gap-2 p-1">
@@ -44,30 +55,34 @@ export default function BookSearchResult(props: Props) {
           onLoad={(event) => {
             const { width, height } = event.source;
             if (width === 1 && height === 1) {
-              setNoImage(true);
-              if (props.onNoImage) {
-                props.onNoImage();
+              console.log("Image is 1x1, setting no image");
+              if (onNoImage) {
+                console.log("Image is 1x1, setting no image");
+                onNoImage();
               }
+              setNoImage(true);
             }
           }}
           onError={(e) => {
-            setNoImage(true);
-            if (props.onNoImage) {
-              props.onNoImage();
+            console.log("Error loading image:");
+            if (onNoImage) {
+              console.log("Error loading image:");
+              onNoImage();
             }
+            setNoImage(true);
           }}
           cachePolicy={"memory-disk"}
         />
       )}
       <View className="flex-[2]">
-        <Text className="font-semibold">{props.title}</Text>
-        {props.author && (
+        <Text className="font-semibold">{title}</Text>
+        {author && (
           <Text size="sm" className="text-gray-500">
-            {props.author}
+            {author}
           </Text>
         )}
-        {props.rating && (
-          <Text className="text-sm text-gray-500">Rating: {props.rating}</Text>
+        {rating && (
+          <Text className="text-sm text-gray-500">Rating: {rating}</Text>
         )}
       </View>
       <View className="flex-[1] space-y-1">

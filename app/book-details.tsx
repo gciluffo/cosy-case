@@ -61,6 +61,8 @@ export default function BookDetails() {
     return !!book;
   }, [bookKey, localBookKey, cases]);
 
+  console.log({ bookspines: localBook?.spines, spines });
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -258,10 +260,13 @@ export default function BookDetails() {
           };
         });
 
-        // update book in store
+        // update book in store, make sure to deselect other spines
         updateBook(localBook.key, {
           ...localBook,
-          spines: [...localBook.spines, newSpine],
+          spines: [
+            ...localBook.spines.map((s) => ({ ...s, selected: false })),
+            newSpine,
+          ],
         });
       } else {
         // set Localbook if the spine is already cached
@@ -271,7 +276,9 @@ export default function BookDetails() {
           return {
             ...prev,
             spines: prev.spines.map((s) =>
-              s.cacheKey === newCacheKey ? { ...s, selected: true } : s
+              s.cacheKey === newCacheKey
+                ? { ...s, selected: true }
+                : { ...s, selected: false }
             ),
           };
         });
@@ -280,7 +287,9 @@ export default function BookDetails() {
         updateBook(localBook.key, {
           ...localBook,
           spines: localBook.spines.map((s) =>
-            s.cacheKey === newCacheKey ? { ...s, selected: true } : s
+            s.cacheKey === newCacheKey
+              ? { ...s, selected: true }
+              : { ...s, selected: false }
           ),
         });
       }
@@ -308,7 +317,6 @@ export default function BookDetails() {
         key: cacheKey,
         options: {},
       });
-      const { width, height } = getWidthHeightFromUrl(signedUrl);
 
       // update book in store, make sure the other spines are not selected
       updateBook(localBook.key, {
@@ -354,6 +362,8 @@ export default function BookDetails() {
       };
     });
   };
+
+  // console.log({ spines });
 
   if (loading) {
     return (
