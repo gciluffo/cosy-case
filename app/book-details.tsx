@@ -36,7 +36,11 @@ import CollapsibleDescription from "@/components/CollapsibleDescription";
 import { Card } from "@/components/ui/card";
 import InlinePicker from "@/components/InlinePicker";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
-import { getBookDescription, isStringIsbn13 } from "@/utils/books";
+import {
+  calculateBadgeProgress,
+  getBookDescription,
+  isStringIsbn13,
+} from "@/utils/books";
 import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
 
 export default function BookDetails() {
@@ -52,7 +56,8 @@ export default function BookDetails() {
   const [spines, setSpines] = useState<
     { url: string; isSelected: boolean; cacheKey: string }[]
   >([]);
-  const { removeBook, getBookByKey, updateBook, cases } = useStore();
+  const { removeBook, getBookByKey, updateBook, cases, badges, setBadges } =
+    useStore();
   const params = useLocalSearchParams();
   const { localBookKey, bookKey, cover_url, refetchSpineImages } = params;
 
@@ -61,7 +66,7 @@ export default function BookDetails() {
     return !!book;
   }, [bookKey, localBookKey, cases]);
 
-  console.log({ bookspines: localBook?.spines, spines });
+  // console.log({ bookspines: localBook?.spines, spines });
 
   useEffect(() => {
     const init = async () => {
@@ -363,7 +368,24 @@ export default function BookDetails() {
     });
   };
 
-  // console.log({ spines });
+  const onStatusChanged = (value: BookStatus) => {
+    if (localBook) {
+      localBook.status = value;
+      setLocalBook({ ...localBook });
+      updateBook(localBook.key, {
+        ...localBook,
+        status: value,
+        dateFinished:
+          value === BookStatus.FINISHED ? new Date().toISOString() : undefined,
+        dateStarted:
+          value === BookStatus.READING ? new Date().toISOString() : undefined,
+      });
+      if (value === BookStatus.FINISHED) {
+        const newBadgeArr = calculateBadgeProgress(localBook, badges);
+        setBadges(newBadgeArr);
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -514,6 +536,12 @@ export default function BookDetails() {
             {localBook?.number_of_pages || remoteBook?.number_of_pages}
           </Text>
         </View>
+        <View className="h-[1px] bg-gray-200 my-3" />
+        <View className="flex-row justify-between">
+          <Text className="text-gray-500">Genre</Text>
+          <Text>{localBook?.genericGenre}</Text>
+        </View>
+        <View className="h-[1px] bg-gray-200 my-3" />
         <View className="h-[20px]" />
       </View>
 
@@ -531,22 +559,7 @@ export default function BookDetails() {
                   dropdownPosition="top"
                   selectedValue={localBook.status}
                   onValueChange={(value: BookStatus) => {
-                    if (localBook) {
-                      localBook.status = value;
-                      setLocalBook({ ...localBook });
-                      updateBook(localBook.key, {
-                        ...localBook,
-                        status: value,
-                        dateFinished:
-                          value === "finished"
-                            ? new Date().toISOString()
-                            : undefined,
-                        dateStarted:
-                          value === "reading"
-                            ? new Date().toISOString()
-                            : undefined,
-                      });
-                    }
+                    onStatusChanged(value);
                   }}
                   items={[
                     { label: "Finished", value: "finished", icon: "check" },

@@ -1,15 +1,17 @@
 import { G, Rect, Text as SvgText } from "react-native-svg";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
-import { Book, BookStatus } from "@/models/book";
+import { BadgeType, Book, BookStatus } from "@/models/book";
 import useStore from "@/store";
 import { getGenreChartData } from "@/utils/books";
 import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { PieChart, pieDataItem, BarChart } from "react-native-gifted-charts";
+import { scale } from "@/utils/scale";
+import Badge from "@/components/Badge";
 
 export default function State() {
-  const { cases, user, updateUser } = useStore();
+  const { cases, badges } = useStore();
 
   const allBooks = useMemo(() => {
     const books = cases.reduce((acc, bookCase) => {
@@ -56,6 +58,19 @@ export default function State() {
       <Text className="text-sm text-gray-500 mb-2">
         Your achievements and badges earned in the app.
       </Text>
+      <View className="flex flex-row flex-wrap">
+        {Object.values(BadgeType).map((badgeType) => (
+          <View className="p-2" key={badgeType}>
+            <Badge
+              key={badgeType}
+              type={badgeType}
+              progress={badges.find((b) => b.type === badgeType)?.progress || 0}
+              width={scale(150)}
+              height={scale(150)}
+            />
+          </View>
+        ))}
+      </View>
       <View className="h-5" />
       <Heading>Book Genres</Heading>
       <Text className="text-sm text-gray-500 mb-2">
@@ -65,12 +80,14 @@ export default function State() {
       <View className="flex flex-col items-center justify-center">
         <PieChart
           data={pieChartGenreData}
-          innerRadius={90}
-          radius={130}
+          innerRadius={80}
+          radius={scale(100)}
+          isAnimated
+          animationDuration={500}
           donut
           shadow
           showExternalLabels
-          paddingHorizontal={10}
+          paddingHorizontal={30}
           externalLabelComponent={(item) => (
             <SvgText fontSize={12} fontFamily="Arial">
               {item?.text}
@@ -78,9 +95,11 @@ export default function State() {
           )}
           labelLineConfig={{
             avoidOverlappingOfLabels: true,
-            labelComponentWidth: 30,
-            labelComponentMargin: 10,
-            length: 5,
+            labelComponentWidth: 40,
+            labelComponentHeight: 10,
+            labelComponentMargin: 5,
+            length: 10,
+            tailLength: 9,
           }}
         />
       </View>
@@ -91,10 +110,24 @@ export default function State() {
       </Text>
       <View className="h-5" />
       <BarChart
+        isAnimated
+        animationDuration={500}
         data={[
-          { value: bookStatuses[BookStatus.TBR], label: "TBR" },
-          { value: bookStatuses[BookStatus.FINISHED], label: "Finished" },
-          { value: bookStatuses[BookStatus.READING], label: "Reading" },
+          {
+            value: bookStatuses[BookStatus.TBR],
+            label: "TBR",
+            frontColor: "#4CAF50",
+          },
+          {
+            value: bookStatuses[BookStatus.FINISHED],
+            label: "Finished",
+            frontColor: "#2196F3",
+          },
+          {
+            value: bookStatuses[BookStatus.READING],
+            label: "Reading",
+            frontColor: "#FF9800",
+          },
         ]}
         barWidth={50}
         spacing={20}

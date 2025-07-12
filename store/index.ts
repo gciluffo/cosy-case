@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Book, BookCase, BookReview } from "@/models/book";
+import { Badge, Book, BookCase, BookReview } from "@/models/book";
 import { middleware } from "zustand-expo-devtools";
 
 // Books have to be added to cases
@@ -17,6 +17,7 @@ export interface User {
 export interface Store {
   user: User;
   cases: BookCase[];
+  badges: Badge[];
   addBooksToCase: (caseName: string, books: Book[]) => void;
   updateBook: (bookId: string, book: Partial<Book>) => void;
   removeBookFromCase: (bookId: string, caseName: string) => void;
@@ -28,6 +29,7 @@ export interface Store {
   getBookByKey: (key: string) => Book | undefined;
   setUser: (user: User) => void;
   updateUser: (user: Partial<User>) => void;
+  setBadges: (badges: Badge[]) => void;
 }
 
 const useStore = create<Store, [["zustand/persist", unknown]]>(
@@ -39,6 +41,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
         bookListDisplayMode: "grid",
         bookListFilter: undefined,
       },
+      badges: [],
       cases: [
         {
           name: "default",
@@ -118,6 +121,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
             ),
           })),
         })),
+      setBadges: (badges: Badge[]) => set({ badges }),
     }),
     {
       name: "user", // Storage key
