@@ -1,8 +1,10 @@
 import {
   getBookDetails,
+  getBookDetailsV2,
   getBookSpineBucketPathFromSignedUrl,
   getSpineImages,
   searchBookSpineByTitle,
+  searchBooksV2,
 } from "@/api";
 import { OpenLibraryBook } from "@/models/open-library";
 import { Image } from "expo-image";
@@ -22,7 +24,13 @@ import { Text } from "@/components/ui/text";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import useStore from "@/store";
-import { Book, BookReview, BookStatus, Spine } from "@/models/book";
+import {
+  Book,
+  BookReview,
+  BookStatus,
+  GenericBookGenre,
+  Spine,
+} from "@/models/book";
 import {
   getPrimaryAndSecondaryColors,
   getWidthHeightFromUrl,
@@ -34,6 +42,11 @@ import { scale, verticalScale } from "@/utils/scale";
 import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
 import { captureRef } from "react-native-view-shot";
 import { sortBookcase } from "@/utils/bookcase";
+import {
+  calculateBadgeProgress,
+  getBookGenericGenresFromSubjects,
+  getGenericGenreFromCategories,
+} from "@/utils/books";
 
 export interface AddBookParam {
   key: string;
@@ -44,7 +57,15 @@ export interface AddBookParam {
 }
 
 export default function AddBookScreen() {
-  const { addBooksToCase, cases, getCaseByName, updateCase } = useStore();
+  const {
+    addBooksToCase,
+    cases,
+    getCaseByName,
+    updateCase,
+    badges,
+    setBadges,
+    updateBook,
+  } = useStore();
   const [bookDetails, setBookDetails] = useState<OpenLibraryBook>(
     {} as OpenLibraryBook
   );
@@ -58,7 +79,7 @@ export default function AddBookScreen() {
   } | null>(null);
   const [addingBook, setAddingBook] = useState(false);
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState(BookStatus.FINISHED);
+  const [selectedStatus, setSelectedStatus] = useState(BookStatus.READING);
   const [selectedReview, setSelectedReview] = useState(BookReview.LIKED);
   const [reviewText, setReviewText] = useState<string>("");
   const [selectedShelves, setSelectedShelves] = useState<string[]>([
@@ -229,6 +250,23 @@ export default function AddBookScreen() {
         });
       }
 
+      // do some api calls in the background to update the book details
+      // console.log("Adding book to library:", bookDetails);
+      const isbn = bookDetails?.isbn_13?.[0] || bookDetails?.isbn_10?.[0];
+      let categories: string[] | undefined = undefined;
+      let genericGenre: GenericBookGenre | undefined = undefined;
+      const response = await searchBooksV2(
+        isbn ? `isbn:${isbn}` : bookDetails.title
+      );
+      const id = response.items?.[0]?.id;
+      const detailsV2 = await getBookDetailsV2(id);
+      categories = detailsV2?.volumeInfo?.categories;
+      // console.log("Categories from V2:", categories);
+      genericGenre =
+        getGenericGenreFromCategories(categories!) ||
+        getBookGenericGenresFromSubjects(bookDetails?.subjects || [])[0];
+      // console.log("Generic genre:", genericGenre);
+
       const bookToAdd: Book = {
         ...bookDetails,
         cover_url: bookObject.cover_url,
@@ -241,6 +279,8 @@ export default function AddBookScreen() {
           secondary: coverColors?.secondary || "#FFFFFF",
         },
         spines,
+        categories: categories,
+        genericGenre: genericGenre,
         dateAdded: new Date().toISOString(),
         dateFinished:
           selectedStatus === BookStatus.FINISHED
@@ -251,6 +291,13 @@ export default function AddBookScreen() {
             ? new Date().toISOString()
             : undefined,
       };
+
+      // if status is finished, calculate impact on badge progress
+      // console.log("selectedStatus:", selectedStatus);
+      if (selectedStatus === BookStatus.FINISHED) {
+        const newBadgeArr = calculateBadgeProgress(bookToAdd, badges);
+        setBadges(newBadgeArr);
+      }
 
       // console.log("Book to add:", bookToAdd);
       // // addBookToCase("default", bookToAdd);

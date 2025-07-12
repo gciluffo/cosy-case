@@ -1,4 +1,11 @@
-import { Book, Widget } from "@/models/book";
+import BookDetails from "@/app/book-details";
+import {
+  Badge,
+  BadgeCountRequired,
+  BadgeType,
+  Book,
+  GenericBookGenre,
+} from "@/models/book";
 import { OpenLibraryBook } from "@/models/open-library";
 
 /**
@@ -95,174 +102,135 @@ export const getBookDescription = (book: Book | OpenLibraryBook) => {
   }
 };
 
-const genericBookGenres: string[] = [
-  "Fiction",
-  "Non-Fiction",
-  "Fantasy",
-  "Science Fiction",
-  "Mystery",
-  "Romance",
-  "Thriller",
-  "Historical",
-  "Horror",
-  "Poetry",
-  "Drama",
-  "Young Adult",
-  "Children's",
-  "Biography",
-  "Self-help",
-  "Health & Wellness",
-  "Science",
-  "Mathematics",
-  "History",
-  "Art & Design",
-  "Business",
-  "Politics",
-  "Religion",
-  "Psychology",
-  "Education",
-  "Travel & Places",
-  "Animals & Nature",
-  "Cookbooks",
-  "Comics & Graphic Novels",
-  "Textbooks",
-  "Programming & Tech",
-];
-
-export const bookSubjects: string[] = [
-  // Arts
-  "Architecture",
-  "Art Instruction",
-  "Art History",
-  "Dance",
-  "Design",
-  "Fashion",
-  "Film",
-  "Graphic Design",
-  "Music",
-  "Music Theory",
-  "Painting",
-  "Photography",
-
-  // Animals
-  "Bears",
-  "Cats",
-  "Kittens",
-  "Dogs",
-  "Puppies",
-
-  "Fantasy",
-  "Historical Fiction",
-  "Horror",
-  "Humor",
-  "Literature",
-  "Magic",
-  "Mystery and detective stories",
-  "Plays",
-  "Poetry",
-  "Romance",
-  "Science Fiction",
-  "Short Stories",
-  "Thriller",
-  "Young Adult",
-
-  // Science & Mathematics
-  "Biology",
-  "Chemistry",
-  "Mathematics",
-  "Physics",
-  "Programming",
-
-  // Business & Finance
-  "Management",
-  "Entrepreneurship",
-  "Business Economics",
-  "Business Success",
-  "Finance",
-  "Personal Finance",
-
-  // Children's
-  "Kids Books",
-  "Stories in Rhyme",
-  "Baby Books",
-  "Bedtime Books",
-  "Picture Books",
-
-  // History
-  "Ancient Civilization",
-  "Archaeology",
-  "Anthropology",
-  "World War II",
-  "Social Life and Customs",
-
-  // Health & Wellness
-  "Cooking",
-  "Cookbooks",
-  "Mental Health",
-  "Exercise",
-  "Nutrition",
-  "Self-help",
-
-  // Biography
-  "Autobiographies",
-  "History",
-  "Politics and Government",
-  "World War II", // (duplicate kept intentionally)
-  "Women",
-  "Kings and Rulers",
-  "Composers",
-  "Artists",
-
-  // Social Sciences
-  "Anthropology", // (duplicate kept intentionally)
-  "Religion",
-  "Political Science",
-  "Psychology",
-
-  // Places
-  "Brazil",
-  "India",
-  "Indonesia",
-  "United States",
-
-  // Textbooks
-  "History", // (duplicate kept intentionally)
-  "Mathematics", // (duplicate kept intentionally)
-  "Geography",
-  "Psychology", // (duplicate kept intentionally)
-  "Algebra",
-  "Education",
-  "Business & Economics",
-  "Science",
-  "Chemistry", // (duplicate kept intentionally)
-  "Physics", // (duplicate kept intentionally)
-  "Computer Science",
-];
-
 export const getGenreChartData = (
   books: Book[]
 ): { label: string; value: number }[] => {
-  const subjectCounts: Record<string, number> = {};
-  for (const book of books) {
-    const subjects = book.subjects || [];
-    for (const subject of subjects) {
-      const normalizedSubject = subject.toLowerCase().trim();
-      if (subjectCounts[normalizedSubject]) {
-        subjectCounts[normalizedSubject]++;
-      } else {
-        subjectCounts[normalizedSubject] = 1;
-      }
+  const genreCounts: Record<string, number> = {};
+
+  books.forEach((book) => {
+    if (book.genericGenre) {
+      genreCounts[book.genericGenre] =
+        (genreCounts[book.genericGenre] || 0) + 1;
+    }
+  });
+
+  return Object.entries(genreCounts).map(([label, value]) => ({
+    label,
+    value,
+  }));
+};
+
+const handleBadgeProgress = (badgeType: BadgeType, badges: Badge[]) => {
+  const badge = badges.find((b) => b.type === badgeType);
+
+  const totalCountRequired = BadgeCountRequired[badgeType];
+
+  if (badge && badge.progress < 1) {
+    badge.progress = badge.progress + 1 / totalCountRequired;
+  } else if (!badge) {
+    badges.push({
+      type: badgeType,
+      progress: 1 / totalCountRequired,
+    });
+  }
+};
+
+/**
+ * When a book gets put into a finished status, then this function is called.
+ * Computes which badges the completed book counts towards
+ * @param cases
+ * @param newlyCompletedBook
+ */
+export const calculateBadgeProgress = (
+  newlyCompletedBook: Book,
+  existingBadges: Badge[]
+): Badge[] => {
+  console.log("Calculating badge progress for book:");
+  const badgesClone = [...existingBadges];
+
+  // ******** FIRST_FINISHED_BOOK **************
+  const firstBookBadge = existingBadges.find(
+    (b) => b.type === BadgeType.FIRST_FINISHED_BOOK
+  );
+
+  if (firstBookBadge) {
+    firstBookBadge.progress = 1;
+  } else {
+    badgesClone.push({
+      type: BadgeType.FIRST_FINISHED_BOOK,
+      progress: 1,
+    });
+  }
+
+  // ******** FIFTY_BOOKS_FINISHED **************
+  handleBadgeProgress(BadgeType.FIFTEY_BOOKS_FINISHED, badgesClone);
+
+  // ******** Genre Specific Badges **************
+  const newBookGenre = newlyCompletedBook.genericGenre;
+
+  if (newBookGenre) {
+    switch (newBookGenre) {
+      case GenericBookGenre.ScienceFiction:
+        handleBadgeProgress(BadgeType.FIVE_SCIFI_BOOKS_FINISHED, badgesClone);
+        break;
+      case GenericBookGenre.Fantasy:
+        handleBadgeProgress(BadgeType.FIVE_FANTASY_BOOKS_FINISHED, badgesClone);
+        break;
+      case GenericBookGenre.NonFiction:
+        handleBadgeProgress(
+          BadgeType.FIVE_NON_FICTION_BOOKS_FINISHED,
+          badgesClone
+        );
+        break;
+      case GenericBookGenre.Romance:
+        handleBadgeProgress(BadgeType.FIVE_ROMANCE_BOOKS_FINISHED, badgesClone);
+        break;
+      case GenericBookGenre.Mystery:
+        handleBadgeProgress(BadgeType.FIVE_MYSTERY_BOOKS_FINISHED, badgesClone);
+        break;
+      case GenericBookGenre.Horror:
+        handleBadgeProgress(BadgeType.FIVE_HORROR_BOOKS_FINISHED, badgesClone);
+        break;
+      // case GenericBookGenre.Thriller:
+      //   handleBadgeProgress(BadgeType.FIVE_THRILLER_BOOKS_FINISHED, existingBadgesClone);
+      //   break;
+      default:
+        // No specific badge for this genre
+        break;
     }
   }
 
-  const totalBooks = books.length;
-  const radarData: { label: string; value: number }[] = [];
-  for (const subject of genericBookGenres) {
+  return badgesClone;
+};
+
+// "categories": [
+//             "Fiction / Fantasy / General",
+//             "Fiction / Fantasy / Epic",
+//             "Fiction / Fantasy / Action & Adventure",
+//             "Fiction / Fantasy / Military"
+//         ],
+// ...existing code...
+export const getGenericGenreFromCategories = (
+  categories: string[]
+): GenericBookGenre | undefined => {
+  return Object.values(GenericBookGenre).find((genre) =>
+    categories.some((cat) => cat.includes(genre))
+  );
+};
+
+export const getBookGenericGenresFromSubjects = (
+  subjects: string[]
+): GenericBookGenre[] => {
+  const genres: GenericBookGenre[] = [];
+  for (const subject of subjects) {
     const normalizedSubject = subject.toLowerCase().trim();
-    if (subjectCounts[normalizedSubject]) {
-      const value = (subjectCounts[normalizedSubject] / totalBooks) * 100;
-      radarData.push({ label: subject, value });
+    if (
+      Object.values(GenericBookGenre)
+        .map((g) => g.toLowerCase().trim())
+        .includes(normalizedSubject)
+    ) {
+      genres.push(subject as GenericBookGenre);
     }
   }
-  return radarData.filter((item) => item.value > 0);
+  return genres;
 };

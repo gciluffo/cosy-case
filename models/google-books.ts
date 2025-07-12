@@ -112,6 +112,7 @@ export interface VolumeInfo {
   language?: string;
   previewLink?: string;
   infoLink?: string;
+  categories?: string[];
   canonicalVolumeLink?: string;
 }
 
