@@ -209,7 +209,7 @@ const BookshelfScreen = () => {
         height,
       };
 
-      if (currentShelfWidth + width < MAX_WIDTH) {
+      if (currentShelfWidth + width < MAX_WIDTH - offsetX) {
         tempShelves[currentShelfIndex].push(thingWithDimensions);
         currentShelfWidth += width;
       } else {

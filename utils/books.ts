@@ -1,11 +1,4 @@
-import BookDetails from "@/app/book-details";
-import {
-  Badge,
-  BadgeCountRequired,
-  BadgeType,
-  Book,
-  GenericBookGenre,
-} from "@/models/book";
+import { Book, GenericBookGenre } from "@/models/book";
 import { OpenLibraryBook } from "@/models/open-library";
 
 /**

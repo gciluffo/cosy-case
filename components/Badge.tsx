@@ -1,10 +1,9 @@
 import { View } from "react-native";
-import { Text } from "@/components/ui/text";
-import { BadgeType } from "@/models/book";
 import { ImageBackground } from "expo-image";
 import React from "react";
 import { useMemo } from "react";
 import { Canvas, Group, Path, Skia } from "@shopify/react-native-skia";
+import { BadgeType } from "@/models/badge";
 
 type ProgressWheel = {
   size: number;
@@ -23,9 +22,7 @@ const ProgressWheel = ({
 
   const path = useMemo(() => {
     const skPath = Skia.Path.Make();
-
     skPath.addCircle(size / 2, size / 2, radius);
-
     return skPath;
   }, [radius, size]);
 
@@ -45,6 +42,34 @@ const ProgressWheel = ({
       rotate: -Math.PI / 2,
     },
   ];
+
+  // Animation logic
+  const [animatedProgress, setAnimatedProgress] = React.useState(0);
+
+  React.useEffect(() => {
+    let frame: number;
+    let start: number | null = null;
+    const duration = 700; // ms
+
+    function animate(ts: number) {
+      if (!start) start = ts;
+      const elapsed = ts - start;
+      const nextProgress = Math.min(progress, (elapsed / duration) * progress);
+      setAnimatedProgress(nextProgress);
+      if (elapsed < duration && nextProgress < progress) {
+        frame = requestAnimationFrame(animate);
+      } else {
+        setAnimatedProgress(progress);
+      }
+    }
+
+    setAnimatedProgress(0);
+    frame = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [progress]);
 
   return (
     <View
@@ -71,10 +96,10 @@ const ProgressWheel = ({
           <Path
             start={0}
             path={path}
-            end={progress}
+            end={animatedProgress}
             style={"stroke"}
             strokeCap={"round"}
-            color={"gold"}
+            color={"#fac002"}
             strokeWidth={10}
           />
         </Group>
@@ -141,7 +166,7 @@ export default function Badge(props: BadgeProps) {
           height: size - radius / 2,
         }}
         className="rounded-full"
-        imageStyle={progress < 1 ? { opacity: 0.6 } : undefined}
+        imageStyle={progress < 1 ? { opacity: 0.7 } : undefined}
       />
     </ProgressWheel>
   );

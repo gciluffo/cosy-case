@@ -531,7 +531,7 @@ export default function AddBookScreen() {
                   bookCase={item}
                   caseWidth={scale(120)}
                   caseHeight={verticalScale(100)}
-                  shelfHeight={verticalScale(33)}
+                  shelfHeight={verticalScale(40)}
                 />
               </TouchableOpacity>
               <Text>{item.name}</Text>

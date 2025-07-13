@@ -222,6 +222,7 @@ export default function NYTTrendingBooksView() {
           horizontal
           showsHorizontalScrollIndicator={false}
           ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+          style={{ marginBottom: 20, marginTop: 10 }}
         />
       ) : (
         <LoadingHorizontalFlatList />

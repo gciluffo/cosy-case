@@ -1,6 +1,6 @@
 import { Book, BookCase, isBook, Widget } from "@/models/book";
 import { getBookHeightPx, getBookSpineWidth } from "@/utils/books";
-import { scale, verticalScale } from "@/utils/scale";
+import { moderateScale, scale, verticalScale } from "@/utils/scale";
 import { ImageBackground } from "expo-image";
 import React, { useEffect } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
@@ -35,7 +35,7 @@ export default function CompactBookShelf(props: BookShelfProps) {
 
     // Initialize shelves
     let totalShelfHeight = 0;
-    while (totalShelfHeight < caseHeight) {
+    while (totalShelfHeight <= caseHeight) {
       tempShelves.push([]);
       totalShelfHeight += shelfHeight;
     }
@@ -88,7 +88,7 @@ export default function CompactBookShelf(props: BookShelfProps) {
           height
         );
       } else {
-        width = scale(20);
+        width = moderateScale(20);
         height = shelfHeight - offsetY + 15;
       }
 
@@ -98,7 +98,7 @@ export default function CompactBookShelf(props: BookShelfProps) {
         height,
       };
 
-      if (currentShelfWidth + width < caseWidth) {
+      if (currentShelfWidth + width < caseWidth - offsetX) {
         tempShelves[currentShelfIndex].push(bookWithDimensions);
         currentShelfWidth += width;
       } else {

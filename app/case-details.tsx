@@ -29,6 +29,7 @@ import {
   TextInput,
   ScrollView,
   Share,
+  ActivityIndicator,
 } from "react-native";
 import { Image, ImageBackground } from "expo-image";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
@@ -44,15 +45,16 @@ import {
   uploadBookcaseShareLink,
 } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
-import CachedImage, { CacheManager } from "@/components/ChachedImage";
-import { BadgeType, BookSortOrder } from "@/models/book";
+import { CacheManager } from "@/components/ChachedImage";
+import { BookSortOrder } from "@/models/book";
 import { sortBookcase } from "@/utils/bookcase";
 import { getGenreChartData } from "@/utils/books";
 import ViewShot, { captureRef } from "react-native-view-shot";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { handleOneTimeBadgeProgress } from "@/utils/badges";
+import { BadgeType } from "@/models/badge";
 
-const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 40);
+const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 50);
 const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
 const SHELF_HEIGHT = verticalScale(isTablet ? 30 : 40);
 
@@ -75,6 +77,7 @@ export default function CaseDetails() {
   const [sortOrder, setSortOrder] = useState<BookSortOrder>(
     BookSortOrder.DATE_ADDED
   );
+  const [loading, setLoading] = useState<boolean>(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -82,9 +85,7 @@ export default function CaseDetails() {
       headerRight: () => (
         <TouchableOpacity
           onPress={async () => {
-            // capture image of the bookcase,
-            // make call to api to get shareable link
-            // use the react native share component to share the link
+            setLoading(true);
             try {
               const uri = await captureRef(ref, {
                 quality: 1,
@@ -116,14 +117,20 @@ export default function CaseDetails() {
               }
             } catch (error) {
               console.error("Error sharing bookcase link:", error);
+            } finally {
+              setLoading(false);
             }
           }}
         >
-          <FontAwesome name="share" size={24} color="white" />
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <FontAwesome name="share" size={24} color="white" />
+          )}
         </TouchableOpacity>
       ),
     });
-  }, [navigation]);
+  }, [navigation, loading]);
 
   useEffect(() => {
     const init = async () => {
@@ -346,8 +353,6 @@ export default function CaseDetails() {
       textColor: "#000",
     })) as pieDataItem[];
   }, [bookCase?.books]);
-
-  // console.log("Radar Chart Data", radarChartData);
 
   return (
     <ParallaxScrollView
