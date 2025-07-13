@@ -1,3 +1,4 @@
+import { BookCase } from "@/models/book";
 import {
   GoogleBookDetails,
   GoogleBooksSearchResponse,
@@ -369,4 +370,51 @@ export const getNewYorkTimesBestSellers = async () => {
     graphicNovels: graphicNovels || [],
     adviceAndHowToBooks: adviceAndHowToBooks || [],
   };
+};
+
+export const uploadBookcaseShareLink = async (
+  bookcase: BookCase,
+  file: any
+) => {
+  const formData = new FormData();
+  formData.append("bookcase", JSON.stringify(bookcase));
+  formData.append("file", file);
+
+  const response = await fetch(`${BASE_URL}/create-bookcase-link`, {
+    method: "POST",
+    body: formData,
+    headers: {
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to upload bookcase share link");
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const getBookcaseShareLink = async (
+  shortCode: string
+): Promise<{
+  bookcase: BookCase;
+  image_url: string;
+  wallpaper_url?: string;
+}> => {
+  const response = await fetch(`${BASE_URL}/resolve-link/${shortCode}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": process.env.EXPO_PUBLIC_API_KEY || "",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch bookcase share link");
+  }
+
+  const data = await response.json();
+  return data;
 };

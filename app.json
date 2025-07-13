@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "assets/app-icons/ios-light.png",
-    "scheme": "myapp",
+    "scheme": "cosy-case",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "backgroundColor": "#ffffff",
@@ -22,7 +22,8 @@
       "bundleIdentifier": "com.gciluffo.cosycase",
       "icon": {
         "light": "assets/app-icons/ios-light.png"
-      }
+      },
+      "associatedDomains": ["applinks:api.cosy-case.click"]
     },
     "android": {
       "adaptiveIcon": {

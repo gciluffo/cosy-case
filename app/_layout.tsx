@@ -164,11 +164,6 @@ export default function RootLayout() {
             headerTitle: "",
             headerTintColor: "white", // or any contrasting color for your back button
             headerBackButtonDisplayMode: "generic",
-            headerRight: () => (
-              <TouchableOpacity>
-                <FontAwesome name="share" size={24} color="white" />
-              </TouchableOpacity>
-            ),
           }}
         />
         <Stack.Screen
@@ -204,6 +199,13 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="book-list"
+          options={{
+            title: "Case Contents",
+            headerBackButtonDisplayMode: "generic",
+          }}
+        />
+        <Stack.Screen
           name="add-book-scan"
           options={{
             headerTransparent: true,
@@ -214,6 +216,15 @@ export default function RootLayout() {
         />
         <Stack.Screen
           name="single-case-display"
+          options={{
+            headerTransparent: true,
+            headerTitle: "",
+            headerTintColor: "white", // or any contrasting color for your back button
+            headerBackButtonDisplayMode: "generic",
+          }}
+        />
+        <Stack.Screen
+          name="shared-bookcase"
           options={{
             headerTransparent: true,
             headerTitle: "",

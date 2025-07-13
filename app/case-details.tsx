@@ -17,7 +17,7 @@ import {
   ActionsheetBackdrop,
 } from "@/components/ui/actionsheet";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ButtonIcon } from "@/components/ui/button";
+import { ButtonIcon, Button, ButtonText } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { AddIcon, TrashIcon, CircleIcon } from "@/components/ui/icon";
 import { isTablet, moderateScale, scale, verticalScale } from "@/utils/scale";
@@ -28,28 +28,35 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Share,
 } from "react-native";
 import { Image, ImageBackground } from "expo-image";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import useStore from "@/store";
 import { LinearGradient } from "expo-linear-gradient";
 import { Text } from "@/components/ui/text";
 import CompactBookShelf from "@/components/CompactBookShelf";
-import { Button, ButtonText } from "@/components/ui/button";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { getWallpaperImages, getWidgetImages } from "@/api";
+import {
+  getWallpaperImages,
+  getWidgetImages,
+  uploadBookcaseShareLink,
+} from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
 import { BookSortOrder } from "@/models/book";
 import { sortBookcase } from "@/utils/bookcase";
 import { getGenreChartData } from "@/utils/books";
+import ViewShot, { captureRef } from "react-native-view-shot";
+import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 40);
 const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
 const SHELF_HEIGHT = verticalScale(isTablet ? 30 : 40);
 
 export default function CaseDetails() {
+  const ref = useRef<ViewShot>(null);
   const params = useLocalSearchParams();
   const { caseName } = params;
   const { getCaseByName, removeCase, cases, updateCase } = useStore();
@@ -66,6 +73,48 @@ export default function CaseDetails() {
   const [sortOrder, setSortOrder] = useState<BookSortOrder>(
     BookSortOrder.DATE_ADDED
   );
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={async () => {
+            // capture image of the bookcase,
+            // make call to api to get shareable link
+            // use the react native share component to share the link
+            try {
+              const uri = await captureRef(ref, {
+                quality: 1,
+              });
+
+              const date = new Date();
+
+              const file = {
+                uri,
+                name: `case-${caseName}-${date.getTime()}.jpg`, // Use the case name for the file name
+                type: "image/jpeg", // Adjust the MIME type if necessary
+              };
+
+              const response = await uploadBookcaseShareLink(bookCase!, file);
+
+              if (response.link) {
+                // use the react native share component to share the link
+                await Share.share({
+                  message: `Check out my bookcase: ${response.link}`,
+                  url: response.link,
+                });
+              }
+            } catch (error) {
+              console.error("Error sharing bookcase link:", error);
+            }
+          }}
+        >
+          <FontAwesome name="share" size={24} color="white" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   useEffect(() => {
     const init = async () => {
@@ -214,12 +263,14 @@ export default function CaseDetails() {
               });
             }}
           >
-            <CompactBookShelf
-              bookCase={bookCase}
-              caseWidth={CASE_WIDTH}
-              caseHeight={CASE_HEIGHT}
-              shelfHeight={SHELF_HEIGHT}
-            />
+            <ViewShot ref={ref} options={{ format: "jpg", quality: 0.9 }}>
+              <CompactBookShelf
+                bookCase={bookCase}
+                caseWidth={CASE_WIDTH}
+                caseHeight={CASE_HEIGHT}
+                shelfHeight={SHELF_HEIGHT}
+              />
+            </ViewShot>
           </TouchableOpacity>
         )}
 

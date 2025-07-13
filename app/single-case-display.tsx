@@ -31,16 +31,7 @@ const Bookshelf = (props: BookShelfProps) => {
   const renderContent = () => {
     return (
       <GestureHandlerRootView>
-        <SnapbackZoom
-          onLongPress={() => {
-            router.push({
-              pathname: "/case-details",
-              params: {
-                caseName: bookCase.name,
-              },
-            });
-          }}
-        >
+        <SnapbackZoom>
           <View className="flex-1 items-center justify-center">
             {shelves.map((shelfBooks, index) => {
               return (
