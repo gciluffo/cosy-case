@@ -104,7 +104,21 @@ const Bookshelf = (props: BookShelfProps) => {
           {renderContent()}
         </ImageBackground>
       ) : (
-        renderContent()
+        <View
+          style={{
+            width: Dimensions.get("window").width,
+          }}
+        >
+          <LinearGradient
+            colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.5)"]}
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          />
+          {renderContent()}
+        </View>
       )}
     </>
   );

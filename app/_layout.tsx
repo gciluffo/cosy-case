@@ -17,6 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Linking, TouchableOpacity } from "react-native";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { isTablet } from "@/utils/scale";
+import useStore from "@/store";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -29,13 +30,43 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const { user } = useStore();
 
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
 
-    // AsyncStorage.clear();
+    // console.log(user);
+    // TODO: Remove this after migration
+    if (user?.clearStorageV4 === undefined) {
+      console.log("User has not opted to clear storage V4!!!!");
+      // Clear state in zustand store
+      useStore.setState({
+        user: {
+          deviceId: "",
+          isOnboarded: false,
+          bookListDisplayMode: "grid",
+          bookListFilter: undefined,
+          clearStorageV4: true,
+        },
+        badges: [],
+        cases: [
+          {
+            name: "default",
+            topImageKey: "birchTop",
+            middleImageKey: "birchMiddle",
+            bottomImageKey: "birchBottom",
+            offsetXPercent: 0.07,
+            offsetYPercent: 0.07,
+            books: [],
+            isDefault: true,
+            widgets: [],
+          },
+        ],
+      });
+      AsyncStorage.clear();
+    }
   }, [loaded]);
 
   if (!loaded) {

@@ -1,7 +1,7 @@
 import { G, Rect, Text as SvgText } from "react-native-svg";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
-import { BadgeType, Book, BookStatus } from "@/models/book";
+import { Book, BookStatus } from "@/models/book";
 import useStore from "@/store";
 import { getGenreChartData } from "@/utils/books";
 import { useMemo } from "react";
@@ -9,6 +9,7 @@ import { ScrollView, View } from "react-native";
 import { PieChart, pieDataItem, BarChart } from "react-native-gifted-charts";
 import { scale } from "@/utils/scale";
 import Badge from "@/components/Badge";
+import { BadgeType } from "@/models/badge";
 
 export default function State() {
   const { cases, badges } = useStore();

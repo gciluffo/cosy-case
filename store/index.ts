@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Badge, Book, BookCase, BookReview } from "@/models/book";
+import { Book, BookCase, BookReview } from "@/models/book";
 import { middleware } from "zustand-expo-devtools";
+import { Badge } from "@/models/badge";
 
 // Books have to be added to cases
 //
@@ -12,6 +13,7 @@ export interface User {
   isOnboarded: boolean;
   bookListDisplayMode?: "grid" | "list";
   bookListFilter?: BookReview;
+  clearStorageV4?: boolean; // TODO: Remove this after next deploy
 }
 
 export interface Store {
@@ -40,6 +42,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
         isOnboarded: false,
         bookListDisplayMode: "grid",
         bookListFilter: undefined,
+        clearStorageV4: true, // TODO: Remove this after next deploy
       },
       badges: [],
       cases: [
