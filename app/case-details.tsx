@@ -45,11 +45,12 @@ import {
 } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
-import { BookSortOrder } from "@/models/book";
+import { BadgeType, BookSortOrder } from "@/models/book";
 import { sortBookcase } from "@/utils/bookcase";
 import { getGenreChartData } from "@/utils/books";
 import ViewShot, { captureRef } from "react-native-view-shot";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
+import { handleOneTimeBadgeProgress } from "@/utils/badges";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 40);
 const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
@@ -59,7 +60,8 @@ export default function CaseDetails() {
   const ref = useRef<ViewShot>(null);
   const params = useLocalSearchParams();
   const { caseName } = params;
-  const { getCaseByName, removeCase, cases, updateCase } = useStore();
+  const { getCaseByName, removeCase, badges, updateCase, setBadges } =
+    useStore();
   const bookCase = getCaseByName(caseName as string);
   const [showActionsheet, setShowActionsheet] = useState(false);
   const handleClose = () => setShowActionsheet(false);
@@ -104,6 +106,13 @@ export default function CaseDetails() {
                   message: `Check out my bookcase: ${response.link}`,
                   url: response.link,
                 });
+
+                // check if the user has completed the badge yet
+                const newBadges = handleOneTimeBadgeProgress(
+                  BadgeType.FIRST_SHARED_BOOK,
+                  badges
+                );
+                setBadges(newBadges);
               }
             } catch (error) {
               console.error("Error sharing bookcase link:", error);

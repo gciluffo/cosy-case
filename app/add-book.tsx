@@ -43,10 +43,10 @@ import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
 import { captureRef } from "react-native-view-shot";
 import { sortBookcase } from "@/utils/bookcase";
 import {
-  calculateBadgeProgress,
   getBookGenericGenresFromSubjects,
   getGenericGenreFromCategories,
 } from "@/utils/books";
+import { calculateBadgeProgress } from "@/utils/badges";
 
 export interface AddBookParam {
   key: string;
