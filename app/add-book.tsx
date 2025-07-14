@@ -45,7 +45,6 @@ import { sortBookcase } from "@/utils/bookcase";
 import {
   getBookGenericGenresFromSubjects,
   getGenericGenreFromCategories,
-  isStringIsbn13,
   isStringValidIsbn,
 } from "@/utils/books";
 import { calculateBadgeProgress } from "@/utils/badges";

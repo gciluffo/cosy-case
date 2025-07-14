@@ -104,8 +104,7 @@ export default function CaseDetails() {
               if (response.link) {
                 // use the react native share component to share the link
                 await Share.share({
-                  message: `Check out my bookcase: ${response.link}`,
-                  url: response.link,
+                  message: `Check out my bookcase 📚 ${response.link}`,
                 });
 
                 // check if the user has completed the badge yet

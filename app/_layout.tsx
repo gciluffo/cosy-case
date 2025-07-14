@@ -36,37 +36,6 @@ export default function RootLayout() {
     if (loaded) {
       SplashScreen.hideAsync();
     }
-
-    // console.log(user);
-    // TODO: Remove this after migration
-    if (user?.clearStorageV4 === undefined) {
-      console.log("User has not opted to clear storage V4!!!!");
-      // Clear state in zustand store
-      useStore.setState({
-        user: {
-          deviceId: "",
-          isOnboarded: false,
-          bookListDisplayMode: "grid",
-          bookListFilter: undefined,
-          clearStorageV4: true,
-        },
-        badges: [],
-        cases: [
-          {
-            name: "default",
-            topImageKey: "birchTop",
-            middleImageKey: "birchMiddle",
-            bottomImageKey: "birchBottom",
-            offsetXPercent: 0.07,
-            offsetYPercent: 0.07,
-            books: [],
-            isDefault: true,
-            widgets: [],
-          },
-        ],
-      });
-      AsyncStorage.clear();
-    }
   }, [loaded]);
 
   if (!loaded) {

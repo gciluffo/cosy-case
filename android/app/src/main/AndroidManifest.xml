@@ -28,6 +28,7 @@
         <data android:scheme="myapp"/>
         <data android:scheme="com.gciluffo.cosycase"/>
         <data android:scheme="exp+cosy-case"/>
+        <data android:scheme="cosy-case"/>
       </intent-filter>
     </activity>
     <uses-native-library android:name="libOpenCL.so" android:required="false"/>
