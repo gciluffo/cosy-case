@@ -82,6 +82,11 @@ export function isStringIsbn13(isbn: string): boolean {
   return /^\d{13}$/.test(isbn);
 }
 
+export function isStringValidIsbn(isbn: string): boolean {
+  // Check if the ISBN is a valid 10 or 13-digit number
+  return /^\d{10}$/.test(isbn) || /^\d{13}$/.test(isbn);
+}
+
 export const getBookDescription = (book: Book | OpenLibraryBook) => {
   if (
     typeof book.description === "object" &&

@@ -105,8 +105,7 @@ export const handleTimeFrameBadgeProgress = (
   badges: Badge[],
   timeFrame: "year" | "month"
 ): Badge[] => {
-  const badgeClone = [...badges];
-  const badge = badgeClone.find((b) => b.type === badgeType);
+  const badge = badges.find((b) => b.type === badgeType);
 
   // if badge.timeStarted year is behind the current year then reset the progress
   if (badge && badge.timeStarted) {
@@ -131,14 +130,14 @@ export const handleTimeFrameBadgeProgress = (
   if (badge && badge.progress < 1) {
     badge.progress += 1 / BadgeCountRequired[badgeType];
   } else if (!badge) {
-    badgeClone.push({
+    badges.push({
       type: badgeType,
       progress: 1 / BadgeCountRequired[badgeType],
       timeStarted: new Date().toISOString(),
     });
   }
 
-  return badgeClone;
+  return badges;
 };
 
 // If date

@@ -45,6 +45,8 @@ import { sortBookcase } from "@/utils/bookcase";
 import {
   getBookGenericGenresFromSubjects,
   getGenericGenreFromCategories,
+  isStringIsbn13,
+  isStringValidIsbn,
 } from "@/utils/books";
 import { calculateBadgeProgress } from "@/utils/badges";
 
@@ -250,22 +252,29 @@ export default function AddBookScreen() {
         });
       }
 
-      // do some api calls in the background to update the book details
-      // console.log("Adding book to library:", bookDetails);
+      // Get some more information about the genre of the book
       const isbn = bookDetails?.isbn_13?.[0] || bookDetails?.isbn_10?.[0];
       let categories: string[] | undefined = undefined;
-      let genericGenre: GenericBookGenre | undefined = undefined;
-      const response = await searchBooksV2(
-        isbn ? `isbn:${isbn}` : bookDetails.title
-      );
-      const id = response.items?.[0]?.id;
-      const detailsV2 = await getBookDetailsV2(id);
-      categories = detailsV2?.volumeInfo?.categories;
-      // console.log("Categories from V2:", categories);
-      genericGenre =
-        getGenericGenreFromCategories(categories!) ||
-        getBookGenericGenresFromSubjects(bookDetails?.subjects || [])[0];
-      // console.log("Generic genre:", genericGenre);
+      try {
+        console.log("Searching for book categories with ISBN:", isbn);
+        const response = await searchBooksV2(
+          isStringValidIsbn(isbn) ? `isbn:${isbn}` : bookDetails.title
+        );
+
+        if (response.totalItems === 0) {
+          throw new Error("No book found with the provided ISBN or title.");
+        }
+
+        const id = response.items?.[0]?.id;
+        const detailsV2 = await getBookDetailsV2(id);
+        categories = detailsV2?.volumeInfo?.categories;
+      } catch (error) {
+        console.warn("Error fetching book categories:", error);
+      }
+
+      const genericGenre = categories
+        ? getGenericGenreFromCategories(categories)
+        : getBookGenericGenresFromSubjects(bookDetails?.subjects || [])[0];
 
       const bookToAdd: Book = {
         ...bookDetails,
