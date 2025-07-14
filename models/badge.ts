@@ -7,13 +7,15 @@ export enum BadgeType {
   FIVE_ROMANCE_BOOKS_FINISHED = "five_romance_books_finished",
   FIVE_MYSTERY_BOOKS_FINISHED = "five_mystery_books_finished",
   FIVE_HORROR_BOOKS_FINISHED = "five_horror_books_finished",
-  // FIVE_THRILLER_BOOKS_FINISHED = "five_thriller_books_finished",
+  FIVE_THRILLER_BOOKS_FINISHED = "five_thriller_books_finished",
   FIFTEY_BOOKS_FINISHED = "fifty_books_finished",
+  TWELVE_BOOK_FINISHED_IN_A_YEAR = "twelve_books_finished_in_a_year",
 }
 
 export interface Badge {
   type: BadgeType;
   progress: number; // a decimal value between 0 and 1 representing the progress towards the badge
+  timeStarted?: string; // ISO date string when the badge was started
   description?: string;
 }
 

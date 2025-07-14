@@ -134,7 +134,7 @@ export default function Badge(props: BadgeProps) {
       case BadgeType.FIRST_FINISHED_BOOK:
         return require("@/assets/images/badges/first_book_finished.png");
       case BadgeType.FIRST_SHARED_BOOK:
-        return require("@/assets/images/badges/first_shared_shelf.jpeg");
+        return require("@/assets/images/badges/first_shared_shelf.png");
       case BadgeType.FIVE_SCIFI_BOOKS_FINISHED:
         return require("@/assets/images/badges/5_scifi_books_finished.png");
       case BadgeType.FIVE_FANTASY_BOOKS_FINISHED:
@@ -147,10 +147,12 @@ export default function Badge(props: BadgeProps) {
         return require("@/assets/images/badges/5_mystery_books_finished.png");
       case BadgeType.FIVE_HORROR_BOOKS_FINISHED:
         return require("@/assets/images/badges/5_horror_books_finished.png");
-      //   case BadgeType.FIVE_THRILLER_BOOKS_FINISHED:
-      //     return require("@/assets/images/badges/5_thriller_books_finished.png");
+      case BadgeType.FIVE_THRILLER_BOOKS_FINISHED:
+        return require("@/assets/images/badges/5_thriller_books_finished.png");
       case BadgeType.FIFTEY_BOOKS_FINISHED:
         return require("@/assets/images/badges/finished_50_books.png");
+      case BadgeType.TWELVE_BOOK_FINISHED_IN_A_YEAR:
+        return require("@/assets/images/badges/12_books_yearly.png");
     }
   };
 
