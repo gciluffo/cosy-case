@@ -53,13 +53,13 @@ import ViewShot, { captureRef } from "react-native-view-shot";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { handleOneTimeBadgeProgress } from "@/utils/badges";
 import { BadgeType } from "@/models/badge";
+import FullScreenBookshelfComponent from "@/components/FullScreenBookShelf";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 50);
 const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
 const SHELF_HEIGHT = verticalScale(isTablet ? 30 : 40);
 
 export default function CaseDetails() {
-  const ref = useRef<ViewShot>(null);
   const params = useLocalSearchParams();
   const { caseName } = params;
   const { getCaseByName, removeCase, badges, updateCase, setBadges } =
@@ -78,6 +78,8 @@ export default function CaseDetails() {
     BookSortOrder.DATE_ADDED
   );
   const [loading, setLoading] = useState<boolean>(false);
+  const [showHiddenShelf, setShowHiddenShelf] = useState(false);
+  const hiddenRef = useRef<ViewShot>(null);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -85,40 +87,44 @@ export default function CaseDetails() {
       headerRight: () => (
         <TouchableOpacity
           onPress={async () => {
+            setShowHiddenShelf(true); // Render the hidden component
             setLoading(true);
-            try {
-              const uri = await captureRef(ref, {
-                quality: 1,
-              });
-
-              const date = new Date();
-
-              const file = {
-                uri,
-                name: `case-${caseName}-${date.getTime()}.jpg`, // Use the case name for the file name
-                type: "image/jpeg", // Adjust the MIME type if necessary
-              };
-
-              const response = await uploadBookcaseShareLink(bookCase!, file);
-
-              if (response.link) {
-                // use the react native share component to share the link
-                await Share.share({
-                  message: `Check out my bookcase 📚 ${response.link}`,
+            setTimeout(async () => {
+              try {
+                const uri = await captureRef(hiddenRef, {
+                  quality: 1,
                 });
 
-                // check if the user has completed the badge yet
-                const newBadges = handleOneTimeBadgeProgress(
-                  BadgeType.FIRST_SHARED_BOOK,
-                  badges
-                );
-                setBadges(newBadges);
+                const date = new Date();
+
+                const file = {
+                  uri,
+                  name: `case-${caseName}-${date.getTime()}.jpg`, // Use the case name for the file name
+                  type: "image/jpeg", // Adjust the MIME type if necessary
+                };
+
+                const response = await uploadBookcaseShareLink(bookCase!, file);
+
+                if (response.link) {
+                  // use the react native share component to share the link
+                  await Share.share({
+                    message: `Check out my bookcase 📚 ${response.link}`,
+                  });
+
+                  // check if the user has completed the badge yet
+                  const newBadges = handleOneTimeBadgeProgress(
+                    BadgeType.FIRST_SHARED_BOOK,
+                    badges
+                  );
+                  setBadges(newBadges);
+                }
+              } catch (e) {
+                console.error(e);
+              } finally {
+                setShowHiddenShelf(false); // Hide after capture
+                setLoading(false);
               }
-            } catch (error) {
-              console.error("Error sharing bookcase link:", error);
-            } finally {
-              setLoading(false);
-            }
+            }, 500);
           }}
         >
           {loading ? (
@@ -278,14 +284,12 @@ export default function CaseDetails() {
               });
             }}
           >
-            <ViewShot ref={ref} options={{ format: "jpg", quality: 0.9 }}>
-              <CompactBookShelf
-                bookCase={bookCase}
-                caseWidth={CASE_WIDTH}
-                caseHeight={CASE_HEIGHT}
-                shelfHeight={SHELF_HEIGHT}
-              />
-            </ViewShot>
+            <CompactBookShelf
+              bookCase={bookCase}
+              caseWidth={CASE_WIDTH}
+              caseHeight={CASE_HEIGHT}
+              shelfHeight={SHELF_HEIGHT}
+            />
           </TouchableOpacity>
         )}
 
@@ -642,6 +646,14 @@ export default function CaseDetails() {
           </ActionsheetItem>
         </ActionsheetContent>
       </Actionsheet>
+
+      {showHiddenShelf && (
+        <View style={{ position: "absolute", left: -9999 }}>
+          <ViewShot ref={hiddenRef} options={{ format: "jpg", quality: 1 }}>
+            <FullScreenBookshelfComponent bookcase={bookCase!} />
+          </ViewShot>
+        </View>
+      )}
     </ParallaxScrollView>
   );
 }
