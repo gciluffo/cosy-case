@@ -86,19 +86,18 @@ export const handleOneTimeBadgeProgress = (
   badgeType: BadgeType,
   badges: Badge[]
 ): Badge[] => {
-  const badgeClone = [...badges];
-  const badge = badgeClone.find((b) => b.type === badgeType);
+  const badge = badges.find((b) => b.type === badgeType);
 
   if (badge) {
     badge.progress = 1;
   } else {
-    badgeClone.push({
+    badges.push({
       type: badgeType,
       progress: 1,
     });
   }
 
-  return badgeClone;
+  return badges;
 };
 
 export const handleTimeFrameBadgeProgress = (

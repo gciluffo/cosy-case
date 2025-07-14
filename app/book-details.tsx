@@ -36,12 +36,9 @@ import CollapsibleDescription from "@/components/CollapsibleDescription";
 import { Card } from "@/components/ui/card";
 import InlinePicker from "@/components/InlinePicker";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
-import {
-  calculateBadgeProgress,
-  getBookDescription,
-  isStringIsbn13,
-} from "@/utils/books";
+import { getBookDescription, isStringIsbn13 } from "@/utils/books";
 import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
+import { calculateBadgeProgress } from "@/utils/badges";
 
 export default function BookDetails() {
   const [localBook, setLocalBook] = useState<Book | null>(null);
