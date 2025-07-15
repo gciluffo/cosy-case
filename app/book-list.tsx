@@ -24,7 +24,7 @@ export default function BookList() {
           onPress={() => {
             router.push({
               pathname: "/book-details",
-              params: { bookKey: item.key },
+              params: { bookKey: item.key, cover_url: item.cover_url },
             });
           }}
         >

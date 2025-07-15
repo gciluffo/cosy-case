@@ -10,11 +10,12 @@ import {
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { Text } from "@/components/ui/text";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Linking, TouchableOpacity } from "react-native";
+import { Linking, TouchableOpacity, View } from "react-native";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { isTablet } from "@/utils/scale";
 import useStore from "@/store";
@@ -230,6 +231,35 @@ export default function RootLayout() {
             headerTitle: "",
             headerTintColor: "white", // or any contrasting color for your back button
             headerBackButtonDisplayMode: "generic",
+          }}
+        />
+        <Stack.Screen
+          name="shared-bookcase/[id]"
+          options={{
+            headerTransparent: false,
+            headerBackButtonDisplayMode: "generic",
+            headerLeft: () => {
+              if (!navigation.canGoBack()) {
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.replace("/");
+                    }}
+                  >
+                    <View className="flex-row items-center gap-2">
+                      <FontAwesome
+                        name="chevron-left"
+                        size={25}
+                        color="#3b82f6"
+                      />
+                      <Text size="lg" style={{ color: "#3b82f6" }}>
+                        Back
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }
+            },
           }}
         />
         <Stack.Screen
