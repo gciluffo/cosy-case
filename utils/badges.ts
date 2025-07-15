@@ -205,3 +205,17 @@ export const BadgeCountRequired: Record<BadgeType, number> = {
   [BadgeType.FIFTEY_BOOKS_FINISHED]: 50,
   [BadgeType.TWELVE_BOOK_FINISHED_IN_A_YEAR]: 12,
 };
+
+export const BadgeDescription: Record<BadgeType, string> = {
+  [BadgeType.FIRST_FINISHED_BOOK]: "Complete your first book.",
+  [BadgeType.FIRST_SHARED_BOOK]: "Share a bookcase for the first time.",
+  [BadgeType.FIVE_SCIFI_BOOKS_FINISHED]: "Finish 5 science fiction books.",
+  [BadgeType.FIVE_FANTASY_BOOKS_FINISHED]: "Finish 5 fantasy books.",
+  [BadgeType.FIVE_NON_FICTION_BOOKS_FINISHED]: "Finish 5 non-fiction books.",
+  [BadgeType.FIVE_ROMANCE_BOOKS_FINISHED]: "Finish 5 romance books.",
+  [BadgeType.FIVE_MYSTERY_BOOKS_FINISHED]: "Finish 5 mystery books.",
+  [BadgeType.FIVE_HORROR_BOOKS_FINISHED]: "Finish 5 horror books.",
+  [BadgeType.FIVE_THRILLER_BOOKS_FINISHED]: "Finish 5 thriller books.",
+  [BadgeType.FIFTEY_BOOKS_FINISHED]: "Finish 50 books in total.",
+  [BadgeType.TWELVE_BOOK_FINISHED_IN_A_YEAR]: "Finish 12 books in a year.",
+};

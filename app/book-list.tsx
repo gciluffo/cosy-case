@@ -13,7 +13,6 @@ export default function BookList() {
       ? (params.books as unknown as Book[])
       : [];
 
-  // return a FlatList of books 2 columns wide
   return (
     <FlatList
       data={books}

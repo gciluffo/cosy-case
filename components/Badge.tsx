@@ -152,7 +152,7 @@ export default function Badge(props: BadgeProps) {
       case BadgeType.FIFTEY_BOOKS_FINISHED:
         return require("@/assets/images/badges/finished_50_books.png");
       case BadgeType.TWELVE_BOOK_FINISHED_IN_A_YEAR:
-        return require("@/assets/images/badges/12_books_yearly.png");
+        return require("@/assets/images/badges/cosy-champ.png");
     }
   };
 

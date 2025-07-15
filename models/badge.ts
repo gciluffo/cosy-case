@@ -16,7 +16,6 @@ export interface Badge {
   type: BadgeType;
   progress: number; // a decimal value between 0 and 1 representing the progress towards the badge
   timeStarted?: string; // ISO date string when the badge was started
-  description?: string;
 }
 
 export interface BadgeReward {
