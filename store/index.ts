@@ -13,7 +13,7 @@ export interface User {
   isOnboarded: boolean;
   bookListDisplayMode?: "grid" | "list";
   bookListFilter?: BookReview;
-  clearStorageV4?: boolean; // TODO: Remove this after next deploy
+  introToBookSpinePicturesCompleted?: boolean;
 }
 
 export interface Store {
@@ -42,7 +42,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
         isOnboarded: false,
         bookListDisplayMode: "grid",
         bookListFilter: undefined,
-        clearStorageV4: true, // TODO: Remove this after next deploy
+        introToBookSpinePicturesCompleted: false,
       },
       badges: [],
       cases: [

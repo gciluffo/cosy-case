@@ -1,17 +1,7 @@
-import {
-  View,
-  ScrollView,
-  StyleSheet,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  ActivityIndicator,
-} from "react-native";
+import { View, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { Button, ButtonSpinner, ButtonText } from "@/components/ui/button";
 import React, { useEffect } from "react";
 import { isTablet } from "@/utils/scale";
-import { A } from "@expo/html-elements";
 
 interface Props {
   children: React.ReactNode;

@@ -270,6 +270,16 @@ export default function RootLayout() {
             headerBackButtonDisplayMode: "generic",
           }}
         />
+        <Stack.Screen
+          name="intro-single-bookspine-camera"
+          options={{
+            title: "Intro",
+            presentation: "fullScreenModal",
+            headerTransparent: true,
+            headerTitle: "",
+            headerBackButtonDisplayMode: "generic",
+          }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </GluestackUIProvider>

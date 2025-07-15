@@ -11,6 +11,7 @@ import { Text } from "@/components/ui/text";
 import { confirmCroppedImage, uploadImageForSpineDetection } from "@/api";
 import CroppedImageConfirm from "@/components/ImageEditor";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
+import useStore from "@/store";
 
 interface Params {
   key: string;
@@ -23,6 +24,7 @@ export default function ScanSpine() {
   const [permission, requestPermission] = useCameraPermissions();
   const [uploading, setUploading] = useState(false);
   const [image, setImage] = useState<string | null>(null);
+  const { user } = useStore();
   const cameraRef = useRef<CameraView>(null);
   const params = useLocalSearchParams();
   const { book } = params;
@@ -35,6 +37,10 @@ export default function ScanSpine() {
   useEffect(() => {
     if (!permission?.granted) {
       requestPermission();
+    }
+
+    if (!user.introToBookSpinePicturesCompleted) {
+      router.push("/intro-single-bookspine-camera");
     }
 
     return () => {
