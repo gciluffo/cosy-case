@@ -4,12 +4,7 @@ import { SnapbackZoom } from "react-native-zoom-toolkit";
 import { Text } from "@/components/ui/text";
 import { getBookcaseShareLink } from "@/api";
 import { BookCase } from "@/models/book";
-import {
-  router,
-  useLocalSearchParams,
-  useNavigation,
-  useRouter,
-} from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, StyleSheet, ActivityIndicator, Dimensions } from "react-native";
 import { ImageBackground, Image } from "expo-image";
@@ -27,7 +22,6 @@ export default function SharedBookcase() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check out my bookcase: https://api.cosy-case.click/shared-bookcase/876b36
     const init = async () => {
       try {
         if (!shortCode) {
@@ -48,7 +42,7 @@ export default function SharedBookcase() {
       } catch (error) {
         console.error("Error fetching shared bookcase:", error);
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 
@@ -62,6 +56,15 @@ export default function SharedBookcase() {
 
     return (
       <View className="flex-1 items-center justify-center">
+        {loading && (
+          <View style={[styles.loadingOverlay]} pointerEvents="auto">
+            <ActivityIndicator size="large" />
+            <Text size="lg" style={[styles.message]}>
+              Loading Bookcase...
+            </Text>
+          </View>
+        )}
+
         <GestureHandlerRootView>
           <SnapbackZoom>
             <View className="flex-1 gap-10">
@@ -75,6 +78,7 @@ export default function SharedBookcase() {
                 transition={200}
                 alt="Bookcase Image"
                 className="mb-4"
+                onLoadEnd={() => setLoading(false)}
               />
               <Button
                 className="bg-white rounded-lg"
@@ -103,17 +107,6 @@ export default function SharedBookcase() {
       </View>
     );
   };
-
-  if (loading) {
-    return (
-      <View style={styles.permissionContainer}>
-        <ActivityIndicator size="large" />
-        <Text size="lg" style={styles.message}>
-          Loading Bookcase...
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <>
@@ -154,5 +147,16 @@ const styles = StyleSheet.create({
   },
   message: {
     marginTop: 12,
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    backgroundColor: "rgba(230,230,230,.99)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
