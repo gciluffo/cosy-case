@@ -45,7 +45,7 @@ import {
   uploadBookcaseShareLink,
 } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
-import { CacheManager } from "@/components/ChachedImage";
+import CachedImage, { CacheManager } from "@/components/ChachedImage";
 import { BookSortOrder } from "@/models/book";
 import { sortBookcase } from "@/utils/bookcase";
 import { getGenreChartData } from "@/utils/books";
@@ -72,7 +72,7 @@ export default function CaseDetails() {
     { url: string; isSelected: boolean; cacheKey: string }[]
   >([]);
   const [caseWallpapers, setCaseWallpapers] = useState<
-    { url: string; isSelected: boolean }[]
+    { url: string; isSelected: boolean; cacheKey: string }[]
   >([]);
   const [sortOrder, setSortOrder] = useState<BookSortOrder>(
     BookSortOrder.DATE_ADDED
@@ -169,6 +169,7 @@ export default function CaseDetails() {
 
       const wallpaperList = wallpaperUrls.map((url) => {
         const { bucketName, objectKey } = getObjectKeyFromSignedUrl(url);
+        const cacheKey = `${objectKey}-wallpaper`;
         const isSelected = bookCaseWallpaper?.url
           ? getObjectKeyFromSignedUrl(bookCaseWallpaper.url).objectKey ===
             objectKey
@@ -176,7 +177,7 @@ export default function CaseDetails() {
         return {
           url,
           isSelected,
-          // cacheKey,
+          cacheKey,
         };
       });
       setCaseWallpapers(wallpaperList);
@@ -240,7 +241,7 @@ export default function CaseDetails() {
   const onSelectedWallpaper = async (wallpaper: {
     url: string;
     isSelected: boolean;
-    cacheKey?: string;
+    cacheKey: string;
   }) => {
     // update local state
     // if wallpaper was previously deselected then download as cache
@@ -255,10 +256,22 @@ export default function CaseDetails() {
       )
     );
 
+    const imageExists = await CacheManager.checkIfCached({
+      key: wallpaper.cacheKey,
+    });
+    if (isSelected && !imageExists) {
+      // download the image and add to cache
+      await CacheManager.downloadAsync({
+        uri: wallpaper.url,
+        key: wallpaper.cacheKey,
+        options: {},
+      });
+    }
+
     if (isSelected) {
       // add the wallpaper to the bookCase wallPaper
       updateCase(bookCase?.name!, {
-        wallPaper: { url: wallpaper.url },
+        wallPaper: { url: wallpaper.url, cacheKey: wallpaper.cacheKey },
       });
     }
 
@@ -362,9 +375,10 @@ export default function CaseDetails() {
       parallaxHeaderHeight={300}
       parallaxHeaderContent={() => (
         <>
-          {bookCase?.wallPaper?.url ? (
-            <ImageBackground
-              source={{ uri: bookCase.wallPaper.url }}
+          {bookCase?.wallPaper?.cacheKey ? (
+            <CachedImage
+              source={{ uri: "" }}
+              cacheKey={bookCase.wallPaper.cacheKey}
               style={{
                 width: Dimensions.get("window").width,
                 height: verticalScale(450),
@@ -382,7 +396,7 @@ export default function CaseDetails() {
                 }}
               />
               {renderCaseHeader()}
-            </ImageBackground>
+            </CachedImage>
           ) : (
             <LinearGradient
               colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,1)"]}

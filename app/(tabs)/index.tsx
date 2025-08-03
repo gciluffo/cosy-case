@@ -36,6 +36,15 @@ const Bookshelf = (props: BookShelfProps) => {
     return (
       <GestureHandlerRootView>
         <SnapbackZoom
+          onDoubleTap={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push({
+              pathname: "/case-details",
+              params: {
+                caseName: bookCase.name,
+              },
+            });
+          }}
           onLongPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push({
@@ -81,11 +90,12 @@ const Bookshelf = (props: BookShelfProps) => {
 
   return (
     <>
-      {wallPaper?.url ? (
-        <ImageBackground
+      {wallPaper?.cacheKey ? (
+        <CachedImage
           source={{
-            uri: wallPaper?.url || "",
+            uri: "",
           }}
+          cacheKey={wallPaper?.cacheKey || ""}
           style={{
             backgroundColor: "transparent",
             width: Dimensions.get("window").width,
@@ -102,7 +112,7 @@ const Bookshelf = (props: BookShelfProps) => {
             }}
           />
           {renderContent()}
-        </ImageBackground>
+        </CachedImage>
       ) : (
         <View
           style={{

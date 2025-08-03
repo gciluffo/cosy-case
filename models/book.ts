@@ -78,7 +78,6 @@ export enum BookSortOrder {
 }
 
 export enum GenericBookGenre {
-  // Fiction = "Fiction",
   NonFiction = "Non-Fiction",
   Fantasy = "Fantasy",
   ScienceFiction = "Science Fiction",

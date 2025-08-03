@@ -23,10 +23,11 @@ type CachedImageProps = Omit<ImageProps, "source"> & {
   cacheKey: string;
   source: { uri: string; expiresIn?: number };
   placeholderContent?: React.ReactNode;
+  children?: React.ReactNode;
 };
 
 const CachedImage: React.FC<CachedImageProps> = (props) => {
-  const { source, cacheKey, placeholderContent, ...rest } = props;
+  const { source, cacheKey, placeholderContent, children, ...rest } = props;
   const { uri, expiresIn } = source;
   const sanitizedKey = sanitizeCacheKey(cacheKey);
   const fileURI = `${IMAGE_CACHE_FOLDER}${sanitizedKey}.png`;
@@ -80,6 +81,22 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
   };
 
   if (!imgUri) return placeholderContent || null;
+
+  if (children) {
+    // Separate style props for ImageBackground and Image
+    const { style, ...imageBackgroundProps } = rest;
+    return (
+      <ImageBackground
+        {...imageBackgroundProps}
+        source={{
+          uri: imgUri,
+        }}
+        style={style as any} // Cast to any to avoid type error, or ensure style is ViewStyle
+      >
+        {children}
+      </ImageBackground>
+    );
+  }
 
   return (
     <Image
