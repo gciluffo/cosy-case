@@ -434,6 +434,7 @@ export default function CaseDetails() {
                   className="rounded-lg"
                   style={styles.bookImage}
                   contentFit="contain"
+                  cachePolicy={"memory-disk"}
                 />
               </TouchableOpacity>
             ))}

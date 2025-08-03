@@ -1,4 +1,4 @@
-import { OpenLibraryBook, OpenLibraryBookSearch } from "./open-library";
+import { OpenLibraryBook } from "./open-library";
 
 export type Spine = {
   cacheKey: string;

@@ -5,11 +5,12 @@ import { Book, BookStatus } from "@/models/book";
 import useStore from "@/store";
 import { getGenreChartData } from "@/utils/books";
 import { useMemo } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { PieChart, pieDataItem, BarChart } from "react-native-gifted-charts";
 import { scale } from "@/utils/scale";
 import Badge from "@/components/Badge";
 import { BadgeType } from "@/models/badge";
+import { router } from "expo-router";
 
 export default function State() {
   const { cases, badges } = useStore();
@@ -61,7 +62,16 @@ export default function State() {
       </Text>
       <View className="flex flex-row flex-wrap">
         {Object.values(BadgeType).map((badgeType) => (
-          <View className="p-2" key={badgeType}>
+          <TouchableOpacity
+            className="p-2"
+            key={badgeType}
+            onPress={() => {
+              router.push({
+                pathname: "/badge",
+                params: { type: badgeType },
+              });
+            }}
+          >
             <Badge
               key={badgeType}
               type={badgeType}
@@ -69,7 +79,7 @@ export default function State() {
               width={scale(150)}
               height={scale(150)}
             />
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
       <View className="h-5" />

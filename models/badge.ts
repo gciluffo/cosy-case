@@ -1,3 +1,5 @@
+import { Book } from "./book";
+
 export enum BadgeType {
   FIRST_FINISHED_BOOK = "first_finished_book",
   FIRST_SHARED_BOOK = "first_shared_book",
@@ -16,6 +18,7 @@ export interface Badge {
   type: BadgeType;
   progress: number; // a decimal value between 0 and 1 representing the progress towards the badge
   timeStarted?: string; // ISO date string when the badge was started
+  books?: Book[]; // optional, used for badges that require specific books to be finished
 }
 
 export interface BadgeReward {

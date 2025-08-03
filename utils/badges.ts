@@ -1,21 +1,6 @@
 import { BadgeType, Badge, BadgeReward } from "@/models/badge";
 import { Book, GenericBookGenre } from "@/models/book";
 
-const handleBadgeProgress = (badgeType: BadgeType, badges: Badge[]) => {
-  const badge = badges.find((b) => b.type === badgeType);
-
-  const totalCountRequired = BadgeCountRequired[badgeType];
-
-  if (badge && badge.progress < 1) {
-    badge.progress = badge.progress + 1 / totalCountRequired;
-  } else if (!badge) {
-    badges.push({
-      type: badgeType,
-      progress: 1 / totalCountRequired,
-    });
-  }
-};
-
 /**
  * When a book gets put into a finished status, then this function is called.
  * Computes which badges the completed book counts towards
@@ -29,16 +14,25 @@ export const calculateBadgeProgress = (
   const badgesClone = [...existingBadges];
 
   // ******** FIRST_FINISHED_BOOK **************
-  handleOneTimeBadgeProgress(BadgeType.FIRST_FINISHED_BOOK, badgesClone);
+  handleOneTimeBadgeProgress(
+    BadgeType.FIRST_FINISHED_BOOK,
+    badgesClone,
+    newlyCompletedBook
+  );
 
   // ******** FIFTY_BOOKS_FINISHED **************
-  handleBadgeProgress(BadgeType.FIFTEY_BOOKS_FINISHED, badgesClone);
+  handleBadgeProgress(
+    BadgeType.FIFTEY_BOOKS_FINISHED,
+    badgesClone,
+    newlyCompletedBook
+  );
 
   // ******** TWELVE_BOOK_FINISHED_IN_A_YEAR **************
   handleTimeFrameBadgeProgress(
     BadgeType.TWELVE_BOOK_FINISHED_IN_A_YEAR,
     badgesClone,
-    "year"
+    "year",
+    newlyCompletedBook
   );
 
   // ******** Genre Specific Badges **************
@@ -47,30 +41,52 @@ export const calculateBadgeProgress = (
   if (newBookGenre) {
     switch (newBookGenre) {
       case GenericBookGenre.ScienceFiction:
-        handleBadgeProgress(BadgeType.FIVE_SCIFI_BOOKS_FINISHED, badgesClone);
+        handleBadgeProgress(
+          BadgeType.FIVE_SCIFI_BOOKS_FINISHED,
+          badgesClone,
+          newlyCompletedBook
+        );
         break;
       case GenericBookGenre.Fantasy:
-        handleBadgeProgress(BadgeType.FIVE_FANTASY_BOOKS_FINISHED, badgesClone);
+        handleBadgeProgress(
+          BadgeType.FIVE_FANTASY_BOOKS_FINISHED,
+          badgesClone,
+          newlyCompletedBook
+        );
         break;
       case GenericBookGenre.NonFiction:
         handleBadgeProgress(
           BadgeType.FIVE_NON_FICTION_BOOKS_FINISHED,
-          badgesClone
+          badgesClone,
+          newlyCompletedBook
         );
         break;
       case GenericBookGenre.Romance:
-        handleBadgeProgress(BadgeType.FIVE_ROMANCE_BOOKS_FINISHED, badgesClone);
+        handleBadgeProgress(
+          BadgeType.FIVE_ROMANCE_BOOKS_FINISHED,
+          badgesClone,
+          newlyCompletedBook
+        );
         break;
       case GenericBookGenre.Mystery:
-        handleBadgeProgress(BadgeType.FIVE_MYSTERY_BOOKS_FINISHED, badgesClone);
+        handleBadgeProgress(
+          BadgeType.FIVE_MYSTERY_BOOKS_FINISHED,
+          badgesClone,
+          newlyCompletedBook
+        );
         break;
       case GenericBookGenre.Horror:
-        handleBadgeProgress(BadgeType.FIVE_HORROR_BOOKS_FINISHED, badgesClone);
+        handleBadgeProgress(
+          BadgeType.FIVE_HORROR_BOOKS_FINISHED,
+          badgesClone,
+          newlyCompletedBook
+        );
         break;
       case GenericBookGenre.Thriller:
         handleBadgeProgress(
           BadgeType.FIVE_THRILLER_BOOKS_FINISHED,
-          badgesClone
+          badgesClone,
+          newlyCompletedBook
         );
         break;
       default:
@@ -82,9 +98,31 @@ export const calculateBadgeProgress = (
   return badgesClone;
 };
 
+const handleBadgeProgress = (
+  badgeType: BadgeType,
+  badges: Badge[],
+  newlyCompletedBook: Book
+) => {
+  const badge = badges.find((b) => b.type === badgeType);
+
+  const totalCountRequired = BadgeCountRequired[badgeType];
+
+  if (badge && badge.progress < 1) {
+    badge.progress = badge.progress + 1 / totalCountRequired;
+    if (badge.books) badge.books.push(newlyCompletedBook);
+  } else if (!badge) {
+    badges.push({
+      type: badgeType,
+      progress: 1 / totalCountRequired,
+      books: [newlyCompletedBook],
+    });
+  }
+};
+
 export const handleOneTimeBadgeProgress = (
   badgeType: BadgeType,
-  badges: Badge[]
+  badges: Badge[],
+  newlyCompletedBook?: Book
 ): Badge[] => {
   const badge = badges.find((b) => b.type === badgeType);
 
@@ -94,6 +132,7 @@ export const handleOneTimeBadgeProgress = (
     badges.push({
       type: badgeType,
       progress: 1,
+      books: [newlyCompletedBook],
     });
   }
 
@@ -103,7 +142,8 @@ export const handleOneTimeBadgeProgress = (
 export const handleTimeFrameBadgeProgress = (
   badgeType: BadgeType,
   badges: Badge[],
-  timeFrame: "year" | "month"
+  timeFrame: "year" | "month",
+  newlyCompletedBook: Book
 ): Badge[] => {
   const badge = badges.find((b) => b.type === badgeType);
 
@@ -118,22 +158,26 @@ export const handleTimeFrameBadgeProgress = (
     ) {
       badge.progress = 0;
       badge.timeStarted = new Date().toISOString();
+      badge.books = [];
     } else if (
       timeFrame === "month" &&
       timeStartedDate.getMonth() < currentDate.getMonth()
     ) {
       badge.progress = 0;
       badge.timeStarted = new Date().toISOString();
+      badge.books = [];
     }
   }
 
   if (badge && badge.progress < 1) {
     badge.progress += 1 / BadgeCountRequired[badgeType];
+    if (badge.books) badge.books.push(newlyCompletedBook);
   } else if (!badge) {
     badges.push({
       type: badgeType,
       progress: 1 / BadgeCountRequired[badgeType],
       timeStarted: new Date().toISOString(),
+      books: [newlyCompletedBook],
     });
   }
 

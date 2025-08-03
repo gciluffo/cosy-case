@@ -121,13 +121,13 @@ const ProgressWheel = ({
 interface BadgeProps {
   type: BadgeType;
   progress: number; // progress percentage, value of 1 is 100%
-  hideProgress?: boolean;
   width?: number;
   height?: number;
+  fullOpacity?: boolean;
 }
 
 export default function Badge(props: BadgeProps) {
-  const { type, progress, width, height, hideProgress = true } = props;
+  const { type, progress, width, height, fullOpacity = false } = props;
 
   const getFilePathForBadge = (type: BadgeType) => {
     switch (type) {
@@ -159,6 +159,13 @@ export default function Badge(props: BadgeProps) {
   const size = width || 40;
   const radius = width ? width / 2 : 20;
 
+  const getOpacityStyle = () => {
+    if (fullOpacity) {
+      return { opacity: 1 };
+    }
+    return { opacity: progress < 1 ? 0.7 : 1 };
+  };
+
   return (
     <ProgressWheel size={size} progress={progress} strokeWidth={10}>
       <ImageBackground
@@ -168,7 +175,7 @@ export default function Badge(props: BadgeProps) {
           height: size - radius / 2,
         }}
         className="rounded-full"
-        imageStyle={progress < 1 ? { opacity: 0.7 } : undefined}
+        imageStyle={getOpacityStyle()}
       />
     </ProgressWheel>
   );

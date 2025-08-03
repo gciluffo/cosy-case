@@ -271,6 +271,14 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="badge"
+          options={{
+            title: "",
+            headerBackButtonDisplayMode: "generic",
+            headerTransparent: true,
+          }}
+        />
+        <Stack.Screen
           name="intro-single-bookspine-camera"
           options={{
             title: "Intro",
