@@ -29,7 +29,7 @@ export default function RootLayout() {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Merriweather: require("../assets/fonts/Merriweather-1.ttf"),
   });
   const { user } = useStore();
 

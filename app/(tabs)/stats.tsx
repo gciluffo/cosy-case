@@ -110,7 +110,7 @@ export default function State() {
           showExternalLabels
           paddingHorizontal={30}
           externalLabelComponent={(item) => (
-            <SvgText fontSize={12} fontFamily="Arial">
+            <SvgText fontSize={12} fontFamily="Merriweather">
               {item?.text}
             </SvgText>
           )}
