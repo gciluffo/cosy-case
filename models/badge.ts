@@ -10,6 +10,9 @@ export enum BadgeType {
   FIVE_MYSTERY_BOOKS_FINISHED = "five_mystery_books_finished",
   FIVE_HORROR_BOOKS_FINISHED = "five_horror_books_finished",
   FIVE_THRILLER_BOOKS_FINISHED = "five_thriller_books_finished",
+  FIVE_HISTORY_BOOKS_FINISHED = "five_history_books_finished",
+  FIRST_SPINE_IMAGE_UPLOADED = "first_spine_image_uploaded",
+  FIVE_SPINE_IMAGES_UPLOADED = "five_spine_images_uploaded",
   FIFTEY_BOOKS_FINISHED = "fifty_books_finished",
   TWELVE_BOOK_FINISHED_IN_A_YEAR = "twelve_books_finished_in_a_year",
 }

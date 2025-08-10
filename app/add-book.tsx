@@ -47,7 +47,7 @@ import {
   getGenericGenreFromCategories,
   isStringValidIsbn,
 } from "@/utils/books";
-import { calculateBadgeProgress } from "@/utils/badges";
+import { calculateBadgeProgressForCompleteBook } from "@/utils/badges";
 
 export interface AddBookParam {
   key: string;
@@ -303,7 +303,10 @@ export default function AddBookScreen() {
       // if status is finished, calculate impact on badge progress
       // console.log("selectedStatus:", selectedStatus);
       if (selectedStatus === BookStatus.FINISHED) {
-        const newBadgeArr = calculateBadgeProgress(bookToAdd, badges);
+        const newBadgeArr = calculateBadgeProgressForCompleteBook(
+          bookToAdd,
+          badges
+        );
         setBadges(newBadgeArr);
       }
 

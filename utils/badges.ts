@@ -7,7 +7,7 @@ import { Book, GenericBookGenre } from "@/models/book";
  * @param cases
  * @param newlyCompletedBook
  */
-export const calculateBadgeProgress = (
+export const calculateBadgeProgressForCompleteBook = (
   newlyCompletedBook: Book,
   existingBadges: Badge[]
 ): Badge[] => {
@@ -88,6 +88,13 @@ export const calculateBadgeProgress = (
           badgesClone,
           newlyCompletedBook
         );
+      case GenericBookGenre.Historical:
+      case GenericBookGenre.History:
+        handleBadgeProgress(
+          BadgeType.FIVE_HISTORY_BOOKS_FINISHED,
+          badgesClone,
+          newlyCompletedBook
+        );
         break;
       default:
         // No specific badge for this genre
@@ -98,10 +105,10 @@ export const calculateBadgeProgress = (
   return badgesClone;
 };
 
-const handleBadgeProgress = (
+export const handleBadgeProgress = (
   badgeType: BadgeType,
   badges: Badge[],
-  newlyCompletedBook: Book
+  newlyCompletedBook?: Book
 ) => {
   const badge = badges.find((b) => b.type === badgeType);
 
@@ -109,12 +116,12 @@ const handleBadgeProgress = (
 
   if (badge && badge.progress < 1) {
     badge.progress = badge.progress + 1 / totalCountRequired;
-    if (badge.books) badge.books.push(newlyCompletedBook);
+    if (badge.books && newlyCompletedBook) badge.books.push(newlyCompletedBook);
   } else if (!badge) {
     badges.push({
       type: badgeType,
       progress: 1 / totalCountRequired,
-      books: [newlyCompletedBook],
+      books: newlyCompletedBook ? [newlyCompletedBook] : [],
     });
   }
 };
@@ -132,7 +139,7 @@ export const handleOneTimeBadgeProgress = (
     badges.push({
       type: badgeType,
       progress: 1,
-      books: [newlyCompletedBook],
+      books: newlyCompletedBook ? [newlyCompletedBook] : [],
     });
   }
 
@@ -184,10 +191,6 @@ export const handleTimeFrameBadgeProgress = (
   return badges;
 };
 
-// If date
-// increment the progress by 1 as we normally would.
-//
-
 // TODO: Get this figured out
 export const BadgeRewards: Record<BadgeType, BadgeReward> = {
   [BadgeType.FIRST_FINISHED_BOOK]: {
@@ -234,6 +237,18 @@ export const BadgeRewards: Record<BadgeType, BadgeReward> = {
     type: "pet",
     url: "https://example.com/twelve_books_finished_in_a_year_pet.png",
   },
+  [BadgeType.FIVE_HISTORY_BOOKS_FINISHED]: {
+    type: "shelf",
+    url: "https://example.com/five_history_books_shelf.png",
+  },
+  [BadgeType.FIRST_SPINE_IMAGE_UPLOADED]: {
+    type: "decoration",
+    url: "https://example.com/first_spine_image_uploaded_decoration.png",
+  },
+  [BadgeType.FIVE_SPINE_IMAGES_UPLOADED]: {
+    type: "decoration",
+    url: "https://example.com/five_spine_images_uploaded_decoration.png",
+  },
 };
 
 export const BadgeCountRequired: Record<BadgeType, number> = {
@@ -246,8 +261,11 @@ export const BadgeCountRequired: Record<BadgeType, number> = {
   [BadgeType.FIVE_MYSTERY_BOOKS_FINISHED]: 5,
   [BadgeType.FIVE_HORROR_BOOKS_FINISHED]: 5,
   [BadgeType.FIVE_THRILLER_BOOKS_FINISHED]: 5,
+  [BadgeType.FIVE_HISTORY_BOOKS_FINISHED]: 5,
   [BadgeType.FIFTEY_BOOKS_FINISHED]: 50,
   [BadgeType.TWELVE_BOOK_FINISHED_IN_A_YEAR]: 12,
+  [BadgeType.FIRST_SPINE_IMAGE_UPLOADED]: 1,
+  [BadgeType.FIVE_SPINE_IMAGES_UPLOADED]: 5,
 };
 
 export const BadgeDescription: Record<BadgeType, string> = {
@@ -262,4 +280,7 @@ export const BadgeDescription: Record<BadgeType, string> = {
   [BadgeType.FIVE_THRILLER_BOOKS_FINISHED]: "Finish 5 thriller books.",
   [BadgeType.FIFTEY_BOOKS_FINISHED]: "Finish 50 books in total.",
   [BadgeType.TWELVE_BOOK_FINISHED_IN_A_YEAR]: "Finish 12 books in a year.",
+  [BadgeType.FIVE_HISTORY_BOOKS_FINISHED]: "Finish 5 historical books.",
+  [BadgeType.FIRST_SPINE_IMAGE_UPLOADED]: "Upload your first book spine image.",
+  [BadgeType.FIVE_SPINE_IMAGES_UPLOADED]: "Upload 5 book spine images.",
 };

@@ -149,10 +149,16 @@ export default function Badge(props: BadgeProps) {
         return require("@/assets/images/badges/5_horror_books_finished.png");
       case BadgeType.FIVE_THRILLER_BOOKS_FINISHED:
         return require("@/assets/images/badges/5_thriller_books_finished.png");
+      case BadgeType.FIVE_HISTORY_BOOKS_FINISHED:
+        return require("@/assets/images/badges/5_historical_books.png");
       case BadgeType.FIFTEY_BOOKS_FINISHED:
         return require("@/assets/images/badges/finished_50_books.png");
       case BadgeType.TWELVE_BOOK_FINISHED_IN_A_YEAR:
         return require("@/assets/images/badges/cosy-champ.png");
+      case BadgeType.FIRST_SPINE_IMAGE_UPLOADED:
+        return require("@/assets/images/badges/first_spine_image.png");
+      case BadgeType.FIVE_SPINE_IMAGES_UPLOADED:
+        return require("@/assets/images/badges/five_spine_images.png");
     }
   };
 

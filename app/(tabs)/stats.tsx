@@ -54,8 +54,9 @@ export default function State() {
       contentContainerStyle={{
         paddingBottom: 100,
       }}
-      className="p-3 mt-5"
+      className="p-4 mt-5"
     >
+      <View className="h-10" />
       <Heading>Badges</Heading>
       <Text className="text-sm text-gray-500 mb-2">
         Your achievements and badges earned in the app.
@@ -82,6 +83,15 @@ export default function State() {
           </TouchableOpacity>
         ))}
       </View>
+      <View className="h-5" />
+      <View
+        style={{
+          width: "100%",
+          height: 1,
+          backgroundColor: "#ccc",
+          marginVertical: 10,
+        }}
+      />
       <View className="h-5" />
       <Heading>Book Genres</Heading>
       <Text className="text-sm text-gray-500 mb-2">
@@ -114,6 +124,15 @@ export default function State() {
           }}
         />
       </View>
+      <View className="h-5" />
+      <View
+        style={{
+          width: "100%",
+          height: 1,
+          backgroundColor: "#ccc",
+          marginVertical: 10,
+        }}
+      />
       <View className="h-5" />
       <Heading>Book Statuses</Heading>
       <Text className="text-sm text-gray-500 mb-2">

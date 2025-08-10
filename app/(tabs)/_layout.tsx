@@ -102,10 +102,12 @@ export default function TabLayout() {
       <Tabs.Screen
         name="stats"
         options={{
+          headerTitle: "",
           title: "Stats",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={25} name="trophy" color={color} />
           ),
+          headerTransparent: true,
         }}
       />
     </Tabs>

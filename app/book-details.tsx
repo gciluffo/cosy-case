@@ -38,7 +38,7 @@ import InlinePicker from "@/components/InlinePicker";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { getBookDescription, isStringIsbn13 } from "@/utils/books";
 import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
-import { calculateBadgeProgress } from "@/utils/badges";
+import { calculateBadgeProgressForCompleteBook } from "@/utils/badges";
 
 export default function BookDetails() {
   const [localBook, setLocalBook] = useState<Book | null>(null);
@@ -378,7 +378,10 @@ export default function BookDetails() {
           value === BookStatus.READING ? new Date().toISOString() : undefined,
       });
       if (value === BookStatus.FINISHED) {
-        const newBadgeArr = calculateBadgeProgress(localBook, badges);
+        const newBadgeArr = calculateBadgeProgressForCompleteBook(
+          localBook,
+          badges
+        );
         setBadges(newBadgeArr);
       }
     }

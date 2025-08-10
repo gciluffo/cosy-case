@@ -9,7 +9,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import { ScrollView, TouchableOpacity, View, StyleSheet } from "react-native";
 
 export default function BadgeDetails() {
-  // get badgeType from params
   const { badges } = useStore();
   const params = useLocalSearchParams();
   const badgeType = params.type as BadgeType;
@@ -23,7 +22,7 @@ export default function BadgeDetails() {
       }}
       className="p-3 mt-5"
     >
-      <View className="h-40" />
+      <View className="h-20" />
       <View className="flex-1 items-center">
         <Badge
           key={badgeType}
@@ -36,7 +35,6 @@ export default function BadgeDetails() {
         <View className="h-5" />
         <Text>{BadgeDescription[badgeType]}</Text>
         <View className="h-5" />
-        {/* <Heading className="align-left">{BadgeDescription[badgeType]}</Heading> */}
         <View
           style={{
             width: "100%",

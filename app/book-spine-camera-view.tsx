@@ -12,6 +12,11 @@ import { confirmCroppedImage, uploadImageForSpineDetection } from "@/api";
 import CroppedImageConfirm from "@/components/ImageEditor";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import useStore from "@/store";
+import {
+  handleBadgeProgress,
+  handleOneTimeBadgeProgress,
+} from "@/utils/badges";
+import { BadgeType } from "@/models/badge";
 
 interface Params {
   key: string;
@@ -24,7 +29,7 @@ export default function ScanSpine() {
   const [permission, requestPermission] = useCameraPermissions();
   const [uploading, setUploading] = useState(false);
   const [image, setImage] = useState<string | null>(null);
-  const { user } = useStore();
+  const { user, badges, setBadges } = useStore();
   const cameraRef = useRef<CameraView>(null);
   const params = useLocalSearchParams();
   const { book } = params;
@@ -95,14 +100,25 @@ export default function ScanSpine() {
   };
 
   const onImageConfirm = async (confirm: boolean) => {
-    const { objectKey } = getObjectKeyFromSignedUrl(image!);
-    const res = await confirmCroppedImage(confirm, objectKey, bookParsed.key);
+    try {
+      const { objectKey } = getObjectKeyFromSignedUrl(image!);
+      const res = await confirmCroppedImage(confirm, objectKey, bookParsed.key);
 
-    if (confirm) {
-      router.back();
-      router.setParams({
-        refetchSpineImages: "true",
-      });
+      if (confirm) {
+        let newBadges = handleOneTimeBadgeProgress(
+          BadgeType.FIRST_SPINE_IMAGE_UPLOADED,
+          badges
+        );
+        handleBadgeProgress(BadgeType.FIVE_SPINE_IMAGES_UPLOADED, newBadges);
+        setBadges(newBadges);
+
+        router.back();
+        router.setParams({
+          refetchSpineImages: "true",
+        });
+      }
+    } catch (error) {
+      console.error("Error confirming cropped image:", error);
     }
   };
 
