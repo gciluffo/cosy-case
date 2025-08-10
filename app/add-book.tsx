@@ -81,7 +81,7 @@ export default function AddBookScreen() {
   const [addingBook, setAddingBook] = useState(false);
   const [selectedSpine, setSelectedSpine] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState(BookStatus.READING);
-  const [selectedReview, setSelectedReview] = useState(BookReview.LIKED);
+  const [selectedReview, setSelectedReview] = useState(undefined);
   const [reviewText, setReviewText] = useState<string>("");
   const [selectedShelves, setSelectedShelves] = useState<string[]>([
     cases.find((c) => c.isDefault)?.name || "default",
@@ -142,8 +142,6 @@ export default function AddBookScreen() {
         setSearchingSpineImage(true);
 
         const images = await getSpineImages(bookObject.key);
-
-        // console.log("Spine images:", images);
 
         if (images.length > 0) {
           setSpineImages(images);

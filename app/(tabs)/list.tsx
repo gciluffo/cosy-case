@@ -11,7 +11,7 @@ import useStore from "@/store";
 import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
 import { isTablet, moderateScale, scale } from "@/utils/scale";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { Book, BookReview } from "@/models/book";
 import { Text } from "@/components/ui/text";
@@ -22,6 +22,8 @@ import BookReviewIcon from "@/components/BookReviewIcon";
 import { captializeFirstLetter } from "@/utils/string";
 
 export default function TabTwoScreen() {
+  const params = useLocalSearchParams();
+  const reviewParam = params.review as BookReview;
   const [showActionsheet, setShowActionsheet] = useState(false);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const handleClose = () => setShowActionsheet(false);
@@ -37,6 +39,13 @@ export default function TabTwoScreen() {
 
     return uniqueBooks;
   }, [cases]);
+
+  // handle scenario where we preset review filter from param
+  useEffect(() => {
+    if (reviewParam) {
+      updateUser({ bookListFilter: reviewParam });
+    }
+  }, [reviewParam, updateUser]);
 
   useEffect(() => {
     if (!user.bookListFilter) {
@@ -155,7 +164,7 @@ export default function TabTwoScreen() {
                   style={styles.image}
                   contentFit="contain"
                 />
-                {user.bookListDisplayMode === "grid" && (
+                {user.bookListDisplayMode === "grid" && item.review && (
                   <View className="mt-2">
                     <BookReviewIcon bookReview={item.review} />
                   </View>
@@ -170,7 +179,7 @@ export default function TabTwoScreen() {
                   <Text numberOfLines={2} bold size="lg" className="flex-1">
                     {item.title}
                   </Text>
-                  <BookReviewIcon bookReview={item.review} />
+                  {item.review && <BookReviewIcon bookReview={item.review} />}
                 </View>
 
                 <Text numberOfLines={1} size="sm">

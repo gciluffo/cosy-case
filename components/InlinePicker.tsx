@@ -9,7 +9,7 @@ import { captializeFirstLetter } from "@/utils/string";
 
 interface Props {
   label: string;
-  selectedValue: string;
+  selectedValue?: string;
   onValueChange: React.Dispatch<React.SetStateAction<any>>;
   items: Array<{ icon: string; label: string; value: string }>;
   dropdownPosition: "top" | "bottom";
