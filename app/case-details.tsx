@@ -221,6 +221,8 @@ export default function CaseDetails() {
       });
     }
 
+    console.log("widget cache key", widget.cacheKey);
+
     if (isSelected) {
       // add the widget to the bookCase widgets
       updateCase(bookCase?.name!, {

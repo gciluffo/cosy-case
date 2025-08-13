@@ -115,7 +115,7 @@ export default function BookSearch() {
 
       {loading && (
         <FlatList
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: 140 }}
           data={Array(10).fill(null)} // Display 5 skeleton rows
           keyExtractor={(_, index) => `skeleton-${index}`}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}

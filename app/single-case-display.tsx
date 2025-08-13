@@ -3,7 +3,7 @@ import useStore from "@/store";
 import { useLocalSearchParams } from "expo-router";
 import FullScreenBookshelfComponent from "@/components/FullScreenBookShelf";
 import { ImageBackground } from "expo-image";
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 const BookshelfScreen = () => {
@@ -44,7 +44,23 @@ const BookshelfScreen = () => {
           <FullScreenBookshelfComponent bookcase={bookcase} />
         </ImageBackground>
       ) : (
-        <FullScreenBookshelfComponent bookcase={bookcase} />
+        <View
+          style={{
+            width: Dimensions.get("window").width,
+            flex: 1,
+            backgroundColor: "transparent",
+          }}
+        >
+          <LinearGradient
+            colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.5)"]}
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          />
+          <FullScreenBookshelfComponent bookcase={bookcase} />
+        </View>
       )}
     </>
   );

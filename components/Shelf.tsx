@@ -42,8 +42,8 @@ export function Shelf(props: ShelfProps) {
     middleImageKey,
     topImageKey,
     bottomImageKey,
-    offsetXPercent,
-    offsetYPercent,
+    bookOffsetXPercent: offsetXPercent,
+    bookOffsetYPercent: offsetYPercent,
   } = bookCase;
 
   const horizontalPadding = width * offsetXPercent;

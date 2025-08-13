@@ -4,7 +4,7 @@ import { DownloadOptions } from "expo-file-system/src/FileSystem.types";
 import React, { useEffect, useRef, useState } from "react";
 import { Image, ImageBackground, ImageProps } from "expo-image";
 
-export const IMAGE_CACHE_FOLDER = `${FileSystem.cacheDirectory}`;
+export const IMAGE_CACHE_FOLDER = `${FileSystem.documentDirectory}images/`;
 
 export const sanitizeCacheKey = (key: string): string => {
   // Remove any potentially unsafe characters
@@ -46,19 +46,18 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
 
   const loadImageAsync = async () => {
     try {
+      // Ensure the cache directory exists
+      const dirInfo = await FileSystem.getInfoAsync(IMAGE_CACHE_FOLDER);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(IMAGE_CACHE_FOLDER, {
+          intermediates: true,
+        });
+      }
+
       const metadata = await FileSystem.getInfoAsync(fileURI);
-      // const expired = Boolean(
-      //   metadata?.exists &&
-      //     expiresIn &&
-      //     new Date().getTime() / 1000 - metadata.modificationTime > expiresIn
-      // );
 
       await setImgUri(null);
       if (componentIsMounted.current) {
-        // if (expired) {
-        //   await FileSystem.deleteAsync(fileURI, { idempotent: true });
-        // }
-
         if (metadata?.exists) {
           const contentUri = await FileSystem.getContentUriAsync(fileURI);
           // console.log("Cached image found:", contentUri);
@@ -69,9 +68,13 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
         const response = await FileSystem.downloadAsync(uri, fileURI);
         if (componentIsMounted.current && response?.status === 200) {
           setImgUri(`${fileURI}`);
-        }
-        if (response?.status !== 200) {
-          FileSystem.deleteAsync(fileURI, { idempotent: true });
+        } else if (response?.status !== 200) {
+          // Only delete if the file was just created and failed
+          // Don't delete existing cached files on download failure
+          const newMetadata = await FileSystem.getInfoAsync(fileURI);
+          if (newMetadata?.exists && !metadata?.exists) {
+            FileSystem.deleteAsync(fileURI, { idempotent: true });
+          }
         }
       }
     } catch (err) {
@@ -114,6 +117,14 @@ const CachedImage: React.FC<CachedImageProps> = (props) => {
 export const CacheManager = {
   addToCache: async ({ file, key }: { file: string; key: string }) => {
     const sanitizedKey = sanitizeCacheKey(key);
+    // Ensure the cache directory exists
+    const dirInfo = await FileSystem.getInfoAsync(IMAGE_CACHE_FOLDER);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(IMAGE_CACHE_FOLDER, {
+        intermediates: true,
+      });
+    }
+
     await FileSystem.copyAsync({
       from: file,
       to: `${IMAGE_CACHE_FOLDER}${sanitizedKey}.png`,
@@ -138,6 +149,14 @@ export const CacheManager = {
     options: DownloadOptions;
   }) => {
     const sanitizedKey = sanitizeCacheKey(key);
+    // Ensure the cache directory exists
+    const dirInfo = await FileSystem.getInfoAsync(IMAGE_CACHE_FOLDER);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(IMAGE_CACHE_FOLDER, {
+        intermediates: true,
+      });
+    }
+
     return await FileSystem.downloadAsync(
       uri,
       `${IMAGE_CACHE_FOLDER}${sanitizedKey}.png`,
@@ -146,6 +165,14 @@ export const CacheManager = {
   },
   saveBytesToCache: async ({ image, key }: { image: SkImage; key: string }) => {
     const sanitizedKey = sanitizeCacheKey(key);
+    // Ensure the cache directory exists
+    const dirInfo = await FileSystem.getInfoAsync(IMAGE_CACHE_FOLDER);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(IMAGE_CACHE_FOLDER, {
+        intermediates: true,
+      });
+    }
+
     const filePath = `${IMAGE_CACHE_FOLDER}${sanitizedKey}.png`;
 
     try {

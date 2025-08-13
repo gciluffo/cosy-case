@@ -73,7 +73,13 @@ export default function TabTwoScreen() {
           source={require("@/assets/images/bored-rat.png")}
           style={{ width: scale(250), height: scale(250) }}
         />
-        <Heading size={isTablet ? "2xl" : "xl"}>
+        <Heading
+          size={isTablet ? "2xl" : "xl"}
+          style={{
+            width: isTablet ? "80%" : "90%",
+            textAlign: "center",
+          }}
+        >
           No books yet. Tap above to add some!
         </Heading>
       </View>

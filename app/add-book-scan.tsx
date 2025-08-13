@@ -224,7 +224,7 @@ export default function AddBookScan() {
               <View className="flex-row gap-10 items-center">
                 <FontAwesome name="barcode" size={32} color="black" />
                 <View className="flex-1">
-                  <Text size="xl" bold>
+                  <Text size="lg" bold>
                     Scan one or mutliple barcodes
                   </Text>
                   <Text>Scan one or mutliple barcodes</Text>

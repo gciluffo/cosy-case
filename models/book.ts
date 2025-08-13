@@ -56,8 +56,12 @@ export interface BookCase {
   topImageKey: string;
   middleImageKey: string;
   bottomImageKey: string;
-  offsetXPercent: number;
-  offsetYPercent: number;
+  // these are the offsets for the books on the shelves, in percent of the shelf width
+  topShelfOffsetYPercent?: number;
+  middleShelfOffsetYPercent?: number;
+  bottomShelfOffsetYPercent?: number;
+  bookOffsetXPercent: number;
+  bookOffsetYPercent: number;
   books: Book[];
   isDefault: boolean;
   widgets: Widget[];
