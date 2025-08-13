@@ -12,6 +12,17 @@ export const BOOK_CASES: BookCase[] = [
     isDefault: false,
     widgets: [],
   },
+  // {
+  //   name: "default",
+  //   topImageKey: "whiteTrimTop",
+  //   middleImageKey: "whiteTrimMiddle",
+  //   bottomImageKey: "whiteTrimBottom",
+  //   offsetXPercent: 0.05,
+  //   offsetYPercent: 0.07,
+  //   books: [],
+  //   isDefault: false,
+  //   widgets: [],
+  // },
 ];
 
 export const sortBookcase = (bookCase: BookCase, sort: BookSortOrder): void => {

@@ -117,12 +117,20 @@ export default function AddCase() {
         horizontal={true}
         data={bookCases}
         ItemSeparatorComponent={() => {
-          return <View className="m-10" />;
+          return <View className="m-4" />;
         }}
         renderItem={({ item, index }) => (
           <View className="flex" key={item.name}>
             <TouchableOpacity
               style={[item.isSelected && styles.caseIsSelected]}
+              onPress={() => {
+                setBookCases((prev) =>
+                  prev.map((c, i) => ({
+                    ...c,
+                    isSelected: i === index,
+                  }))
+                );
+              }}
             >
               {renderShelf(item)}
             </TouchableOpacity>

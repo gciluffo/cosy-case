@@ -3,17 +3,28 @@ import { ImageBackground } from "expo-image";
 import React from "react";
 
 // @ts-ignore
-import BirchTop from "@/assets/images/top-shelf-birch.png";
+import BirchTop from "@/assets/images/book-shelves/top-shelf-birch.png";
 // @ts-ignore
-import BirchMiddle from "@/assets/images/middle-shelf-birch.png";
+import BirchMiddle from "@/assets/images/book-shelves/middle-shelf-birch.png";
 // @ts-ignore
-import BirchBottom from "@/assets/images/bottom-shelf-birch.png";
+import BirchBottom from "@/assets/images/book-shelves/bottom-shelf-birch.png";
+// @ts-ignore
+import WhiteTrimTop from "@/assets/images/book-shelves/top-white-trim.png";
+// @ts-ignore
+import WhiteTrimMiddle from "@/assets/images/book-shelves/middle-white-trim.png";
+// @ts-ignore
+import WhiteTrimBottom from "@/assets/images/book-shelves/bottom-white-trim.png";
 import { View } from "react-native";
 
-const ShelfImageMap = {
+export const ShelfImageMap = {
+  //birch
   birchTop: BirchTop,
   birchMiddle: BirchMiddle,
   birchBottom: BirchBottom,
+  //white-trim
+  whiteTrimTop: WhiteTrimTop,
+  whiteTrimMiddle: WhiteTrimMiddle,
+  whiteTrimBottom: WhiteTrimBottom,
 };
 
 interface ShelfProps {
@@ -43,7 +54,7 @@ export function Shelf(props: ShelfProps) {
       return (ShelfImageMap as any)[topImageKey];
     }
     if (index === length - 1) {
-      return (ShelfImageMap as any)[middleImageKey];
+      return (ShelfImageMap as any)[bottomImageKey];
     }
     return (ShelfImageMap as any)[middleImageKey];
   };

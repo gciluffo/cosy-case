@@ -137,7 +137,7 @@ export default function TabTwoScreen() {
       />
       <FlatList
         contentContainerStyle={{
-          paddingBottom: 100,
+          paddingBottom: 140,
         }}
         style={styles.list}
         data={filteredBooks}
