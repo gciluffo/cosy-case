@@ -341,7 +341,7 @@ export default function CaseDetails() {
           >
             <ButtonIcon as={TrashIcon} color="black" />
             <ButtonText>
-              <Text>Remove case</Text>
+              <Text>Remove Case</Text>
             </ButtonText>
           </Button>
         )}
@@ -377,11 +377,10 @@ export default function CaseDetails() {
     setBookCases((prev = []) =>
       prev.map((c) => ({
         ...c,
-        isSelected: c.name === selectedBookCase.name,
+        isSelected: c.type === selectedBookCase.type ? true : false,
       }))
     );
 
-    // create a new bookcase Object, and carry over books, widgets, wallpaper,
     const newBookCase = {
       ...selectedBookCase,
       books: bookCase!.books.length > 0 ? [...bookCase!.books] : [],
@@ -390,6 +389,7 @@ export default function CaseDetails() {
       name: bookCase!.name,
       topTrimKey: selectedBookCase!.topTrimKey,
       bottomTrimKey: selectedBookCase!.bottomTrimKey,
+      isDefault: bookCase!.isDefault,
     };
 
     updateCase(bookCase!.name, newBookCase);
@@ -479,7 +479,13 @@ export default function CaseDetails() {
         )}
       </>
     ),
-    [bookCase?.wallPaper?.cacheKey, bookCase?.name, bookCase?.isDefault]
+    [
+      bookCase?.wallPaper?.cacheKey,
+      bookCase?.name,
+      bookCase?.isDefault,
+      bookCase?.widgets,
+      bookCase?.books,
+    ]
   );
 
   return (

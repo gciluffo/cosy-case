@@ -15,6 +15,12 @@ import BirchWhiteMiddle from "@/assets/images/book-shelves/middle-white-birch.pn
 // @ts-ignore
 import BirchWhiteBottom from "@/assets/images/book-shelves/bottom-white-birch.png";
 // @ts-ignore
+import BrownFloatingTop from "@/assets/images/book-shelves/top-floating-brown.png";
+// @ts-ignore
+import BrownFloatingMiddle from "@/assets/images/book-shelves/middle-floating-brown.png";
+// @ts-ignore
+import BrownFloatingBottom from "@/assets/images/book-shelves/bottom-floating-brown.png";
+// @ts-ignore
 import { View } from "react-native";
 
 export const ShelfImageMap = {
@@ -26,6 +32,10 @@ export const ShelfImageMap = {
   birchWhiteTop: BirchWhiteTop,
   birchWhiteMiddle: BirchWhiteMiddle,
   birchWhiteBottom: BirchWhiteBottom,
+  // brown floating bottom
+  brownFloatingBottom: BrownFloatingBottom,
+  brownFloatingTop: BrownFloatingTop,
+  brownFloatingMiddle: BrownFloatingMiddle,
 };
 
 interface ShelfProps {
