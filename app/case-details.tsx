@@ -1,5 +1,5 @@
-import { G, Rect, Text as SvgText } from "react-native-svg";
-import { PieChart, pieDataItem, RadarChart } from "react-native-gifted-charts";
+import { Text as SvgText } from "react-native-svg";
+import { PieChart, pieDataItem } from "react-native-gifted-charts";
 import {
   Radio,
   RadioGroup,
@@ -30,8 +30,9 @@ import {
   ScrollView,
   Share,
   ActivityIndicator,
+  FlatList,
 } from "react-native";
-import { Image, ImageBackground } from "expo-image";
+import { Image } from "expo-image";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import useStore from "@/store";
 import { LinearGradient } from "expo-linear-gradient";
@@ -46,14 +47,16 @@ import {
 } from "@/api";
 import { getObjectKeyFromSignedUrl } from "@/utils/image";
 import CachedImage, { CacheManager } from "@/components/ChachedImage";
-import { BookSortOrder } from "@/models/book";
-import { sortBookcase } from "@/utils/bookcase";
+import { BookCase, BookSortOrder } from "@/models/book";
+import { BOOK_CASES, sortBookcase } from "@/utils/bookcase";
 import { getGenreChartData } from "@/utils/books";
 import ViewShot, { captureRef } from "react-native-view-shot";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { handleOneTimeBadgeProgress } from "@/utils/badges";
 import { BadgeType } from "@/models/badge";
 import FullScreenBookshelfComponent from "@/components/FullScreenBookShelf";
+import { ShelfTrim } from "@/components/ShelfTrim";
+import { Shelf } from "@/components/Shelf";
 
 const CASE_WIDTH = Dimensions.get("window").width / 2 - (isTablet ? 200 : 50);
 const CASE_HEIGHT = verticalScale(isTablet ? 150 : 100);
@@ -67,7 +70,7 @@ export default function CaseDetails() {
   const bookCase = getCaseByName(caseName as string);
   const [showActionsheet, setShowActionsheet] = useState(false);
   const handleClose = () => setShowActionsheet(false);
-  const [caseNameInput, setCaseName] = useState<string>(caseName as string);
+  const [caseNameInput, setCaseName] = useState<string>();
   const [caseWidgets, setCaseWidgets] = useState<
     { url: string; isSelected: boolean; cacheKey: string }[]
   >([]);
@@ -79,6 +82,8 @@ export default function CaseDetails() {
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [showHiddenShelf, setShowHiddenShelf] = useState(false);
+  const [bookCases, setBookCases] =
+    useState<(BookCase & { isSelected: boolean })[]>();
   const hiddenRef = useRef<ViewShot>(null);
   const navigation = useNavigation();
 
@@ -99,7 +104,7 @@ export default function CaseDetails() {
 
                 const file = {
                   uri,
-                  name: `case-${caseName}-${date.getTime()}.jpg`, // Use the case name for the file name
+                  name: `case-${bookCase!.name}-${date.getTime()}.jpg`, // Use the case ID for the file name
                   type: "image/jpeg", // Adjust the MIME type if necessary
                 };
 
@@ -184,6 +189,16 @@ export default function CaseDetails() {
 
       // set the sort order
       setSortOrder(bookCase?.sortOrder || BookSortOrder.DATE_ADDED);
+
+      // set case name
+      setCaseName(bookCase.name);
+
+      // setBookCases
+      const out = BOOK_CASES.map((c) => ({
+        ...c,
+        isSelected: bookCase.type === c.type,
+      }));
+      setBookCases(out);
     };
 
     init();
@@ -220,8 +235,6 @@ export default function CaseDetails() {
         options: {},
       });
     }
-
-    console.log("widget cache key", widget.cacheKey);
 
     if (isSelected) {
       // add the widget to the bookCase widgets
@@ -360,6 +373,28 @@ export default function CaseDetails() {
     updateCase(bookCase?.name!, { books: bookCase?.books, sortOrder: value });
   };
 
+  const onBookCaseSelected = (selectedBookCase: BookCase) => {
+    setBookCases((prev = []) =>
+      prev.map((c) => ({
+        ...c,
+        isSelected: c.name === selectedBookCase.name,
+      }))
+    );
+
+    // create a new bookcase Object, and carry over books, widgets, wallpaper,
+    const newBookCase = {
+      ...selectedBookCase,
+      books: bookCase!.books.length > 0 ? [...bookCase!.books] : [],
+      widgets: bookCase!.widgets.length > 0 ? [...bookCase!.widgets] : [],
+      wallPaper: bookCase!.wallPaper ? { ...bookCase!.wallPaper } : {},
+      name: bookCase!.name,
+      topTrimKey: selectedBookCase!.topTrimKey,
+      bottomTrimKey: selectedBookCase!.bottomTrimKey,
+    };
+
+    updateCase(bookCase!.name, newBookCase);
+  };
+
   const radarChartData = useMemo(() => {
     if (!bookCase || !bookCase.books || bookCase.books.length < 4) {
       return [];
@@ -372,78 +407,116 @@ export default function CaseDetails() {
     })) as pieDataItem[];
   }, [bookCase?.books]);
 
+  const renderBookCase = (bookCase: BookCase) => {
+    return (
+      <>
+        {bookCase.topTrimKey ? (
+          <ShelfTrim
+            trimImageKey={bookCase.topTrimKey as any}
+            width={scale(100)}
+          />
+        ) : null}
+        {[1, 2, 3].map((shelfBooks, index) => {
+          return (
+            <Shelf
+              index={index}
+              bookCase={bookCase}
+              width={scale(100)}
+              height={verticalScale(33)}
+              numShelves={3}
+            >
+              <View></View>
+            </Shelf>
+          );
+        })}
+        {bookCase.bottomTrimKey ? (
+          <ShelfTrim
+            trimImageKey={bookCase.bottomTrimKey as any}
+            width={scale(100)}
+            height={verticalScale(5)}
+          />
+        ) : null}
+      </>
+    );
+  };
+
+  const parallaxHeaderContent = useMemo(
+    () => (
+      <>
+        {bookCase?.wallPaper?.cacheKey ? (
+          <CachedImage
+            source={{ uri: "" }}
+            cacheKey={bookCase.wallPaper.cacheKey}
+            style={{
+              width: Dimensions.get("window").width,
+              height: verticalScale(450),
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            resizeMode="cover"
+          >
+            <LinearGradient
+              colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.7)"]}
+              style={{
+                ...StyleSheet.absoluteFillObject,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            />
+            {renderCaseHeader()}
+          </CachedImage>
+        ) : (
+          <LinearGradient
+            colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,1)"]}
+            style={{
+              height: verticalScale(450),
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {renderCaseHeader()}
+          </LinearGradient>
+        )}
+      </>
+    ),
+    [bookCase?.wallPaper?.cacheKey, bookCase?.name, bookCase?.isDefault]
+  );
+
   return (
     <ParallaxScrollView
       parallaxHeaderHeight={300}
-      parallaxHeaderContent={() => (
-        <>
-          {bookCase?.wallPaper?.cacheKey ? (
-            <CachedImage
-              source={{ uri: "" }}
-              cacheKey={bookCase.wallPaper.cacheKey}
-              style={{
-                width: Dimensions.get("window").width,
-                height: verticalScale(450),
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-              resizeMode="cover"
-            >
-              <LinearGradient
-                colors={["rgba(0,0,0,0.2)", "rgba(0,0,0,0.7)"]}
-                style={{
-                  ...StyleSheet.absoluteFillObject,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              />
-              {renderCaseHeader()}
-            </CachedImage>
-          ) : (
-            <LinearGradient
-              colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,1)"]}
-              style={{
-                height: verticalScale(450),
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {renderCaseHeader()}
-            </LinearGradient>
-          )}
-        </>
-      )}
+      parallaxHeaderContent={() => parallaxHeaderContent}
     >
       <View style={styles.content}>
-        <View className="h-5" />
         {bookCase && bookCase?.books?.length > 0 ? (
-          <View className="flex-row flex-wrap" style={{ marginLeft: -3 }}>
-            {bookCase?.books.map((book) => (
-              <TouchableOpacity
-                key={book.key}
-                className="rounded-lg p-2"
-                onPress={() =>
-                  router.push({
-                    pathname: "/book-details",
-                    params: {
-                      localBookKey: book.key,
-                    },
-                  })
-                }
-              >
-                <Image
-                  source={{ uri: book.cover_url }}
-                  className="rounded-lg"
-                  style={styles.bookImage}
-                  contentFit="contain"
-                  cachePolicy={"memory-disk"}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
+          <>
+            <View className="flex-row flex-wrap" style={{ marginLeft: -3 }}>
+              {bookCase?.books.map((book) => (
+                <TouchableOpacity
+                  key={book.key}
+                  className="rounded-lg p-2"
+                  onPress={() =>
+                    router.push({
+                      pathname: "/book-details",
+                      params: {
+                        localBookKey: book.key,
+                      },
+                    })
+                  }
+                >
+                  <Image
+                    source={{ uri: book.cover_url }}
+                    className="rounded-lg"
+                    style={styles.bookImage}
+                    contentFit="contain"
+                    cachePolicy={"memory-disk"}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
         ) : null}
 
-        <View className="h-5" />
         {radarChartData.length > 0 && bookCase && bookCase.books.length > 3 && (
           <View className="w-100 flex items-center">
             <PieChart
@@ -531,6 +604,31 @@ export default function CaseDetails() {
         </Card>
         <View className="h-5" />
         <Text className="text-gray-500 mb-1 ml-1" size="md">
+          Case
+        </Text>
+        <Card>
+          <FlatList
+            horizontal={true}
+            data={bookCases}
+            ItemSeparatorComponent={() => {
+              return <View className="m-4" />;
+            }}
+            renderItem={({ item, index }) => (
+              <View className="flex" key={item.name}>
+                <TouchableOpacity
+                  style={[item.isSelected && styles.caseIsSelected]}
+                  onPress={() => {
+                    onBookCaseSelected(item);
+                  }}
+                >
+                  {renderBookCase(item)}
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+        </Card>
+        <View className="h-5" />
+        <Text className="text-gray-500 mb-1 ml-1" size="md">
           Wallpaper
         </Text>
         <Card>
@@ -586,12 +684,12 @@ export default function CaseDetails() {
                 </RadioIndicator>
                 <RadioLabel size="lg">Author</RadioLabel>
               </Radio>
-              {/* <Radio value={BookSortOrder.GENRE} size="lg">
+              <Radio value={BookSortOrder.GENRE} size="lg">
                 <RadioIndicator>
                   <RadioIcon as={CircleIcon} />
                 </RadioIndicator>
                 <RadioLabel>Genre</RadioLabel>
-              </Radio> */}
+              </Radio>
               <Radio value={BookSortOrder.COLOR} size="lg">
                 <RadioIndicator>
                   <RadioIcon as={CircleIcon} />

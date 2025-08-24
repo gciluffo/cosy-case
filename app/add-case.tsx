@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Text } from "@/components/ui/text";
 import useStore from "@/store";
-import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
+import ScrollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import { router } from "expo-router";
 import { Card } from "@/components/ui/card";
 import { Image } from "expo-image";
@@ -79,6 +79,7 @@ export default function AddCase() {
           <ShelfTrim
             trimImageKey={bookCase.bottomTrimKey as any}
             width={scale(100)}
+            height={verticalScale(10)}
           />
         ) : null}
       </>
@@ -92,6 +93,7 @@ export default function AddCase() {
     const selectedStyle = bookCases.find((c) => c.isSelected);
 
     const newCase: BookCase = {
+      type: selectedStyle!.type,
       name: caseName,
       topShelfImageKey: selectedStyle!.topShelfImageKey,
       middleShelfImageKey: selectedStyle!.middleShelfImageKey,
@@ -117,7 +119,7 @@ export default function AddCase() {
   };
 
   return (
-    <ScollViewFloatingButton
+    <ScrollViewFloatingButton
       onPress={() => onAddCase()}
       buttonText="Add Bookcase"
       loading={isLoading}
@@ -205,18 +207,7 @@ export default function AddCase() {
           </ScrollView>
         </View>
       </Card>
-
-      {/* <View className="h-20 bg-slate-300"></View>
-      <View className="h-5" />
-      <Text className="color-gray-600">Scale</Text>
-      <View className="h-20 bg-slate-300"></View>
-      <View className="h-5" />
-      <Text className="color-gray-600">Widgets</Text>
-      <View className="h-20 bg-slate-300"></View>
-      <View className="h-5" />
-      <Text className="color-gray-600">Sort Order</Text>
-      <View className="h-20 bg-slate-300"></View> */}
-    </ScollViewFloatingButton>
+    </ScrollViewFloatingButton>
   );
 }
 

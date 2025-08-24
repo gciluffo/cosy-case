@@ -22,7 +22,7 @@ import { Textarea, TextareaInput } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
-import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
+import ScrollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import useStore from "@/store";
 import {
   Book,
@@ -331,7 +331,7 @@ export default function AddBookScreen() {
   };
 
   return (
-    <ScollViewFloatingButton
+    <ScrollViewFloatingButton
       onPress={() => onAddToLibrary()}
       buttonText="Add to Library"
       loading={addingBook}
@@ -564,7 +564,7 @@ export default function AddBookScreen() {
           }}
         />
       </Card>
-    </ScollViewFloatingButton>
+    </ScrollViewFloatingButton>
   );
 }
 

@@ -147,16 +147,9 @@ export default function CompactBookShelf(props: BookShelfProps) {
         <ShelfTrim
           trimImageKey={bookCase.bottomTrimKey as any}
           width={caseWidth}
+          height={verticalScale(5)}
         />
       ) : null}
     </>
   );
 }
-
-// const styles = StyleSheet.create({
-//   shelfBackground: {
-//     // TODO: Refactor this when we add a flating navbar
-//     height: verticalScale(INDIVIDUAL_SHELF_HEIGHT),
-//     width: SHELF_WIDTH + 10,
-//   },
-// });

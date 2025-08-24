@@ -11,7 +11,7 @@ interface Props {
   loading?: boolean;
 }
 
-const ScollViewFloatingButton = React.memo((props: Props) => {
+const ScrollViewFloatingButton = React.memo((props: Props) => {
   const { children, onPress, buttonText, disabled, loading } = props;
   let screenHeight = Dimensions.get("window").height;
 
@@ -72,4 +72,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ScollViewFloatingButton;
+export default ScrollViewFloatingButton;

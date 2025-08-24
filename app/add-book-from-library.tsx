@@ -1,4 +1,4 @@
-import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
+import ScrollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import { Image } from "expo-image";
 import { Book } from "@/models/book";
 import useStore from "@/store";
@@ -59,7 +59,7 @@ export default function AddBookFromLibrary() {
   };
 
   return (
-    <ScollViewFloatingButton
+    <ScrollViewFloatingButton
       onPress={() => onAddToLibrary()}
       buttonText="Add to Library"
       disabled={selectedBooks.filter((book) => book.isSelected).length === 0}
@@ -125,7 +125,7 @@ export default function AddBookFromLibrary() {
           </TouchableOpacity>
         ))}
       </View>
-    </ScollViewFloatingButton>
+    </ScrollViewFloatingButton>
   );
 }
 

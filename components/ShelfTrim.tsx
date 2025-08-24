@@ -12,10 +12,11 @@ export const ShelfImageMap = {
 interface ShelfProps {
   trimImageKey: keyof typeof ShelfImageMap;
   width: number;
+  height?: number;
 }
 
 export function ShelfTrim(props: ShelfProps) {
-  const { trimImageKey, width } = props;
+  const { trimImageKey, width, height } = props;
 
   return (
     <ImageBackground
@@ -23,7 +24,7 @@ export function ShelfTrim(props: ShelfProps) {
       style={{
         width,
         justifyContent: "center",
-        height: moderateScale(20),
+        height: height ? moderateScale(height) : moderateScale(20),
       }}
       resizeMode="stretch"
     ></ImageBackground>

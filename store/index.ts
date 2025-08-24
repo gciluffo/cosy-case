@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Book, BookCase, BookReview } from "@/models/book";
 import { middleware } from "zustand-expo-devtools";
 import { Badge } from "@/models/badge";
+import { BOOK_CASES } from "@/utils/bookcase";
 
 // Books have to be added to cases
 //
@@ -27,6 +28,7 @@ export interface Store {
   removeCase: (caseName: string) => void;
   updateCase: (caseName: string, bookCase: Partial<BookCase>) => void;
   getCaseByName: (caseName: string) => BookCase | undefined;
+  getCaseById: (caseId: string) => BookCase | undefined;
   removeBook: (bookId: string) => void;
   getBookByKey: (key: string) => Book | undefined;
   setUser: (user: User) => void;
@@ -45,19 +47,7 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
         introToBookSpinePicturesCompleted: false,
       },
       badges: [],
-      cases: [
-        {
-          name: "default",
-          topShelfImageKey: "birchTop",
-          middleShelfImageKey: "birchMiddle",
-          bottomShelfImageKey: "birchBottom",
-          bookOffsetXPercent: 0.07,
-          bookOffsetYPercent: 0.07,
-          books: [],
-          isDefault: true,
-          widgets: [],
-        },
-      ],
+      cases: [BOOK_CASES.find((c) => c.isDefault) || BOOK_CASES[0]],
       addCase: (bookCase: BookCase) =>
         set((state) => ({ cases: [...state.cases, bookCase] })),
       removeCase: (caseName: string) =>
@@ -74,6 +64,8 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
         }),
       getCaseByName: (caseName: string) =>
         get().cases.find((bookCase) => bookCase.name === caseName),
+      getCaseById: (caseId: string) =>
+        get().cases.find((bookCase) => bookCase.type === caseId),
       addBooksToCase: (caseName: string, books: Book[]) =>
         set((state) => ({
           cases: state.cases.map((bookCase) => {

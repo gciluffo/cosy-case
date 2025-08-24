@@ -52,6 +52,7 @@ export interface Wallpaper {
 }
 
 export interface BookCase {
+  type: string;
   name: string;
   topTrimKey?: string;
   topShelfImageKey: string;
