@@ -53,13 +53,11 @@ export interface Wallpaper {
 
 export interface BookCase {
   name: string;
-  topImageKey: string;
-  middleImageKey: string;
-  bottomImageKey: string;
-  // these are the offsets for the books on the shelves, in percent of the shelf width
-  topShelfOffsetYPercent?: number;
-  middleShelfOffsetYPercent?: number;
-  bottomShelfOffsetYPercent?: number;
+  topTrimKey?: string;
+  topShelfImageKey: string;
+  middleShelfImageKey: string;
+  bottomShelfImageKey: string;
+  bottomTrimKey?: string;
   bookOffsetXPercent: number;
   bookOffsetYPercent: number;
   books: Book[];

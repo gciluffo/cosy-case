@@ -1,5 +1,4 @@
 import { Shelf } from "@/components/Shelf";
-import colors from "tailwindcss/colors";
 import { BookCase } from "@/models/book";
 import { BOOK_CASES } from "@/utils/bookcase";
 import { moderateScale, scale, verticalScale } from "@/utils/scale";
@@ -18,12 +17,11 @@ import ScollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import { router } from "expo-router";
 import { Card } from "@/components/ui/card";
 import { Image } from "expo-image";
-import { getWallpaperImages, getWidgetImages } from "@/api";
-import { getObjectKeyFromSignedUrl } from "@/utils/image";
-import { CacheManager } from "@/components/ChachedImage";
+import { getWallpaperImages } from "@/api";
+import { ShelfTrim } from "@/components/ShelfTrim";
 
 export default function AddCase() {
-  const { addCase, cases, updateCase } = useStore();
+  const { addCase, cases } = useStore();
   const [bookCases, setBookCases] = useState<
     (BookCase & { isSelected: boolean })[]
   >(
@@ -58,6 +56,12 @@ export default function AddCase() {
   const renderShelf = (bookCase: BookCase) => {
     return (
       <>
+        {bookCase.topTrimKey ? (
+          <ShelfTrim
+            trimImageKey={bookCase.topTrimKey as any}
+            width={scale(100)}
+          />
+        ) : null}
         {[1, 2, 3].map((shelfBooks, index) => {
           return (
             <Shelf
@@ -71,6 +75,12 @@ export default function AddCase() {
             </Shelf>
           );
         })}
+        {bookCase.bottomTrimKey ? (
+          <ShelfTrim
+            trimImageKey={bookCase.bottomTrimKey as any}
+            width={scale(100)}
+          />
+        ) : null}
       </>
     );
   };
@@ -83,11 +93,13 @@ export default function AddCase() {
 
     const newCase: BookCase = {
       name: caseName,
-      topImageKey: selectedStyle!.topImageKey,
-      middleImageKey: selectedStyle!.middleImageKey,
-      bottomImageKey: selectedStyle!.bottomImageKey,
+      topShelfImageKey: selectedStyle!.topShelfImageKey,
+      middleShelfImageKey: selectedStyle!.middleShelfImageKey,
+      bottomShelfImageKey: selectedStyle!.bottomShelfImageKey,
       bookOffsetXPercent: selectedStyle!.bookOffsetXPercent,
       bookOffsetYPercent: selectedStyle!.bookOffsetYPercent,
+      bottomTrimKey: selectedStyle!.bottomTrimKey,
+      topTrimKey: selectedStyle!.topTrimKey,
       books: [],
       isDefault: false,
       widgets: [],

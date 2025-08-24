@@ -8,6 +8,7 @@ import { Shelf } from "@/components/Shelf";
 import CachedBookSpine from "@/components/BookSpine";
 import CachedWidget from "@/components/Widget";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { ShelfTrim } from "./ShelfTrim";
 
 const MAX_WIDTH = Dimensions.get("window").width * (isTablet ? 0.8 : 0.95);
 const MAX_HEIGHT = Dimensions.get("window").height * (isTablet ? 1.5 : 0.8);
@@ -28,6 +29,12 @@ const Bookshelf = (props: BookShelfProps) => {
       <GestureHandlerRootView>
         <SnapbackZoom>
           <View className="flex-1 items-center justify-center">
+            {bookCase.topTrimKey ? (
+              <ShelfTrim
+                trimImageKey={bookCase.topTrimKey as any}
+                width={MAX_WIDTH + 10}
+              />
+            ) : null}
             {shelves.map((shelfBooks, index) => {
               return (
                 <Shelf
@@ -54,6 +61,12 @@ const Bookshelf = (props: BookShelfProps) => {
                 </Shelf>
               );
             })}
+            {bookCase.bottomTrimKey ? (
+              <ShelfTrim
+                trimImageKey={bookCase.bottomTrimKey as any}
+                width={MAX_WIDTH + 10}
+              />
+            ) : null}
           </View>
         </SnapbackZoom>
       </GestureHandlerRootView>

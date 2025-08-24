@@ -7,6 +7,7 @@ import { FlatList, StyleSheet, View } from "react-native";
 import { Shelf } from "./Shelf";
 import CachedBookSpine from "./BookSpine";
 import CachedWidget from "./Widget";
+import { ShelfTrim } from "./ShelfTrim";
 
 interface BookShelfProps {
   bookCase: BookCase;
@@ -114,6 +115,12 @@ export default function CompactBookShelf(props: BookShelfProps) {
 
   return (
     <>
+      {bookCase.topTrimKey ? (
+        <ShelfTrim
+          trimImageKey={bookCase.topTrimKey as any}
+          width={caseWidth}
+        />
+      ) : null}
       {shelves.map((shelfBooks, index) => {
         return (
           <Shelf
@@ -136,6 +143,12 @@ export default function CompactBookShelf(props: BookShelfProps) {
           </Shelf>
         );
       })}
+      {bookCase.bottomTrimKey ? (
+        <ShelfTrim
+          trimImageKey={bookCase.bottomTrimKey as any}
+          width={caseWidth}
+        />
+      ) : null}
     </>
   );
 }

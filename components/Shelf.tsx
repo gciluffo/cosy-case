@@ -9,11 +9,12 @@ import BirchMiddle from "@/assets/images/book-shelves/middle-shelf-birch.png";
 // @ts-ignore
 import BirchBottom from "@/assets/images/book-shelves/bottom-shelf-birch.png";
 // @ts-ignore
-import WhiteTrimTop from "@/assets/images/book-shelves/top-white-trim.png";
+import BirchWhiteTop from "@/assets/images/book-shelves/top-white-birch.png";
 // @ts-ignore
-import WhiteTrimMiddle from "@/assets/images/book-shelves/middle-white-trim.png";
+import BirchWhiteMiddle from "@/assets/images/book-shelves/middle-white-birch.png";
 // @ts-ignore
-import WhiteTrimBottom from "@/assets/images/book-shelves/bottom-white-trim.png";
+import BirchWhiteBottom from "@/assets/images/book-shelves/bottom-white-birch.png";
+// @ts-ignore
 import { View } from "react-native";
 
 export const ShelfImageMap = {
@@ -22,9 +23,9 @@ export const ShelfImageMap = {
   birchMiddle: BirchMiddle,
   birchBottom: BirchBottom,
   //white-trim
-  whiteTrimTop: WhiteTrimTop,
-  whiteTrimMiddle: WhiteTrimMiddle,
-  whiteTrimBottom: WhiteTrimBottom,
+  birchWhiteTop: BirchWhiteTop,
+  birchWhiteMiddle: BirchWhiteMiddle,
+  birchWhiteBottom: BirchWhiteBottom,
 };
 
 interface ShelfProps {
@@ -39,15 +40,15 @@ interface ShelfProps {
 export function Shelf(props: ShelfProps) {
   const { children, index, numShelves, width, height, bookCase } = props;
   const {
-    middleImageKey,
-    topImageKey,
-    bottomImageKey,
-    bookOffsetXPercent: offsetXPercent,
-    bookOffsetYPercent: offsetYPercent,
+    middleShelfImageKey: middleImageKey,
+    topShelfImageKey: topImageKey,
+    bottomShelfImageKey: bottomImageKey,
+    bookOffsetXPercent,
+    bookOffsetYPercent,
   } = bookCase;
 
-  const horizontalPadding = width * offsetXPercent;
-  const verticalPadding = height * offsetYPercent;
+  const horizontalPadding = width * bookOffsetXPercent;
+  const verticalPadding = height * bookOffsetYPercent;
 
   const getShelfImage = (index: number, length: number) => {
     if (index === 0) {
@@ -68,10 +69,10 @@ export function Shelf(props: ShelfProps) {
         paddingHorizontal: horizontalPadding,
         paddingVertical: verticalPadding,
         justifyContent: "center",
+        marginVertical: -0.5,
       }}
       resizeMode="stretch"
     >
-      {/* This makes sure books align well inside shelf */}
       <View style={{ flex: 1, justifyContent: "flex-end" }}>{children}</View>
     </ImageBackground>
   );

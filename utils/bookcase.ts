@@ -3,26 +3,27 @@ import { BookCase, BookSortOrder } from "@/models/book";
 export const BOOK_CASES: BookCase[] = [
   {
     name: "default",
-    topImageKey: "birchTop",
-    middleImageKey: "birchMiddle",
-    bottomImageKey: "birchBottom",
+    topShelfImageKey: "birchTop",
+    middleShelfImageKey: "birchMiddle",
+    bottomShelfImageKey: "birchBottom",
     bookOffsetXPercent: 0.05,
     bookOffsetYPercent: 0.07,
     books: [],
     isDefault: false,
     widgets: [],
   },
-  // {
-  //   name: "default",
-  //   topImageKey: "whiteTrimTop",
-  //   middleImageKey: "whiteTrimMiddle",
-  //   bottomImageKey: "whiteTrimBottom",
-  //   offsetXPercent: 0.05,
-  //   offsetYPercent: 0.07,
-  //   books: [],
-  //   isDefault: false,
-  //   widgets: [],
-  // },
+  {
+    name: "birchWhite",
+    topShelfImageKey: "birchWhiteTop",
+    middleShelfImageKey: "birchWhiteMiddle",
+    bottomShelfImageKey: "birchWhiteBottom",
+    bottomTrimKey: "birchWhiteBottomTrim",
+    bookOffsetXPercent: 0.06,
+    bookOffsetYPercent: 0.07,
+    books: [],
+    isDefault: false,
+    widgets: [],
+  },
 ];
 
 export const sortBookcase = (bookCase: BookCase, sort: BookSortOrder): void => {

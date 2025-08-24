@@ -18,6 +18,7 @@ import { Fab, FabLabel, FabIcon } from "@/components/ui/fab";
 import { AddIcon } from "@/components/ui/icon";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
+import { ShelfTrim } from "@/components/ShelfTrim";
 
 const MAX_WIDTH = Dimensions.get("window").width * (isTablet ? 0.8 : 0.95);
 const MAX_HEIGHT = Dimensions.get("window").height * (isTablet ? 1.5 : 0.8);
@@ -56,6 +57,12 @@ const Bookshelf = (props: BookShelfProps) => {
           }}
         >
           <View className="flex-1 items-center justify-center">
+            {bookCase.topTrimKey ? (
+              <ShelfTrim
+                trimImageKey={bookCase.topTrimKey as any}
+                width={MAX_WIDTH + 10}
+              />
+            ) : null}
             {shelves.map((shelfBooks, index) => {
               return (
                 <Shelf
@@ -82,6 +89,12 @@ const Bookshelf = (props: BookShelfProps) => {
                 </Shelf>
               );
             })}
+            {bookCase.bottomTrimKey ? (
+              <ShelfTrim
+                trimImageKey={bookCase.bottomTrimKey as any}
+                width={MAX_WIDTH + 10}
+              />
+            ) : null}
           </View>
         </SnapbackZoom>
       </GestureHandlerRootView>

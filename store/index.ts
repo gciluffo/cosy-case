@@ -48,9 +48,9 @@ const useStore = create<Store, [["zustand/persist", unknown]]>(
       cases: [
         {
           name: "default",
-          topImageKey: "birchTop",
-          middleImageKey: "birchMiddle",
-          bottomImageKey: "birchBottom",
+          topShelfImageKey: "birchTop",
+          middleShelfImageKey: "birchMiddle",
+          bottomShelfImageKey: "birchBottom",
           bookOffsetXPercent: 0.07,
           bookOffsetYPercent: 0.07,
           books: [],
