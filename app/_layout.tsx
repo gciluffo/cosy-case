@@ -225,15 +225,6 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="shared-bookcase"
-          options={{
-            headerTransparent: true,
-            headerTitle: "",
-            headerTintColor: "white", // or any contrasting color for your back button
-            headerBackButtonDisplayMode: "generic",
-          }}
-        />
-        <Stack.Screen
           name="shared-bookcase/[id]"
           options={{
             headerTransparent: false,

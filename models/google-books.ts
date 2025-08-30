@@ -55,6 +55,9 @@ export interface PanelizationSummary {
 export interface ImageLinks {
   smallThumbnail: string;
   thumbnail: string;
+  small?: string;
+  medium?: string;
+  large?: string;
 }
 
 export interface SaleInfo {
@@ -105,6 +108,7 @@ export interface VolumeInfo {
   dimensions?: Dimensions;
   printType?: string;
   maturityRating?: string;
+  description?: string;
   allowAnonLogging?: boolean;
   contentVersion?: string;
   panelizationSummary?: PanelizationSummary;

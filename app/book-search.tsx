@@ -56,13 +56,13 @@ export default function BookSearch() {
     }
 
     const delayDebounceFn = setTimeout(async () => {
-      // Send API request here
       try {
         setLoading(true);
         const response = await searchBooks(searchText);
         setSearchResults(response);
 
-        findAndUpdateMissingCovers(response);
+        // TODO: Figure out a more effecient way to do this
+        // findAndUpdateMissingCovers(response);
       } catch (error) {
         console.error("Error fetching books:", error);
       } finally {
@@ -171,7 +171,7 @@ export default function BookSearch() {
 
       {searchResults.length && (
         <FlatList
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: 170 }}
           data={searchResults}
           keyExtractor={(item) => item.key}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
@@ -192,7 +192,7 @@ export default function BookSearch() {
       {!searchText && (
         <ScrollView
           contentContainerStyle={{
-            paddingBottom: 60,
+            paddingBottom: 170,
           }}
         >
           <TrendingBooksView />

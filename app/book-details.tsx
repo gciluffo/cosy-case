@@ -14,22 +14,20 @@ import { router, useLocalSearchParams } from "expo-router";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { Image } from "expo-image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  getObjectKeyFromSignedUrl,
-  getPrimaryAndSecondaryColors,
-  getWidthHeightFromUrl,
-} from "@/utils/image";
+import { getPrimaryAndSecondaryColors } from "@/utils/image";
 import { moderateScale, verticalScale } from "@/utils/scale";
 import { Heading } from "@/components/ui/heading";
 import { LinearGradient } from "expo-linear-gradient";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
-import CachedImage, { CacheManager } from "@/components/ChachedImage";
+import { CacheManager } from "@/components/ChachedImage";
 import { Book, BookReview, BookStatus } from "@/models/book";
 import {
   getBookDetails,
+  getBookDetailsV2,
   getBookSpineBucketPathFromSignedUrl,
   getSpineImages,
   searchBooks,
+  searchBooksV2,
 } from "@/api";
 import { OpenLibraryBook } from "@/models/open-library";
 import CollapsibleDescription from "@/components/CollapsibleDescription";
@@ -37,6 +35,7 @@ import { Card } from "@/components/ui/card";
 import InlinePicker from "@/components/InlinePicker";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { getBookDescription, isStringIsbn13 } from "@/utils/books";
+import { stripHtmlTags } from "@/utils/string";
 import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
 import { calculateBadgeProgressForCompleteBook } from "@/utils/badges";
 
@@ -105,17 +104,38 @@ export default function BookDetails() {
           setLoading(true);
 
           let workKey;
+          let googleKey;
           if (isStringIsbn13(bookKey as string)) {
-            const searchResult = await searchBooks(bookKey as string);
-            if (searchResult.length > 0) {
-              workKey = searchResult[0].key;
+            const [v1Result, v2Result] = await Promise.all([
+              searchBooks(bookKey as string),
+              searchBooksV2(bookKey as string),
+            ]);
+
+            if (v1Result.length > 0) {
+              workKey = v1Result[0].key;
             } else {
               console.warn("No book found for ISBN:", bookKey);
             }
+
+            if (v2Result) {
+              googleKey = v2Result.items?.[0]?.id;
+            }
           }
 
-          const book = await getBookDetails(workKey || (bookKey as string));
-          setRemoteBook(book);
+          // const book = await getBookDetails(workKey || (bookKey as string));
+          const [openBook, googleBook] = await Promise.all([
+            getBookDetails(workKey || (bookKey as string)),
+            googleKey ? getBookDetailsV2(googleKey) : Promise.resolve(null),
+          ]);
+
+          // Handle description from Google Books, strip HTML tags if present
+          if (googleBook?.volumeInfo.description) {
+            openBook.description = stripHtmlTags(
+              googleBook.volumeInfo.description
+            );
+          }
+
+          setRemoteBook(openBook);
         }
       } catch (error) {
         console.error("Error fetching book details:", error);
@@ -211,6 +231,7 @@ export default function BookDetails() {
           author: book.author,
           cover_url: coverUrl,
         }),
+        openBook: JSON.stringify(remoteBook),
       },
     });
   };
@@ -498,7 +519,7 @@ export default function BookDetails() {
           <Text>{localBook?.title || remoteBook?.title}</Text>
         </View>
         <View className="h-[1px] bg-gray-200 my-3" />
-        <View className="flex-row justify-between">
+        <View className="flex-row justify-between gap-5">
           <Text className="text-gray-500">Subtitle</Text>
           <Text>{localBook?.subtitle || remoteBook?.subtitle}</Text>
         </View>

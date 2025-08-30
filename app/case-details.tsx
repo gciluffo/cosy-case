@@ -483,8 +483,7 @@ export default function CaseDetails() {
       bookCase?.wallPaper?.cacheKey,
       bookCase?.name,
       bookCase?.isDefault,
-      bookCase?.widgets,
-      bookCase?.books,
+      bookCase,
     ]
   );
 
@@ -563,10 +562,24 @@ export default function CaseDetails() {
                 placeholder={caseNameInput}
                 enterKeyHint="done"
                 onSubmitEditing={() => {
-                  updateCase(bookCase?.name!, { name: caseNameInput });
+                  if (
+                    bookCase &&
+                    caseNameInput &&
+                    caseNameInput !== bookCase.name
+                  ) {
+                    updateCase(caseName as string, { name: caseNameInput });
+                    router.setParams({ caseName: caseNameInput });
+                  }
                 }}
                 onBlur={() => {
-                  updateCase(bookCase?.name!, { name: caseNameInput });
+                  if (
+                    bookCase &&
+                    caseNameInput &&
+                    caseNameInput !== bookCase.name
+                  ) {
+                    updateCase(caseName as string, { name: caseNameInput });
+                    router.setParams({ caseName: caseNameInput });
+                  }
                 }}
                 style={{
                   fontSize: moderateScale(14),

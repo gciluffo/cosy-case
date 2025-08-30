@@ -88,8 +88,9 @@ export default function AddBookScreen() {
   ]);
   const spineRef = useRef(null);
   const params = useLocalSearchParams();
-  const { book, refetchSpineImages } = params;
+  const { book, refetchSpineImages, openBook } = params;
   const bookObject: AddBookParam = JSON.parse(book as string);
+  const openBookObject: OpenLibraryBook = JSON.parse(openBook as string);
 
   useEffect(() => {
     const bookSpinesInit = async () => {
@@ -118,12 +119,17 @@ export default function AddBookScreen() {
           return;
         }
 
+        if (openBookObject) {
+          setBookDetails({ ...bookObject, ...openBookObject });
+          return;
+        }
+
         setLoadingDetails(true);
         const details = await getBookDetails(
           bookObject.key,
           bookObject.edition
         );
-        // console.log("Book details:", details);
+
         // TODO: Get rating for book, seperate open library endpoint
         setBookDetails({ ...bookObject, ...details });
       } catch (error) {

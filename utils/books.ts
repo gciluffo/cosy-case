@@ -1,5 +1,6 @@
 import { Book, GenericBookGenre } from "@/models/book";
 import { OpenLibraryBook } from "@/models/open-library";
+import { stripHtmlTags } from "./string";
 
 /**
  * Returns the rendered width (in pixels) for a book spine,
@@ -88,16 +89,23 @@ export function isStringValidIsbn(isbn: string): boolean {
 }
 
 export const getBookDescription = (book: Book | OpenLibraryBook) => {
+  let description: string;
+
   if (
     typeof book.description === "object" &&
     book.description?.type === "/type/text"
   ) {
-    return book.description.value;
+    description = book.description.value;
   } else if (typeof book.description === "string") {
-    return book.description;
+    description = book.description;
+  } else if (book.description?.type === "/type/html") {
+    description = stripHtmlTags(book.description.value);
   } else {
     return "No description available";
   }
+
+  // Strip HTML tags from the description
+  return stripHtmlTags(description);
 };
 
 export const getGenreChartData = (

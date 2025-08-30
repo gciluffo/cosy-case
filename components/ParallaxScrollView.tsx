@@ -41,13 +41,11 @@ const ParallaxScrollView = (props: Props) => {
   });
 
   return (
-    <KeyboardAwareScrollView>
-      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16} {...rest}>
-        <Animated.View style={[imageAnimatedStyle]}>
-          {parallaxHeaderContent()}
-        </Animated.View>
-        {children}
-      </Animated.ScrollView>
+    <KeyboardAwareScrollView ref={scrollRef} scrollEventThrottle={16} {...rest}>
+      <Animated.View style={[imageAnimatedStyle]}>
+        {parallaxHeaderContent()}
+      </Animated.View>
+      {children}
     </KeyboardAwareScrollView>
   );
 };

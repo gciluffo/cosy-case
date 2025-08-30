@@ -10,10 +10,6 @@ import { captializeFirstLetter } from "@/utils/string";
 const BASE_URL = "http://192.168.2.53:8000";
 
 export async function searchBooks(searchTerm: string) {
-  console.log(
-    "Searching for books with term:",
-    `${BASE_URL}/search/?query=${searchTerm}&offset=0&limit=10`
-  );
   const response = await fetch(
     `${BASE_URL}/search/?query=${encodeURIComponent(
       searchTerm

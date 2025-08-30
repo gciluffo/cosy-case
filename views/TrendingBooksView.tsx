@@ -164,24 +164,6 @@ export default function TrendingBooksView() {
 
   return (
     <View>
-      {/* <Heading>Trending Books Today</Heading>
-      {!isLoading ? (
-        <FlatList
-          data={todayBooks}
-          renderItem={renderBook}
-          keyExtractor={(item) => item.bookId}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
-          style={{ marginBottom: 20, marginTop: 10 }}
-          initialNumToRender={5} // Render only a few items initially
-          maxToRenderPerBatch={5} // Limit the number of items rendered per batch
-          windowSize={5} // Adjust the window size for rendering
-          removeClippedSubviews={true} // Improve performance by removing off-screen items
-        />
-      ) : (
-        <LoadingHorizontalFlatList />
-      )} */}
       <Heading>Open Library Trending Books This Year</Heading>
       {!isLoading ? (
         <FlatList
@@ -196,20 +178,6 @@ export default function TrendingBooksView() {
       ) : (
         <LoadingHorizontalFlatList />
       )}
-      {/* <Heading>Trending Books of All Time</Heading>
-      {!isLoading ? (
-        <FlatList
-          data={allTimeBooks}
-          renderItem={renderBook}
-          keyExtractor={(item) => item.bookId}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
-          style={{ marginBottom: 20, marginTop: 10 }}
-        />
-      ) : (
-        <LoadingHorizontalFlatList />
-      )} */}
     </View>
   );
 }

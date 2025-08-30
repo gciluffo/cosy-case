@@ -3,6 +3,7 @@ import { OpenLibraryBook, OpenLibraryBookSearch } from "@/models/open-library";
 import { useLocalSearchParams } from "expo-router";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { Text } from "@/components/ui/text";
+import { getBookDescription } from "@/utils/books";
 
 export default function AddBookDetails() {
   const params = useLocalSearchParams();
@@ -11,16 +12,8 @@ export default function AddBookDetails() {
   console.log("AddBookDetails", book);
 
   const renderDescription = () => {
-    if (
-      typeof book.description === "object" &&
-      book.description?.type === "/type/text"
-    ) {
-      return <Text>{book.description.value}</Text>;
-    } else if (typeof book.description === "string") {
-      return <Text>{book.description}</Text>;
-    } else {
-      return <Text>No description available</Text>;
-    }
+    const description = getBookDescription(book);
+    return <Text>{description}</Text>;
   };
 
   return (
