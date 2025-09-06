@@ -24,13 +24,7 @@ import { Text } from "@/components/ui/text";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import ScrollViewFloatingButton from "@/components/ScrollViewFloatingButton";
 import useStore from "@/store";
-import {
-  Book,
-  BookReview,
-  BookStatus,
-  GenericBookGenre,
-  Spine,
-} from "@/models/book";
+import { Book, BookStatus, Spine } from "@/models/book";
 import {
   getPrimaryAndSecondaryColors,
   getWidthHeightFromUrl,
@@ -48,6 +42,14 @@ import {
   isStringValidIsbn,
 } from "@/utils/books";
 import { calculateBadgeProgressForCompleteBook } from "@/utils/badges";
+import {
+  downloadPlaceholderSpine,
+  getRemoteSpineCacheKey,
+} from "@/utils/caching";
+import {
+  getInvertedPlaceholderSpineCacheKey,
+  getPlaceholderSpineCacheKey,
+} from "@/utils/caching";
 
 export interface AddBookParam {
   key: string;
@@ -86,11 +88,16 @@ export default function AddBookScreen() {
   const [selectedShelves, setSelectedShelves] = useState<string[]>([
     cases.find((c) => c.isDefault)?.name || "default",
   ]);
-  const spineRef = useRef(null);
+  const placeholderSpineRef = useRef(null);
+  const invertedPlaceholderSpineRef = useRef(null);
   const params = useLocalSearchParams();
   const { book, refetchSpineImages, openBook } = params;
   const bookObject: AddBookParam = JSON.parse(book as string);
-  const openBookObject: OpenLibraryBook = JSON.parse(openBook as string);
+
+  let openBookObject: OpenLibraryBook | undefined = undefined;
+  if (openBook) {
+    openBookObject = JSON.parse(openBook as string);
+  }
 
   useEffect(() => {
     const bookSpinesInit = async () => {
@@ -119,7 +126,7 @@ export default function AddBookScreen() {
           return;
         }
 
-        if (openBookObject) {
+        if (openBook && openBookObject) {
           setBookDetails({ ...bookObject, ...openBookObject });
           return;
         }
@@ -207,28 +214,45 @@ export default function AddBookScreen() {
     setAddingBook(true);
 
     try {
-      const uri = await captureRef(spineRef, {
-        width: 50,
-        height: 250,
-        quality: 1,
+      const cacheKeyPlaceholder = getPlaceholderSpineCacheKey(bookDetails.key);
+      const cacheKeyPlaceholderInverted = getInvertedPlaceholderSpineCacheKey(
+        bookDetails.key
+      );
+
+      await Promise.all([
+        downloadPlaceholderSpine(placeholderSpineRef, cacheKeyPlaceholder),
+        downloadPlaceholderSpine(
+          invertedPlaceholderSpineRef,
+          cacheKeyPlaceholderInverted
+        ),
+      ]);
+
+      spines.push({
+        cacheKey: cacheKeyPlaceholder,
+        selected: selectedSpine === "placeholder",
+        originalImageHeight: 250,
+        originalImageWidth: 50,
+        colors: {
+          primary: coverColors?.primary || "#000000",
+          secondary: coverColors?.secondary || "#FFFFFF",
+        },
       });
-      if (uri) {
-        const cacheKey = `${bookDetails.key}-spine-placeholder`;
-        await CacheManager.downloadAsync({
-          uri: uri,
-          key: cacheKey,
-          options: {},
-        });
+      spines.push({
+        cacheKey: cacheKeyPlaceholderInverted,
+        selected: selectedSpine === "placeholder-inverted",
+        originalImageHeight: 250,
+        originalImageWidth: 50,
+        colors: {
+          primary: coverColors?.secondary || "#000000",
+          secondary: coverColors?.primary || "#FFFFFF",
+        },
+      });
 
-        spines.push({
-          cacheKey: cacheKey,
-          selected: spineImages.length === 0 || selectedSpine === "placeholder",
-          originalImageHeight: 250,
-          originalImageWidth: 50,
-        });
-      }
-
-      if (spineImages.length > 0 && selectedSpine !== "placeholder") {
+      if (
+        spineImages.length > 0 &&
+        selectedSpine !== "placeholder" &&
+        selectedSpine !== "placeholder-inverted"
+      ) {
         const signedUrl = await getBookSpineBucketPathFromSignedUrl(
           selectedSpine!,
           bookDetails.key
@@ -236,7 +260,7 @@ export default function AddBookScreen() {
         const { primary, secondary } = await getPrimaryAndSecondaryColors(
           signedUrl
         );
-        const cacheKey = `${bookDetails.key}-spine-${new Date().getTime()}`;
+        const cacheKey = getRemoteSpineCacheKey(bookDetails.key);
         await CacheManager.downloadAsync({
           uri: signedUrl,
           key: cacheKey,
@@ -303,6 +327,8 @@ export default function AddBookScreen() {
             ? new Date().toISOString()
             : undefined,
       };
+
+      console.log("spines:", spines);
 
       // if status is finished, calculate impact on badge progress
       // console.log("selectedStatus:", selectedStatus);
@@ -484,19 +510,38 @@ export default function AddBookScreen() {
                 </TouchableOpacity>
               ))}
               {bookDetails.author && coverColors && (
-                <TouchableOpacity
-                  onPress={() => setSelectedSpine("placeholder")}
-                  style={[
-                    selectedSpine === "placeholder" && styles.itemSelected,
-                  ]}
-                >
-                  <PlaceholderBookSpine
-                    colors={coverColors}
-                    title={bookDetails.title}
-                    author={bookDetails.author || ""}
-                    viewRef={spineRef}
-                  />
-                </TouchableOpacity>
+                <>
+                  <TouchableOpacity
+                    onPress={() => setSelectedSpine("placeholder")}
+                    style={[
+                      selectedSpine === "placeholder" && styles.itemSelected,
+                    ]}
+                  >
+                    <PlaceholderBookSpine
+                      colors={coverColors}
+                      title={bookDetails.title}
+                      author={bookDetails.author || ""}
+                      viewRef={placeholderSpineRef}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setSelectedSpine("placeholder-inverted")}
+                    style={[
+                      selectedSpine === "placeholder-inverted" &&
+                        styles.itemSelected,
+                    ]}
+                  >
+                    <PlaceholderBookSpine
+                      colors={{
+                        primary: coverColors.secondary,
+                        secondary: coverColors.primary,
+                      }}
+                      title={bookDetails.title}
+                      author={bookDetails.author || ""}
+                      viewRef={invertedPlaceholderSpineRef}
+                    />
+                  </TouchableOpacity>
+                </>
               )}
               <TouchableOpacity
                 style={styles.addContainer}

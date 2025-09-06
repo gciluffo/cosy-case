@@ -1,4 +1,3 @@
-import { captureRef } from "react-native-view-shot";
 import {
   View,
   StyleSheet,
@@ -13,13 +12,16 @@ import useStore from "@/store";
 import { router, useLocalSearchParams } from "expo-router";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { Image } from "expo-image";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { getPrimaryAndSecondaryColors } from "@/utils/image";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getPrimaryAndSecondaryColors,
+  getWidthHeightFromUrl,
+} from "@/utils/image";
 import { moderateScale, verticalScale } from "@/utils/scale";
 import { Heading } from "@/components/ui/heading";
 import { LinearGradient } from "expo-linear-gradient";
 import { AddIcon, TrashIcon } from "@/components/ui/icon";
-import { CacheManager } from "@/components/ChachedImage";
+import CachedImage, { CacheManager } from "@/components/ChachedImage";
 import { Book, BookReview, BookStatus } from "@/models/book";
 import {
   getBookDetails,
@@ -36,15 +38,19 @@ import InlinePicker from "@/components/InlinePicker";
 import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 import { getBookDescription, isStringIsbn13 } from "@/utils/books";
 import { stripHtmlTags } from "@/utils/string";
-import PlaceholderBookSpine from "@/components/PlaceholderBookSpine";
 import { calculateBadgeProgressForCompleteBook } from "@/utils/badges";
+import {
+  getInvertedPlaceholderSpineCacheKey,
+  getPlaceholderSpineCacheKey,
+  getRemoteSpineCacheKey,
+  isCacheKeyPlaceholderSpine,
+} from "@/utils/caching";
 
 export default function BookDetails() {
   const [localBook, setLocalBook] = useState<Book | null>(null);
   const [remoteBook, setRemoteBook] = useState<OpenLibraryBook | null>(null);
   const [loading, setLoading] = useState(false);
   const [reviewText, setReviewText] = useState<string>("");
-  const spineRef = useRef(null);
   const [coverColors, setColorCovers] = useState<{
     primary: string;
     secondary: string;
@@ -62,8 +68,6 @@ export default function BookDetails() {
     return !!book;
   }, [bookKey, localBookKey, cases]);
 
-  // console.log({ bookspines: localBook?.spines, spines });
-
   useEffect(() => {
     const init = async () => {
       try {
@@ -73,6 +77,7 @@ export default function BookDetails() {
             setLocalBook(book);
             const remoteSpines = await getSpineImages(book.key);
             const localBookSpines = book?.spines || [];
+            // console.log({ remoteSpines, localBookSpines });
             const localSelectedSpine = localBookSpines.find(
               (s) => s.selected && s.cacheKey.includes(book.key)
             );
@@ -91,6 +96,23 @@ export default function BookDetails() {
                   )?.cacheKey || ``,
               };
             });
+
+            // add place holder books spines to list
+            list.push({
+              url: "",
+              isSelected:
+                localSelectedSpine?.cacheKey.endsWith("placeholder") || false,
+              cacheKey: getPlaceholderSpineCacheKey(book.key),
+            });
+            list.push({
+              url: "",
+              isSelected:
+                localSelectedSpine?.cacheKey.endsWith("placeholder-inverted") ||
+                false,
+              cacheKey: getInvertedPlaceholderSpineCacheKey(book.key),
+            });
+
+            // console.log("list", list);
 
             setSpines(list);
             if (book.reviewText) {
@@ -232,96 +254,49 @@ export default function BookDetails() {
           cover_url: coverUrl,
         }),
         openBook: JSON.stringify(remoteBook),
+        refetch: "true",
       },
     });
   };
 
-  const isPlaceholderSpineSelected = useMemo(() => {
-    const selectedSpine = localBook?.spines.find((s) => s.selected);
-    return selectedSpine?.cacheKey.includes("placeholder");
-  }, [localBook?.spines]);
-
-  const onSpineSelected = async (url: string, cacheKey?: string) => {
+  const onSpineSelected = async (url: string, cacheKey: string) => {
     if (!localBook) {
       return;
     }
 
-    if (url.includes("placeholder")) {
+    if (cacheKey && isCacheKeyPlaceholderSpine(cacheKey)) {
       // If the placeholder is selected
       // Check if the image exist locally, if not save the image
-      const newCacheKey = `${localBook.key}-spine-placeholder`;
-      const exists = await CacheManager.checkIfCached({ key: newCacheKey });
 
-      const newSpine = {
-        cacheKey: newCacheKey,
-        selected: true,
-        originalImageHeight: 250,
-        originalImageWidth: 50,
-      };
+      // set Localbook if the spine is already cached
+      setLocalBook((prev: Book | null) => {
+        if (!prev) return prev;
 
-      if (!exists) {
-        const uri = await captureRef(spineRef, {
-          width: 50,
-          height: 250,
-          quality: 1,
-        });
-
-        await CacheManager.downloadAsync({
-          uri: uri,
-          key: newCacheKey,
-          options: {},
-        });
-
-        // update localBook
-        setLocalBook((prev: Book | null) => {
-          if (!prev) return prev;
-
-          return {
-            ...prev,
-            author: prev.author ?? null,
-            spines: [...prev.spines, newSpine],
-          };
-        });
-
-        // update book in store, make sure to deselect other spines
-        updateBook(localBook.key, {
-          ...localBook,
-          spines: [
-            ...localBook.spines.map((s) => ({ ...s, selected: false })),
-            newSpine,
-          ],
-        });
-      } else {
-        // set Localbook if the spine is already cached
-        setLocalBook((prev: Book | null) => {
-          if (!prev) return prev;
-
-          return {
-            ...prev,
-            spines: prev.spines.map((s) =>
-              s.cacheKey === newCacheKey
-                ? { ...s, selected: true }
-                : { ...s, selected: false }
-            ),
-          };
-        });
-
-        // update book in store
-        updateBook(localBook.key, {
-          ...localBook,
-          spines: localBook.spines.map((s) =>
-            s.cacheKey === newCacheKey
+        return {
+          ...prev,
+          spines: prev.spines.map((s) =>
+            s.cacheKey === cacheKey
               ? { ...s, selected: true }
               : { ...s, selected: false }
           ),
-        });
-      }
+        };
+      });
+
+      // update book in store
+      updateBook(localBook.key, {
+        ...localBook,
+        spines: localBook.spines.map((s) =>
+          s.cacheKey === cacheKey
+            ? { ...s, selected: true }
+            : { ...s, selected: false }
+        ),
+      });
 
       // deselect everything in spines since playholder spine is selected
       setSpines((prev) =>
         prev.map((s) => ({
           ...s,
-          isSelected: false,
+          isSelected: s.cacheKey === cacheKey ? true : false,
         }))
       );
 
@@ -334,21 +309,31 @@ export default function BookDetails() {
         url,
         localBook.key
       );
-      const cacheKey = `${localBook.key}-spine-${new Date().getTime()}`;
+      const { width, height } = getWidthHeightFromUrl(signedUrl);
+      const newCacheKey = getRemoteSpineCacheKey(localBook.key);
       await CacheManager.downloadAsync({
         uri: signedUrl,
-        key: cacheKey,
+        key: newCacheKey,
         options: {},
       });
 
-      // update book in store, make sure the other spines are not selected
+      const { primary, secondary } = await getPrimaryAndSecondaryColors(
+        signedUrl
+      );
+
+      // in this case we are adding a new spine to the localBook since we selected a remote spine
       updateBook(localBook.key, {
         ...localBook,
-        spines: localBook.spines.map((s) =>
-          s.cacheKey === cacheKey
-            ? { ...s, selected: true }
-            : { ...s, selected: false }
-        ),
+        spines: localBook.spines.concat({
+          cacheKey: newCacheKey,
+          selected: true,
+          originalImageHeight: height,
+          originalImageWidth: width,
+          colors: {
+            primary: primary,
+            secondary: secondary,
+          },
+        }),
       });
     } else {
       // update book in store, make sure the other spines are not selected
@@ -378,7 +363,7 @@ export default function BookDetails() {
         ...prev,
         spines: prev.spines.map((s) => {
           if (s.cacheKey.includes("placeholder")) {
-            return { ...s, selected: false }; // deselect placeholder spine
+            return { ...s, selected: false };
           }
           return s;
         }),
@@ -676,33 +661,32 @@ export default function BookDetails() {
                         }
                         key={index}
                       >
-                        <Image
-                          source={{
-                            uri: image.url,
-                          }}
-                          style={[
-                            styles.spineImage,
-                            image.isSelected && styles.itemSelected,
-                          ]}
-                          contentFit="contain"
-                        />
+                        {image.cacheKey ? (
+                          <CachedImage
+                            source={{
+                              uri: "",
+                            }}
+                            cacheKey={image.cacheKey}
+                            style={[
+                              styles.spineImage,
+                              image.isSelected && styles.itemSelected,
+                            ]}
+                          />
+                        ) : (
+                          <Image
+                            source={{
+                              uri: image.url,
+                            }}
+                            style={[
+                              styles.spineImage,
+                              image.isSelected && styles.itemSelected,
+                            ]}
+                            contentFit="contain"
+                            className="flex-1"
+                          />
+                        )}
                       </TouchableOpacity>
                     ))}
-                    {localBook.author && coverColors && (
-                      <TouchableOpacity
-                        onPress={() => onSpineSelected("placeholder")}
-                        style={[
-                          isPlaceholderSpineSelected ? styles.itemSelected : {},
-                        ]}
-                      >
-                        <PlaceholderBookSpine
-                          colors={coverColors}
-                          title={localBook.title}
-                          author={localBook.author || ""}
-                          viewRef={spineRef}
-                        />
-                      </TouchableOpacity>
-                    )}
                     <TouchableOpacity
                       style={styles.addContainer}
                       onPress={() => {
